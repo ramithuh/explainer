@@ -1,5 +1,7 @@
 export const manifest = {
+  "schemaVersion": "architecture-manifest-v0.2",
   "architecture": {
+    "schemaVersion": "architecture-v0.1",
     "id": "diffusion_transformer",
     "name": "Diffusion Transformer (DiT)",
     "status": "draft",
@@ -557,7 +559,7 @@ export const manifest = {
         "Operates in the latent space of a frozen, off-the-shelf VAE (8x spatial downsampling); the VAE is out of scope for this slice."
       ]
     },
-    "edges": [
+    "relations": [
       {
         "from": "input_latent",
         "to": "patchify",
@@ -1055,6 +1057,7 @@ export const manifest = {
     }
   },
   "boards": {
+    "schemaVersion": "visualization-v0.2",
     "sourceYaml": "../../views/dit-semantic-zoom.view.yaml",
     "rootBoard": "dit_overview",
     "items": [

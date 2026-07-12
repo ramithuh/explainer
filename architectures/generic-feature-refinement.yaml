@@ -1,4 +1,4 @@
-schema_version: architecture-v0.1
+schema_version: architecture-v0.2
 id: generic_feature_refinement
 name: Generic Feature Refinement Pipeline
 family: transformer
@@ -40,8 +40,9 @@ state_semantics:
     updated_by:
       - item_encoder
     consumed_by:
+      - context_builder
       - item_to_group_pool
-      - output_heads
+      - output_decoder
     notes:
       - The item stream is the fine-scale mutable state.
   pair_context:
@@ -61,6 +62,7 @@ state_semantics:
       - output_decoder
 conditioning:
   - id: item_adaln
+    relation_ref: conditioning_signal_modulates_item_encoder
     source: conditioning_signal
     target: item_encoder
     mode: per_item_adaln
@@ -73,6 +75,7 @@ conditioning:
           path: architectures/generic-feature-refinement.yaml
           note: Neutral demo conditioning path.
   - id: group_pair_bias
+    relation_ref: pair_context_biases_group_refiner
     source: pair_context
     target: group_refiner.attention_logits
     mode: pair_bias
@@ -364,8 +367,9 @@ modules:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-edges:
-  - from: raw_records
+relations:
+  - id: raw_records_enter_input_adapter
+    from: raw_records
     to: input_adapter
     carries: [raw fields]
     operation: embed_inputs
@@ -374,7 +378,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: input_adapter
+  - id: input_adapter_initializes_item_state
+    from: input_adapter
     to: item_state
     carries: [item_state]
     operation: initialize_state
@@ -383,7 +388,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: input_adapter
+  - id: input_adapter_initializes_conditioning_signal
+    from: input_adapter
     to: conditioning_signal
     carries: [conditioning_signal]
     operation: initialize_conditioning
@@ -392,7 +398,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: item_state
+  - id: item_state_feeds_context_builder
+    from: item_state
     to: context_builder
     carries: [item_state]
     operation: pair_context_construction
@@ -401,7 +408,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: context_builder
+  - id: context_builder_produces_pair_context
+    from: context_builder
     to: pair_context
     carries: [pair_context]
     operation: build_pair_context
@@ -410,7 +418,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: item_state
+  - id: item_state_feeds_item_encoder
+    from: item_state
     to: item_encoder
     carries: [item_state]
     operation: item_attention_update
@@ -419,8 +428,10 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: conditioning_signal
+  - id: conditioning_signal_modulates_item_encoder
+    from: conditioning_signal
     to: item_encoder
+    kind: conditioning
     carries: [conditioning_signal]
     operation: adaptive_conditioning
     evidence:
@@ -428,7 +439,18 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: item_encoder
+  - id: item_encoder_updates_item_state
+    from: item_encoder
+    to: item_state
+    carries: [item_state]
+    operation: item_attention_update
+    evidence:
+      status: inferred
+      refs:
+        - kind: source
+          path: architectures/generic-feature-refinement.yaml
+  - id: item_encoder_feeds_item_to_group_pool
+    from: item_encoder
     to: item_to_group_pool
     carries: [item_state]
     operation: prepare_compression
@@ -437,7 +459,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: item_to_group_pool
+  - id: item_to_group_pool_produces_group_state
+    from: item_to_group_pool
     to: group_state
     carries: [group_state]
     operation: scatter_mean
@@ -446,7 +469,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: group_state
+  - id: group_state_feeds_group_refiner
+    from: group_state
     to: group_refiner
     carries: [group_state]
     operation: group_attention_update
@@ -455,8 +479,10 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: pair_context
+  - id: pair_context_biases_group_refiner
+    from: pair_context
     to: group_refiner
+    kind: conditioning
     carries: [pair_context]
     operation: pair_bias
     evidence:
@@ -464,7 +490,18 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: group_refiner
+  - id: group_refiner_updates_group_state
+    from: group_refiner
+    to: group_state
+    carries: [group_state]
+    operation: group_attention_update
+    evidence:
+      status: inferred
+      refs:
+        - kind: source
+          path: architectures/generic-feature-refinement.yaml
+  - id: group_refiner_feeds_output_decoder
+    from: group_refiner
     to: output_decoder
     carries: [group_state]
     operation: decode_groups
@@ -473,7 +510,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: output_decoder
+  - id: output_decoder_produces_item_output_state
+    from: output_decoder
     to: item_output_state
     carries: [item_output_state]
     operation: broadcast_and_fuse
@@ -482,7 +520,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: item_output_state
+  - id: item_output_state_feeds_output_heads
+    from: item_output_state
     to: output_heads
     carries: [item_output_state]
     operation: output_projection
@@ -491,7 +530,8 @@ edges:
       refs:
         - kind: source
           path: architectures/generic-feature-refinement.yaml
-  - from: output_heads
+  - id: output_heads_produce_predictions
+    from: output_heads
     to: predictions
     carries: [predictions]
     operation: predict

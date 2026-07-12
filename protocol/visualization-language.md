@@ -1,4 +1,4 @@
-# Visualization Language v0.2
+# Visualization Language v0.3
 
 This file defines the generic semantic-zoom board language used by the static
 renderer. The view source decides which architecture objects are visible at
@@ -7,7 +7,7 @@ each zoom level; the renderer decides presentation and interaction behavior.
 ## Board Shape
 
 ```yaml
-schema_version: visualization-v0.1
+schema_version: visualization-v0.3
 id: generic_semantic_zoom_board
 title: Generic Semantic Zoom Board
 entry:
@@ -16,7 +16,7 @@ root_board: overview
 boards:
   - id: overview
     title: System Overview
-    summary: One-block overview.
+    summary: Task-level inputs through the system to task-level outputs.
     scale_lanes: false
     grid:
       columns: 3
@@ -24,6 +24,13 @@ boards:
     nodes: []
     edges: []
 ```
+
+The root board is the audience's system map. It should show the complete task
+boundary: task-native inputs, the highest-level processing units, and
+task-native outputs. "Input" is domain-specific (for example records,
+sequences, or random latent noise), not necessarily an image. If a backbone is
+surrounded by preprocessing, an execution loop, or decoding, make that
+backbone a drillable child instead of using a one-box root wrapper.
 
 ## Renderer Visibility Defaults
 
@@ -37,8 +44,21 @@ override (to be added when first needed), not a renderer tweak.
   hover.
 - Compact/micro node treatments suppress `role`/`detail` prose on the card;
   it appears in the hover panel.
-- The board overview panel lists only drillable (expandable) nodes, plus
-  root-board claims and coverage.
+- The board overview panel lists only drillable nodes (those with `board_ref`),
+  plus root-board claims and coverage.
+
+## Canonical Audience View
+
+The browser exposes one interface: the audience view. Its semantic navigation,
+model map, bottom explanation surface, focus details, pan, and zoom are parts
+of the same experience rather than selectable UI modes.
+
+Board structure and presentation remain source-first. Authors change view
+YAML or generic renderer rules, regenerate the manifest, and reload the page;
+the renderer does not expose separate edit or tuning modes. Query parameters
+may select architecture content with `?arch=<id>`. The experimental
+`?layout=elk` path may change layout mechanics, but it does not change the
+audience interface.
 
 ## Edge Routing
 
@@ -53,22 +73,22 @@ visual register. The renderer routes automatically:
   connect with a straight line instead of a two-pixel jog.
 - Each edge picks the cheapest route (straight, a Z-bend through the channel
   between the boxes, or a detour lane around them) that crosses no node box.
+  Backward edges receive the same channel search as forward edges.
 - Parallel segments that would draw on top of each other are nudged apart
   into separate lanes.
 
-Skip-toned edges keep their authored clearance lanes (`route_clearance` on
-the view edge). Routing knobs live in the renderer `RULES.route` block;
-they are presentational, so views do not configure them.
+`tone` controls meaning and appearance; it does not choose geometry. Most
+edges, including skip-toned edges, use automatic routing. When an exceptional
+edge must stay in a deliberate corridor, the view may set
+`route_side: top|bottom|left|right` and an optional positive
+`route_clearance` in pixels. This selects a reusable outer lane without
+authoring brittle bend points. Typical uses are a lower feedback rail or an
+upper residual bypass. Explicit lanes participate in the same parallel-lane
+separation as automatic routes.
 
-## Tuning Mode
-
-`?tune=1` opens a live slider panel for the `RULES` presentation knobs
-(label threshold, routing clearances, transition timing). Changes are
-session-only by design: experiment until the board reads well, then
-"Copy RULES" exports the literal to paste back into `renderer.js` and
-commit. Like edit mode for node positions, the panel is a shorter loop to
-the same durable artifact — code and protocol stay the source of truth;
-the panel never persists state of its own.
+Routing knobs in the renderer `RULES.route` block remain global presentation
+defaults; board sources should use `route_side` sparingly and never encode raw
+waypoints.
 
 ## Grid Density
 
@@ -78,6 +98,23 @@ and operator circles can override with `grid.min_col` (px) and
 `grid.col_gap` (px) so many columns still fit one canvas width. The renderer
 also fits each board to the view on entry, so overflow degrades to a zoomed
 fit rather than clipping.
+
+By default, columns are uniform authored cells. A board may instead set
+`grid.column_sizing: content`. In that mode, authored `col` values express
+semantic order and alignment rather than equal pixel tracks. The renderer:
+
+- removes column ranks with no visible nodes (including columns occupied only
+  by elided nodes);
+- measures the widest rendered node in each remaining rank;
+- creates fixed content-width tracks separated by edge-to-edge gutters; and
+- centers or uniformly fits the intrinsic graph without stretching its
+  internal whitespace on wide viewports.
+
+The base gutter comes from `grid.col_gap` or the renderer default. Always-
+visible conditioning badges and contracted-edge labels may enlarge only the
+adjacent gutter that must carry them. Use the default uniform grid when blank
+ranks intentionally reserve lanes. ELK remains a separate experimental layout
+path behind `?layout=elk`.
 
 ## Nodes
 
@@ -92,7 +129,7 @@ nodes:
     treatment: block
     col: 3
     row: 2
-    expandable: true
+    board_ref: group_refiner_detail
 
   - id: pair_context
     kind: representation
@@ -114,12 +151,15 @@ Common visual fields:
 
 ## Edges
 
-Edges describe visible information flow on a board:
+Edges describe visible information flow on a board. An architecture-backed
+edge keeps board-local `from` and `to` node IDs for layout and routing, and
+must use `relation_ref` to identify the canonical architecture relation:
 
 ```yaml
 edges:
   - from: pair_context
     to: group_refiner
+    relation_ref: pair_context_biases_group_refiner
     label: bias
     tone: conditioning
     connection:
@@ -128,13 +168,45 @@ edges:
       inside: The pair/context state is projected to per-head bias terms and added to QK logits.
 ```
 
+`relation_ref` resolves to a stable ID in the architecture's top-level
+`relations`. The architecture relation owns the flow identity, architectural
+semantics, and evidence. The view's label, tone, and `connection` fields are
+presentation for this board and must not contradict or replace those facts.
+
 The `connection.inside` text should say how the source is used inside the
-target. This is the most important part of an edge hover.
+target. This is the most important part of an edge hover, but it remains
+view-specific explanatory prose rather than architecture evidence.
+
+A board-local decomposition edge that does not correspond to a top-level
+architecture relation must be marked explicitly:
+
+```yaml
+edges:
+  - from: overview_context
+    to: overview_pipeline
+    view_only: true
+    label: contextualizes
+    connection:
+      title: Overview relationship
+      role: explanatory grouping
+      inside: This board groups the context with the pipeline for orientation.
+```
+
+Every board edge must use exactly one of `relation_ref` or `view_only: true`.
+`view_only` means the connection belongs only to this board's explanatory
+decomposition rather than the top-level architecture graph. It must involve at
+least one view-local node, and its architectural content should be grounded by
+the board's subject module, pseudocode trace, or standard block. It must not be
+used between two architecture-backed nodes to avoid declaring a real relation;
+the linter enforces that boundary.
 
 ## Drilldown
 
-A node is expandable only when the target board exists. If `module_ref` is set,
-the target board id is the module id. Otherwise the node id is used.
+A node is drillable when it has an explicit `board_ref`, and the referenced
+board must exist. The target is never inferred from `module_ref` or the node
+ID. This makes navigation independent of architecture-object naming and lets
+more than one board explain the same object. Do not author `expandable` in
+visualization-v0.3; `board_ref` is the source of drilldown behavior.
 
 ## Derivation Rule
 
@@ -142,14 +214,14 @@ View files position and style nodes; they must not restate architecture facts
 that can be derived. Two consequences:
 
 - Every board edge whose endpoints both resolve to architecture objects
-  (`module_ref` or `rep_ref`) must correspond to an architecture edge or to a
-  module `inputs`/`outputs` entry. The linter enforces this.
+  (`module_ref` or `rep_ref`) must identify the matching architecture relation
+  with `relation_ref`. Board-local decomposition edges involving view-only
+  operations must instead use `view_only: true`. The linter enforces this
+  distinction.
 - Conditioning-mode badges on edges are derived, not authored. When a board
-  edge runs from a node whose `rep_ref` is the `source` of an architecture
-  `conditioning` entry to a node whose `module_ref` is that entry's `target`
-  module, the renderer badges the edge with the entry's `mode` and applies the
-  conditioning tone automatically. Do not hand-write the mode into the edge
-  label.
+  edge's `relation_ref` identifies a conditioning flow, the renderer uses the
+  architecture-owned conditioning mode and applies the conditioning tone
+  automatically. Do not hand-write the mode into the edge label.
 
 ## Tensor-Shaped Representation Nodes
 

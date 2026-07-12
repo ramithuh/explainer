@@ -1,5 +1,7 @@
 export const manifest = {
+  "schemaVersion": "architecture-manifest-v0.2",
   "architecture": {
+    "schemaVersion": "architecture-v0.2",
     "id": "generic_feature_refinement",
     "name": "Generic Feature Refinement Pipeline",
     "status": "draft",
@@ -407,8 +409,9 @@ export const manifest = {
           "item_encoder"
         ],
         "consumed_by": [
+          "context_builder",
           "item_to_group_pool",
-          "output_heads"
+          "output_decoder"
         ],
         "notes": [
           "The item stream is the fine-scale mutable state."
@@ -441,6 +444,7 @@ export const manifest = {
     "conditioning": [
       {
         "id": "item_adaln",
+        "relation_ref": "conditioning_signal_modulates_item_encoder",
         "source": "conditioning_signal",
         "target": "item_encoder",
         "mode": "per_item_adaln",
@@ -459,6 +463,7 @@ export const manifest = {
       },
       {
         "id": "group_pair_bias",
+        "relation_ref": "pair_context_biases_group_refiner",
         "source": "pair_context",
         "target": "group_refiner.attention_logits",
         "mode": "pair_bias",
@@ -536,8 +541,9 @@ export const manifest = {
         "This demo is architectural only; it is not tied to a training recipe."
       ]
     },
-    "edges": [
+    "relations": [
       {
+        "id": "raw_records_enter_input_adapter",
         "from": "raw_records",
         "to": "input_adapter",
         "carries": [
@@ -555,6 +561,7 @@ export const manifest = {
         }
       },
       {
+        "id": "input_adapter_initializes_item_state",
         "from": "input_adapter",
         "to": "item_state",
         "carries": [
@@ -572,6 +579,7 @@ export const manifest = {
         }
       },
       {
+        "id": "input_adapter_initializes_conditioning_signal",
         "from": "input_adapter",
         "to": "conditioning_signal",
         "carries": [
@@ -589,6 +597,7 @@ export const manifest = {
         }
       },
       {
+        "id": "item_state_feeds_context_builder",
         "from": "item_state",
         "to": "context_builder",
         "carries": [
@@ -606,6 +615,7 @@ export const manifest = {
         }
       },
       {
+        "id": "context_builder_produces_pair_context",
         "from": "context_builder",
         "to": "pair_context",
         "carries": [
@@ -623,6 +633,7 @@ export const manifest = {
         }
       },
       {
+        "id": "item_state_feeds_item_encoder",
         "from": "item_state",
         "to": "item_encoder",
         "carries": [
@@ -640,8 +651,10 @@ export const manifest = {
         }
       },
       {
+        "id": "conditioning_signal_modulates_item_encoder",
         "from": "conditioning_signal",
         "to": "item_encoder",
+        "kind": "conditioning",
         "carries": [
           "conditioning_signal"
         ],
@@ -657,6 +670,25 @@ export const manifest = {
         }
       },
       {
+        "id": "item_encoder_updates_item_state",
+        "from": "item_encoder",
+        "to": "item_state",
+        "carries": [
+          "item_state"
+        ],
+        "operation": "item_attention_update",
+        "evidence": {
+          "status": "inferred",
+          "refs": [
+            {
+              "kind": "source",
+              "path": "architectures/generic-feature-refinement.yaml"
+            }
+          ]
+        }
+      },
+      {
+        "id": "item_encoder_feeds_item_to_group_pool",
         "from": "item_encoder",
         "to": "item_to_group_pool",
         "carries": [
@@ -674,6 +706,7 @@ export const manifest = {
         }
       },
       {
+        "id": "item_to_group_pool_produces_group_state",
         "from": "item_to_group_pool",
         "to": "group_state",
         "carries": [
@@ -691,6 +724,7 @@ export const manifest = {
         }
       },
       {
+        "id": "group_state_feeds_group_refiner",
         "from": "group_state",
         "to": "group_refiner",
         "carries": [
@@ -708,8 +742,10 @@ export const manifest = {
         }
       },
       {
+        "id": "pair_context_biases_group_refiner",
         "from": "pair_context",
         "to": "group_refiner",
+        "kind": "conditioning",
         "carries": [
           "pair_context"
         ],
@@ -725,6 +761,25 @@ export const manifest = {
         }
       },
       {
+        "id": "group_refiner_updates_group_state",
+        "from": "group_refiner",
+        "to": "group_state",
+        "carries": [
+          "group_state"
+        ],
+        "operation": "group_attention_update",
+        "evidence": {
+          "status": "inferred",
+          "refs": [
+            {
+              "kind": "source",
+              "path": "architectures/generic-feature-refinement.yaml"
+            }
+          ]
+        }
+      },
+      {
+        "id": "group_refiner_feeds_output_decoder",
         "from": "group_refiner",
         "to": "output_decoder",
         "carries": [
@@ -742,6 +797,7 @@ export const manifest = {
         }
       },
       {
+        "id": "output_decoder_produces_item_output_state",
         "from": "output_decoder",
         "to": "item_output_state",
         "carries": [
@@ -759,6 +815,7 @@ export const manifest = {
         }
       },
       {
+        "id": "item_output_state_feeds_output_heads",
         "from": "item_output_state",
         "to": "output_heads",
         "carries": [
@@ -776,6 +833,7 @@ export const manifest = {
         }
       },
       {
+        "id": "output_heads_produce_predictions",
         "from": "output_heads",
         "to": "predictions",
         "carries": [
@@ -997,37 +1055,14 @@ export const manifest = {
     }
   },
   "boards": {
+    "schemaVersion": "visualization-v0.3",
     "sourceYaml": "../../views/generic-semantic-zoom.view.yaml",
-    "rootBoard": "generic_overview",
+    "rootBoard": "refinement_pipeline",
     "items": [
-      {
-        "id": "generic_overview",
-        "title": "Generic Feature Refinement",
-        "summary": "A one-block overview. Open the refinement pipeline to inspect input adaptation, item updates, group compression, pair/context bias, broadcast, and output heads.",
-        "scale_lanes": false,
-        "grid": {
-          "columns": 3,
-          "rows": 3
-        },
-        "nodes": [
-          {
-            "id": "refinement_pipeline",
-            "kind": "module",
-            "label": "Feature refinement pipeline",
-            "scale": "abstract",
-            "role": "domain-neutral architecture scaffold",
-            "detail": "inputs -> item encoder -> group refiner -> output decoder",
-            "col": 2,
-            "row": 2,
-            "expandable": true
-          }
-        ]
-      },
       {
         "id": "refinement_pipeline",
         "title": "Feature Refinement Pipeline",
         "summary": "The pipeline embeds records, updates item states, compresses them to group states, refines groups with pair/context bias, then broadcasts back to item outputs.",
-        "parent": "generic_overview",
         "grid": {
           "columns": 7,
           "rows": 5
@@ -1100,7 +1135,7 @@ export const manifest = {
             "treatment": "block",
             "col": 4,
             "row": 3,
-            "expandable": true
+            "board_ref": "item_encoder"
           },
           {
             "id": "item_to_group_pool",
@@ -1130,7 +1165,7 @@ export const manifest = {
             "treatment": "block",
             "col": 6,
             "row": 2,
-            "expandable": true
+            "board_ref": "group_refiner"
           },
           {
             "id": "output_decoder",
@@ -1176,6 +1211,7 @@ export const manifest = {
           {
             "from": "raw_records",
             "to": "input_adapter",
+            "relation_ref": "raw_records_enter_input_adapter",
             "label": "fields",
             "connection": {
               "title": "Raw records to adapter",
@@ -1186,6 +1222,7 @@ export const manifest = {
           {
             "from": "input_adapter",
             "to": "item_state",
+            "relation_ref": "input_adapter_initializes_item_state",
             "label": "item state",
             "connection": {
               "title": "Adapter initializes item state",
@@ -1196,6 +1233,7 @@ export const manifest = {
           {
             "from": "input_adapter",
             "to": "conditioning_signal",
+            "relation_ref": "input_adapter_initializes_conditioning_signal",
             "label": "cond",
             "tone": "conditioning",
             "connection": {
@@ -1207,6 +1245,7 @@ export const manifest = {
           {
             "from": "item_state",
             "to": "context_builder",
+            "relation_ref": "item_state_feeds_context_builder",
             "label": "context feats",
             "connection": {
               "title": "Item features to context builder",
@@ -1217,6 +1256,7 @@ export const manifest = {
           {
             "from": "context_builder",
             "to": "pair_context",
+            "relation_ref": "context_builder_produces_pair_context",
             "label": "C_ij",
             "tone": "conditioning",
             "connection": {
@@ -1228,6 +1268,7 @@ export const manifest = {
           {
             "from": "item_state",
             "to": "item_encoder",
+            "relation_ref": "item_state_feeds_item_encoder",
             "label": "x_i",
             "connection": {
               "title": "Item state into encoder",
@@ -1238,6 +1279,7 @@ export const manifest = {
           {
             "from": "conditioning_signal",
             "to": "item_encoder",
+            "relation_ref": "conditioning_signal_modulates_item_encoder",
             "label": "cond",
             "tone": "conditioning",
             "connection": {
@@ -1249,6 +1291,7 @@ export const manifest = {
           {
             "from": "item_encoder",
             "to": "item_to_group_pool",
+            "relation_ref": "item_encoder_feeds_item_to_group_pool",
             "label": "updated items",
             "connection": {
               "title": "Item encoder to compression",
@@ -1259,6 +1302,7 @@ export const manifest = {
           {
             "from": "item_to_group_pool",
             "to": "group_state",
+            "relation_ref": "item_to_group_pool_produces_group_state",
             "label": "pool",
             "connection": {
               "title": "Item-to-group compression",
@@ -1269,6 +1313,7 @@ export const manifest = {
           {
             "from": "group_state",
             "to": "group_refiner",
+            "relation_ref": "group_state_feeds_group_refiner",
             "label": "g_a",
             "connection": {
               "title": "Group state into refiner",
@@ -1279,6 +1324,7 @@ export const manifest = {
           {
             "from": "pair_context",
             "to": "group_refiner",
+            "relation_ref": "pair_context_biases_group_refiner",
             "label": "bias",
             "tone": "conditioning",
             "connection": {
@@ -1290,6 +1336,7 @@ export const manifest = {
           {
             "from": "group_refiner",
             "to": "output_decoder",
+            "relation_ref": "group_refiner_feeds_output_decoder",
             "label": "refined groups",
             "connection": {
               "title": "Refined groups to decoder",
@@ -1300,6 +1347,7 @@ export const manifest = {
           {
             "from": "output_decoder",
             "to": "item_output_state",
+            "relation_ref": "output_decoder_produces_item_output_state",
             "label": "broadcast",
             "connection": {
               "title": "Group-to-item broadcast",
@@ -1310,6 +1358,7 @@ export const manifest = {
           {
             "from": "item_output_state",
             "to": "output_heads",
+            "relation_ref": "item_output_state_feeds_output_heads",
             "label": "decoded items",
             "connection": {
               "title": "Decoded state into heads",
@@ -1320,6 +1369,7 @@ export const manifest = {
           {
             "from": "output_heads",
             "to": "predictions",
+            "relation_ref": "output_heads_produce_predictions",
             "label": "y",
             "connection": {
               "title": "Predictions",
@@ -1384,6 +1434,7 @@ export const manifest = {
           {
             "from": "item_state_in",
             "to": "adaln",
+            "view_only": true,
             "label": "x_i",
             "connection": {
               "title": "Normalize item state",
@@ -1394,6 +1445,7 @@ export const manifest = {
           {
             "from": "conditioning_signal",
             "to": "adaln",
+            "view_only": true,
             "label": "shift/scale/gate",
             "tone": "conditioning",
             "connection": {
@@ -1405,6 +1457,7 @@ export const manifest = {
           {
             "from": "adaln",
             "to": "local_attention",
+            "view_only": true,
             "label": "modulated x",
             "connection": {
               "title": "Modulated item state",
@@ -1415,6 +1468,7 @@ export const manifest = {
           {
             "from": "local_attention",
             "to": "item_state_out",
+            "relation_ref": "item_encoder_updates_item_state",
             "label": "x'_i",
             "connection": {
               "title": "Updated item state",
@@ -1470,6 +1524,7 @@ export const manifest = {
           {
             "from": "group_state_in",
             "to": "pair_biased_attention",
+            "relation_ref": "group_state_feeds_group_refiner",
             "label": "Q/K/V",
             "connection": {
               "title": "Group state as attention stream",
@@ -1480,6 +1535,7 @@ export const manifest = {
           {
             "from": "pair_context",
             "to": "pair_biased_attention",
+            "relation_ref": "pair_context_biases_group_refiner",
             "label": "bias",
             "tone": "conditioning",
             "connection": {
@@ -1491,6 +1547,7 @@ export const manifest = {
           {
             "from": "pair_biased_attention",
             "to": "group_state_out",
+            "relation_ref": "group_refiner_updates_group_state",
             "label": "update",
             "connection": {
               "title": "Refined group state",

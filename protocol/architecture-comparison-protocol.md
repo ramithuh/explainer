@@ -12,7 +12,7 @@ question: Where does pair/context information enter attention?
 ```
 
 Good questions are narrow enough that the answer can be traced to modules,
-representations, edges, and evidence.
+representations, relations, and evidence.
 
 ## Comparison Axes
 

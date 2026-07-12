@@ -12,6 +12,12 @@ def load_yaml(path)
   YAML.load_file(File.join(ROOT, path))
 end
 
+def architecture_relations(architecture)
+  return architecture.fetch("relations") if architecture.key?("relations")
+
+  architecture.fetch("edges")
+end
+
 def web_ref(path)
   return path if path.nil? || path.start_with?("http", "/")
 
@@ -88,7 +94,9 @@ def build_manifest(config)
   modules = architecture.fetch("modules").map { |mod| normalize_module_refs(mod) }
 
   {
+    "schemaVersion" => "architecture-manifest-v0.2",
     "architecture" => {
+      "schemaVersion" => architecture.fetch("schema_version"),
       "id" => architecture.fetch("id"),
       "name" => architecture.fetch("name"),
       "status" => architecture.fetch("status"),
@@ -100,7 +108,7 @@ def build_manifest(config)
       "conditioning" => architecture["conditioning"] || [],
       "scaleTransitions" => architecture["scale_transitions"] || [],
       "trainingInference" => architecture["training_inference"] || {},
-      "edges" => architecture.fetch("edges"),
+      "relations" => architecture_relations(architecture),
       "claims" => architecture.fetch("claims").map { |claim| claim.fetch("statement") },
     },
     "standardBlocks" => standard_block_manifest(config.fetch("standard_blocks")),
@@ -112,6 +120,7 @@ def build_manifest(config)
       },
     },
     "boards" => {
+      "schemaVersion" => semantic_zoom.fetch("schema_version"),
       "sourceYaml" => web_ref(config.fetch("view")),
       "rootBoard" => semantic_zoom.fetch("root_board"),
       "items" => semantic_zoom.fetch("boards"),

@@ -1,4 +1,4 @@
-# Architecture Language v0.1
+# Architecture Language v0.2
 
 This is a small source format for describing system architectures without
 hardcoding each explanation into HTML or JavaScript.
@@ -10,6 +10,8 @@ into cards, diagrams, masks, equations, and comparison tables.
 ## Design Principles
 
 - Separate architecture facts from presentation.
+- Give every fact one owner. Other sections and views should reference that
+  fact instead of restating it.
 - Track evidence for every non-obvious claim.
 - Describe scale changes explicitly: item, group, pair/context, global, output.
 - Represent attention and conditioning as first-class operations.
@@ -20,7 +22,7 @@ into cards, diagrams, masks, equations, and comparison tables.
 ## Top-Level Shape
 
 ```yaml
-schema_version: architecture-v0.1
+schema_version: architecture-v0.2
 id: stable_machine_id
 name: Human Readable Name
 family: transformer | diffusion | retrieval | planner | graph | other
@@ -36,14 +38,20 @@ scale_transitions: []
 training_inference: {}
 representations: []
 modules: []
-edges: []
+relations: []
 claims: []
 open_questions: []
 ```
 
+Architecture v0.2 replaces anonymous top-level `edges` with named
+`relations`. A relation is the canonical owner of an information-flow
+identity, its architecture endpoints, its semantics, and its evidence.
+Presentation-specific labels and explanations belong in a view and refer back
+to the relation by ID.
+
 ## Evidence Levels
 
-Use one of these on claims, modules, and important fields:
+Use one of these on claims, modules, relations, and important fields:
 
 ```yaml
 evidence:
@@ -234,17 +242,24 @@ are not interchangeable, so encode the mode explicitly.
 ```yaml
 conditioning:
   - id: group_pair_bias
+    relation_ref: pair_context_biases_group_refiner
     source: pair_context
     target: group_refiner.attention_logits
     mode: pair_bias
     standard_block_ref: standard_blocks/pair-biased-attention.yaml
     updates_source: false
   - id: per_item_adaln
+    relation_ref: conditioning_signal_modulates_item_encoder
     source: conditioning_signal
     target: item_encoder
     mode: per_item_adaln
     standard_block_ref: standard_blocks/per-item-adaln-conditioning.yaml
 ```
+
+In architecture-v0.2, every conditioning entry must reference the canonical
+information-flow relation with `relation_ref`. The conditioning entry owns the
+specific mode and target site; the relation owns flow identity, endpoints, and
+flow evidence. The linter verifies that their source and target module agree.
 
 Common modes:
 
@@ -282,21 +297,50 @@ scale_transitions:
     copy_vs_pool: copy
 ```
 
-Prefer this section over encoding important scale jumps only as edge prose.
+Prefer this section over encoding important scale jumps only as relation prose.
 
-## Edges
+## Relations
 
-Edges describe how information moves between representations and modules.
+Relations describe how information moves between representations and modules.
+Every relation has a stable, semantic `snake_case` ID. Name the architectural
+meaning of the flow, not its visual location; a relation ID must remain valid
+when a board is rearranged or when another view projects the same flow.
 
 ```yaml
-edges:
-  - from: item_encoder
-    to: group_refiner
+relations:
+  - id: encoded_items_enter_group_pool
+    from: item_encoder
+    to: item_to_group_pool
+    kind: data_flow
     carries:
-      - group_state
+      - item_state
     operation: item_to_group_pool
-    evidence: {}
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - kind: code
+          path: repo/relative/path.py
+          lines: "120-136"
 ```
+
+The relation owns its ID and evidence. A semantic-zoom view may add concise
+`connection` prose for the needs of one board, but that prose is presentation:
+it does not create a second relation or override architecture evidence.
+
+In this first v0.2 slice, module `inputs` and `outputs` remain separately
+authored interface declarations for compatibility; they are not yet derived
+from relations. Relations are mandatory for flows projected onto v0.3 boards,
+which establishes stable identity and provenance without claiming that the
+relation list is already a complete port-level graph.
+
+`kind` is an optional coarse type such as `data_flow`, `conditioning`,
+`state_update`, or `control`. A relation referenced by a v0.2 conditioning
+entry must use `kind: conditioning`; this prevents endpoint-compatible but
+semantically unrelated flows from being linked accidentally.
+
+Do not author anonymous `edges` in architecture-v0.2. To migrate a v0.1 edge,
+preserve its endpoints, carried representations, operation, and evidence under
+`relations`, then add a stable semantic ID.
 
 ## Claims
 
@@ -348,7 +392,7 @@ open_questions:
 A renderer should be able to:
 
 - draw modules as nodes;
-- draw edges from `edges`;
+- draw information flow from `relations`;
 - color nodes by `scale`;
 - display attention masks from `attention.pattern` and window fields;
 - display control-flow loops and cached state from `execution`;

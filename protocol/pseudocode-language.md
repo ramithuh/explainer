@@ -1,7 +1,8 @@
 # Pseudocode Language v0.1
 
 This source format records algorithm or code traces that can be linked back to
-architecture modules, representations, claims, and standard visual blocks.
+architecture modules, representations, relations, claims, and standard visual
+blocks.
 
 ## Top-Level Shape
 
@@ -31,6 +32,10 @@ symbols:
     shape: "B x N_item x d"
     architecture_ref: representations.item_state
 ```
+
+Architecture references may target `modules.*`, `representations.*`,
+`relations.*`, or `claims.*` IDs. Use a relation reference when a trace line
+supports a particular information-flow boundary rather than a whole module.
 
 Common symbol types:
 
