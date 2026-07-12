@@ -11,11 +11,41 @@ sources:
     path: facebookresearch/DiT/models.py
     note: Official reference implementation.
 symbols:
+  - id: initial_noise
+    name: x_T
+    tex: 'x_T'
+    type: input
+    shape: "B x 4 x I x I"
+    architecture_ref: representations.initial_noise
+  - id: step_noise
+    name: xi
+    tex: '\xi'
+    type: input
+    shape: "B x 4 x I x I"
+    architecture_ref: representations.step_noise
   - id: input_latent
-    name: z
+    name: x
     type: input
     shape: "B x 4 x I x I"
     architecture_ref: representations.input_latent
+  - id: final_latent
+    name: x_0
+    tex: 'x_0'
+    type: output
+    shape: "B x 4 x I x I"
+    architecture_ref: representations.final_latent
+  - id: vae_decode_latent
+    name: z_vae
+    tex: 'z_{\mathrm{vae}}'
+    type: representation
+    shape: "B x 4 x I x I"
+    architecture_ref: representations.vae_decode_latent
+  - id: generated_image
+    name: x_hat
+    tex: '\hat{x}'
+    type: output
+    shape: "B x 3 x H x W"
+    architecture_ref: representations.generated_image
   - id: timestep
     name: t
     type: input
@@ -44,24 +74,24 @@ symbols:
     shape: "B x d"
     architecture_ref: representations.cond_vector
   - id: token_state
-    name: x
+    name: h
     type: representation
     shape: "B x T x d"
     architecture_ref: representations.token_state
   - id: output_tokens
     name: u
     type: representation
-    shape: "B x T x (p*p*2C)"
+    shape: "B x T x (p*p*C_out)"
     architecture_ref: representations.output_tokens
   - id: noise_prediction
-    name: "ε, Σ"
-    tex: '\varepsilon_\theta, \Sigma_\theta'
+    name: "ε, v"
+    tex: '\varepsilon_\theta, v_\theta'
     type: output
-    shape: "B x 2C x I x I"
+    shape: "B x C_out x I x I"
     architecture_ref: representations.noise_prediction
 lines:
   - id: patchify_tokens
-    text: "x = PatchEmbed(z) + pos_embed  # fixed 2D sin-cos"
+    text: "h = PatchEmbed(x) + pos_embed  # fixed 2D sin-cos"
     operation: patch_embedding
     inputs: [input_latent]
     outputs: [token_state]
@@ -81,7 +111,7 @@ lines:
       - source: dit_code
         locator: TimestepEmbedder
   - id: embed_label
-    text: "y_emb = Embedding(drop_to_null(y))  # label dropout for CFG"
+    text: "y_emb = Embedding(maybe_drop_to_null(y))  # training-only dropout; CFG supplies null labels at inference"
     operation: label_embedding_with_cfg_dropout
     inputs: [class_label]
     outputs: [y_embedding]
@@ -102,7 +132,7 @@ lines:
       - source: dit_code
         locator: DiT.forward
   - id: run_blocks
-    text: "for block in blocks: x = DiTBlock(x, c)  # adaLN-Zero, N blocks"
+    text: "for block in blocks: h = DiTBlock(h, c)  # adaLN-Zero, 28 blocks in DiT-XL"
     operation: adaln_zero
     standard_block_ref: standard_blocks/adaln-zero-conditioning.yaml
     inputs: [token_state, cond_vector]
@@ -119,7 +149,7 @@ lines:
         token_state: token_state
         cond_vector: cond_vector
   - id: decode_tokens
-    text: "u = Linear(modulate(LayerNorm(x), MLP(c)))"
+    text: "shift, scale = Linear(SiLU(c)); u = Linear((1 + scale) * LayerNorm(h) + shift)"
     operation: linear_decode
     inputs: [token_state, cond_vector]
     outputs: [output_tokens]
@@ -129,7 +159,7 @@ lines:
       - source: dit_code
         locator: FinalLayer
   - id: unpatchify_output
-    text: "eps, sigma = split(Unpatchify(u))"
+    text: "out = Unpatchify(u); eps, var_values = split(out) if learn_sigma else (out, None)"
     operation: reshape
     inputs: [output_tokens]
     outputs: [noise_prediction]
