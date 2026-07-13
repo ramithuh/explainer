@@ -1,409 +1,359 @@
-# Architecture Language v0.2 (Legacy Reference)
+# Architecture Language v0.4
 
-This is a small source format for describing system architectures without
-hardcoding each explanation into HTML or JavaScript.
+Status: **current implemented contract**.
 
-> **Current contract:**
-> `protocol/architecture-projection-model.md` specifies the implemented
-> architecture-v0.3 hierarchy, typed value sites, and architecture-derived
-> board projection model. This file remains as the legacy v0.2 vocabulary
-> reference for compatibility work.
+Architecture YAML is the durable semantic source for a model or system. It
+describes canonical objects, hierarchy, information flow, specialized
+semantics, evidence, and explicit decomposition closure. Boards select and
+present this graph; they do not redefine it.
 
-The goal is not to be complete on day one. The goal is to make every story and
-comparison use the same vocabulary, so a renderer can turn the same source
-into cards, diagrams, masks, equations, and comparison tables.
+Related contracts:
 
-## Design Principles
-
-- Separate architecture facts from presentation.
-- Give every fact one owner. Other sections and views should reference that
-  fact instead of restating it.
-- Track evidence for every non-obvious claim.
-- Describe scale changes explicitly: item, group, pair/context, global, output.
-- Represent attention and conditioning as first-class operations.
-- Mark unknowns as unknown instead of filling gaps from memory.
-- Support prediction, generation, retrieval, planning, and control systems
-  with the same primitives.
+- `protocol/fact-ownership.md`: one owner for every fact;
+- `protocol/architecture-coverage.md`: breadth closure and depth frontiers;
+- `protocol/architecture-projection-model.md`: architecture-derived boards;
+- `protocol/bibliography.md`: canonical source metadata and typed citations.
 
 ## Top-Level Shape
 
 ```yaml
-schema_version: architecture-v0.2
-id: stable_machine_id
+schema_version: architecture-v0.4
+id: stable_architecture_id
 name: Human Readable Name
-family: transformer | diffusion | retrieval | planner | graph | other
-status: draft | partial | reviewed
-task_modes:
-  - prediction
-  - generation
+family: transformer
+status: draft
+task_modes: [generation]
+
 sources: []
+decomposition: {}
 execution: {}
 state_semantics: {}
 conditioning: []
 scale_transitions: []
 training_inference: {}
 representations: []
+value_sites: []
 modules: []
 relations: []
 claims: []
 open_questions: []
 ```
 
-Architecture v0.2 replaces anonymous top-level `edges` with named
-`relations`. A relation is the canonical owner of an information-flow
-identity, its architecture endpoints, its semantics, and its evidence.
-Presentation-specific labels and explanations belong in a view and refer back
-to the relation by ID.
+Use stable semantic `snake_case` IDs. Cross-object references are typed:
 
-## Evidence Levels
+```yaml
+modules.ddpm_sampler
+representations.input_latent
+value_sites.latent_before_step
+relations.current_latent_enters_reverse_step
+claims.sampler_is_fixed_math
+```
 
-Use one of these on claims, modules, relations, and important fields:
+## Sources and Evidence
+
+Source metadata lives once in `references/bibliography.yaml`. Architecture
+facts cite it with a typed role:
 
 ```yaml
 evidence:
-  status: confirmed_from_code | confirmed_from_paper | confirmed_from_docs | inferred | unknown
+  status: confirmed_from_code
   refs:
-    - kind: code
-      path: repo/relative/path.py
-      lines: "492-557"
-      note: optional short description
+    - source_ref: dit_models_code
+      role: implementation_evidence
+      lines: DiT.forward
+      note: The forward pass combines timestep and class embeddings.
 ```
 
-Interpretation:
+Supported certainty states are:
 
-- `confirmed_from_code`: directly inspected implementation.
-- `confirmed_from_paper`: directly supported by paper/supplement.
-- `confirmed_from_docs`: directly supported by project documentation or spec.
-- `inferred`: reasonable inference from connected facts; say what was inferred.
-- `unknown`: intentionally unset.
+- `confirmed_from_code`;
+- `confirmed_from_paper`;
+- `confirmed_from_docs`;
+- `inferred`; and
+- `open_question`.
 
-## Representations
+Every nontrivial module, representation, relation, claim, conditioning use,
+scale transition, and state-lifecycle assertion needs evidence. Do not infer
+historical priority from a citation; record origin claims separately with
+their own evidence.
 
-Representations are named streams or tensors carried through the architecture.
+## Decomposition and Hierarchy
+
+Every module has exactly one `parent_ref`, rooted at `architecture`. Child
+membership and hierarchy depth are derived from these references.
+
+```yaml
+decomposition:
+  status: complete
+  evidence:
+    status: confirmed_from_code
+    refs:
+      - source_ref: implementation_source
+        role: implementation_evidence
+
+modules:
+  - id: denoiser
+    parent_ref: architecture
+    decomposition:
+      status: complete
+
+  - id: external_decoder
+    parent_ref: architecture
+    decomposition:
+      status: opaque
+      reason: external_pretrained_component
+```
+
+Every scope declares one decomposition status:
+
+- `complete`: its immediate child set is asserted exhaustive;
+- `partial`: sibling breadth may still be missing and `reason` is required;
+- `leaf`: intentional terminal at the current explanatory granularity; or
+- `opaque`: component is accounted for but internals are intentionally not
+  modeled, with a required `reason`.
+
+Never author a second child list or expected count. See
+`protocol/architecture-coverage.md` for compiler invariants and generated
+coverage reports.
+
+## Representations and Value Sites
+
+A representation describes a reusable tensor or stream type:
 
 ```yaml
 representations:
-  - id: item_state
-    scale: item
-    semantic_role: mutable per-item latent state
-    shape: "B x N_item x d_item"
+  - id: diffusion_latent
+    scale: spatial
+    semantic_role: mutable latent in reverse diffusion
+    shape: "B x 4 x I x I"
     carries:
-      - local features
-      - positional features
-    evidence: {}
-
-  - id: pair_context
-    scale: item_pair
-    semantic_role: pair/context conditioning
-    shape: "B x N_item x N_item x d_pair"
+      - noised image content
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
 
-Common scales:
-
-- `item`
-- `item_pair`
-- `group`
-- `group_pair`
-- `global`
-- `memory`
-- `output`
-- `abstract`
-
-## Execution
-
-Execution describes loops, cached state, and phase-specific behavior that is
-not visible from a static block diagram.
+A value site describes one concrete architectural occurrence of that type:
 
 ```yaml
-execution:
-  loops:
-    - id: refinement_loop
-      repeats: num_refinement_steps
-      reruns:
-        - item_encoder
-        - group_refiner
-        - output_decoder
-      cached:
-        - pair_context
-        - masks
-      notes:
-        - context may be cached across refinement steps when valid
-  cached_state:
-    - id: attention_mask
-      produced_by: input_adapter
-      consumed_by: item_encoder
-      scope: model_call
+value_sites:
+  - id: latent_before_step
+    representation_ref: representations.diffusion_latent
+    scope_ref: modules.ddpm_sampler
+    role: state_read
+
+  - id: latent_after_step
+    representation_ref: representations.diffusion_latent
+    scope_ref: modules.ddpm_sampler
+    role: state_write
 ```
 
-Use this section for recurrent trunks, sampling loops, planning loops,
-retrieval caches, stop-gradient loops, and inference-only reuse.
+Split mutable before/after values into distinct sites. Never express a state
+update as an ambiguous self-edge. Task-native inputs and outputs use
+`scope_ref: architecture` and `boundary: input|output`.
 
-## State Semantics
-
-State semantics say whether a representation is mutable model state, read-only
-conditioning, a cache, or an output.
-
-```yaml
-state_semantics:
-  pair_context:
-    role: read_only_conditioning
-    produced_by: context_builder
-    updated_by: []
-    consumed_by:
-      - group_refiner
-    notes:
-      - projected to attention logits but not returned updated
-  group_state:
-    role: mutable_state
-    produced_by: item_to_group_pool
-    updated_by:
-      - group_refiner
-    consumed_by:
-      - output_decoder
-```
-
-Common roles:
-
-- `mutable_state`
-- `read_only_conditioning`
-- `static_conditioning`
-- `cached_state`
-- `index_map`
-- `output_state`
-- `output_update`
+`representations` own reusable shape, scale, and meaning. `value_sites` own
+occurrence scope, boundary, and local role. Producers and consumers are
+derived from relations.
 
 ## Modules
 
-Modules are blocks, stacks, heads, losses, samplers, adapters, or data
-transforms.
+Modules are semantic processing units: adapters, stacks, formulas, samplers,
+heads, decoders, or reusable mechanism occurrences.
 
 ```yaml
 modules:
-  - id: item_encoder
-    label: Item Encoder
-    kind: attention_stack
-    role: update item state with local context
-    scale: item
-    repeats: 3
-    pseudocode_ref: pseudocode/example.yaml
-    depth:
-      blocks: 3
-      heads: 8
-    contains:
-      - id: local_attention
-        label: Local item attention
-        standard_block_ref: standard_blocks/pair-biased-attention.yaml
-    inputs:
-      - item_state
-      - pair_context
-    outputs:
-      - item_state
-    attention:
-      pattern: local
-      query_scale: item
-      key_value_scale: item
-      pair_bias: true
-      pair_bias_source: pair_context
-      standard_block_ref: standard_blocks/pair-biased-attention.yaml
-    evidence: {}
+  - id: reverse_diffusion_step
+    parent_ref: modules.ddpm_sampler
+    decomposition:
+      status: leaf
+    label: DDPM Sampling Formula
+    kind: sampling_formula
+    role: combine the current latent and model prediction into the next latent
+    scale: spatial
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
 
-Optional navigation fields:
+Optional module fields include `repeats`, `depth`, `attention`,
+`standard_block_ref`, `pseudocode_ref`, and `frozen`. Do not author module
+`inputs` or `outputs`; canonical relations define the interface.
 
-- `story_ref`: curated story to open when this unit is focused.
-- `pseudocode_ref`: line-by-line algorithm/code trace.
-- `standard_block_ref`: reusable canonical motif.
-- `contains`: child units used for hover peeks and drilldown.
-- `repeats`: compressed repetition count for stacks.
+## Canonical Relations
 
-## Attention Operation Fields
+Relations are the sole owners of information-flow identity and endpoints:
 
 ```yaml
-attention:
-  pattern: full | local | sparse | cross | recurrent | graph | custom
-  query_scale: item | group | memory
-  key_value_scale: item | group | memory
-  query_subset_size: 32
-  key_value_subset_size: 128
-  window:
-    kind: contiguous | nearest_neighbor | full | custom
-    size: 128
-  heads: 8
-  pair_bias: true | false | unknown
-  pair_bias_source: pair_context | group_pair_context | none | unknown
-  positional_encoding:
-    kind: rope | relative_position | learned | none | unknown
-  extra_terms:
-    - distances
-    - recency
-    - relation_type
+relations:
+  - id: current_latent_enters_reverse_step
+    from: value_sites.latent_before_step
+    to: modules.reverse_diffusion_step
+    kind: data_flow
+    carries:
+      - representations.diffusion_latent
+    operation: reverse_diffusion_update
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
+
+Every relation has a stable semantic ID and typed endpoints. Common kinds
+include `data_flow`, `conditioning`, `state_update`, `index_flow`, `skip`, and
+`control`. `carries` references representation types; `operation` names the
+architectural action.
+
+Do not author anonymous architecture `edges`, duplicated module interfaces,
+or board-local semantic flow. The compiler derives module/value-site
+interfaces and projected board edges from relations.
+
+## State Semantics
+
+State semantics group related value-site occurrences and describe their shared
+lifecycle:
+
+```yaml
+state_semantics:
+  sampling_latent:
+    representation_ref: representations.diffusion_latent
+    value_site_refs:
+      - value_sites.latent_before_step
+      - value_sites.latent_after_step
+    lifecycle: iterative_loop_state
+    notes:
+      - Before and after sites distinguish x_t from x_(t-1).
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
+```
+
+The group owns lifecycle interpretation and notes. It does not author `role`,
+`produced_by`, `consumed_by`, or `updated_by`. Site roles come from
+`value_sites`; interfaces come from relations. A value site may belong to at
+most one state group, and every grouped site must use the declared
+representation.
 
 ## Conditioning
 
-Conditioning describes how one representation influences a target without
-necessarily becoming that target's mutable state. Different conditioning modes
-are not interchangeable, so encode the mode explicitly.
+Conditioning records how a canonical conditioning relation is used:
 
 ```yaml
 conditioning:
-  - id: group_pair_bias
-    relation_ref: pair_context_biases_group_refiner
-    source: pair_context
-    target: group_refiner.attention_logits
-    mode: pair_bias
-    standard_block_ref: standard_blocks/pair-biased-attention.yaml
+  - id: block_adaln_zero
+    relation_ref: relations.cond_vector_enters_adaln_mlp
+    mode: adaln_zero
+    standard_block_ref: standard_blocks/adaln-zero-conditioning.yaml
     updates_source: false
-  - id: per_item_adaln
-    relation_ref: conditioning_signal_modulates_item_encoder
-    source: conditioning_signal
-    target: item_encoder
-    mode: per_item_adaln
-    standard_block_ref: standard_blocks/per-item-adaln-conditioning.yaml
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
 
-In architecture-v0.2, every conditioning entry must reference the canonical
-information-flow relation with `relation_ref`. The conditioning entry owns the
-specific mode and target site; the relation owns flow identity, endpoints, and
-flow evidence. The linter verifies that their source and target module agree.
-
-Common modes:
-
-- `pair_bias`
-- `per_item_adaln`
-- `additive_injection`
-- `concat`
-- `cross_attention`
-- `gate`
+The relation owns source and target; the conditioning entry owns the mechanism
+such as `adaln_zero`, `pair_bias`, `gate`, `additive_injection`,
+`concatenation`, or `cross_attention`. Do not copy relation endpoints into the
+conditioning entry.
 
 ## Scale Transitions
 
-Scale transitions describe compression, broadcast, pooling, and reshaping with
-enough structure to distinguish pooling from copying.
+Scale transitions interpret an ordered canonical flow path:
 
 ```yaml
 scale_transitions:
   - id: item_to_group_pool
-    from_scale: item
-    to_scale: group
-    source: item_state
-    target: group_state
-    projection: item_to_group_linear
-    index_map: item_to_group_index
+    relation_path:
+      - relations.encoded_items_enter_group_pool
+      - relations.group_pool_produces_group_state
+    index_relation_ref: relations.group_index_guides_pooling
     aggregation: scatter_mean
     copy_vs_pool: pool
-  - id: group_to_item_broadcast
-    from_scale: group
-    to_scale: item
-    source: group_state
-    target: item_output_state
-    projection: group_to_item_linear
-    index_map: item_to_group_index
-    aggregation: gather
-    copy_vs_pool: copy
-```
-
-Prefer this section over encoding important scale jumps only as relation prose.
-
-## Relations
-
-Relations describe how information moves between representations and modules.
-Every relation has a stable, semantic `snake_case` ID. Name the architectural
-meaning of the flow, not its visual location; a relation ID must remain valid
-when a board is rearranged or when another view projects the same flow.
-
-```yaml
-relations:
-  - id: encoded_items_enter_group_pool
-    from: item_encoder
-    to: item_to_group_pool
-    kind: data_flow
-    carries:
-      - item_state
-    operation: item_to_group_pool
     evidence:
       status: confirmed_from_code
       refs:
-        - kind: code
-          path: repo/relative/path.py
-          lines: "120-136"
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
 
-The relation owns its ID and evidence. A semantic-zoom view may add concise
-`connection` prose for the needs of one board, but that prose is presentation:
-it does not create a second relation or override architecture evidence.
+The path must be continuous and run from a value site to a value site. An
+optional `index_relation_ref` must identify an `index_flow` into that path.
+Endpoints, endpoint scales, projection modules, and index-map occurrences are
+derived; do not author them again.
 
-In this first v0.2 slice, module `inputs` and `outputs` remain separately
-authored interface declarations for compatibility; they are not yet derived
-from relations. Relations are mandatory for flows projected onto v0.3 boards,
-which establishes stable identity and provenance without claiming that the
-relation list is already a complete port-level graph.
+## Execution and Training/Inference
 
-`kind` is an optional coarse type such as `data_flow`, `conditioning`,
-`state_update`, or `control`. A relation referenced by a v0.2 conditioning
-entry must use `kind: conditioning`; this prevents endpoint-compatible but
-semantically unrelated flows from being linked accidentally.
+`execution` owns dynamic behavior not recoverable from a static graph:
 
-Do not author anonymous `edges` in architecture-v0.2. To migrate a v0.1 edge,
-preserve its endpoints, carried representations, operation, and evidence under
-`relations`, then add a stable semantic ID.
+```yaml
+execution:
+  loops:
+    - id: denoising_loop
+      repeats: num_sampling_steps
+      reruns:
+        - modules.denoiser
+        - modules.reverse_diffusion_step
+      cached: []
+      notes: []
+      evidence:
+        status: confirmed_from_code
+        refs:
+          - source_ref: implementation_source
+            role: implementation_evidence
+```
 
-## Claims
+Use it for sampling loops, recycling, recurrent refinement, cached state, and
+phase-specific reruns. `training_inference` owns objectives, schedules,
+samplers, latent codecs, teacher forcing, self-conditioning, and deployment
+notes when relevant.
 
-Claims are short statements that stories or comparisons can display directly.
+## Claims and Open Questions
+
+Claims are named, evidence-backed statements suitable for inspectors, stories,
+and comparisons. Open questions preserve unresolved facts rather than hiding
+them in prose:
 
 ```yaml
 claims:
-  - id: pair_context_is_bias_not_state
-    statement: The pair/context stream biases attention but is not updated by the attention stack.
-    scope:
-      module: group_refiner
+  - id: sampler_formula_has_no_learned_weights
+    statement: The reverse update is fixed schedule math around model outputs.
     evidence:
-      status: confirmed_from_docs
-      refs: []
-```
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 
-## Training And Inference
-
-Architecture alone often misses method behavior. Use this section for
-objectives, schedules, samplers, teacher forcing, self-conditioning, caching,
-and deployment notes.
-
-```yaml
-training_inference:
-  objective:
-    kind: classification | regression | denoising | flow_matching | unknown
-  schedule:
-    kind: diffusion | curriculum | none | unknown
-  sampler:
-    kind: one_shot | iterative | beam_search | ode_solver | unknown
-  teacher_forcing: unknown
-  self_conditioning: unknown
-  checkpoint_notes: []
-```
-
-## Open Questions
-
-Open questions are part of the source format. Do not bury them in prose.
-
-```yaml
 open_questions:
-  - id: context_update_path
-    question: Is the pair/context state updated or only injected?
+  - id: unresolved_boundary
+    question: Is this cache refreshed during inference?
     status: unresolved
 ```
 
-## Renderer Contract
+## Compilation
 
-A renderer should be able to:
+The Ruby compiler stack validates and derives the browser manifest:
 
-- draw modules as nodes;
-- draw information flow from `relations`;
-- color nodes by `scale`;
-- display attention masks from `attention.pattern` and window fields;
-- display control-flow loops and cached state from `execution`;
-- distinguish mutable state from conditioning with `state_semantics`;
-- render common conditioning and scale-transition motifs from standard blocks;
-- build comparison tables from normalized module and attention fields;
-- show confidence/evidence badges from `evidence.status`;
-- link each claim to source refs.
+```text
+architecture-v0.4 YAML
+  -> ownership validation
+  -> decomposition coverage validation/compilation
+  -> semantic board projection
+  -> architecture-manifest-v0.4 JavaScript
+```
+
+Generated convenience fields include value-site producer/consumer indexes,
+conditioning endpoints, scale-transition endpoints/scales, hierarchy coverage,
+and projected board edges. They are compiler output, not alternate authoring
+locations.
+
+Legacy architecture-v0.1/v0.2/v0.3 compatibility and migration behavior are
+documented in `protocol/architecture-projection-model.md`; new sources use
+architecture-v0.4.

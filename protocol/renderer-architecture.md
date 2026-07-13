@@ -1,4 +1,6 @@
-# Renderer Architecture v0.3
+# Renderer Architecture v0.4
+
+Status: **current implemented compiler/renderer boundary**.
 
 This document describes the generic renderer stack for semantic architecture
 explainers. The renderer should stay domain-neutral: source files decide what
@@ -7,24 +9,28 @@ reusable presentation rules.
 
 ## Layers
 
-1. **Architecture source**: `architectures/*.yaml` defines modules,
-   representations, relations, evidence, state semantics, conditioning, and scale
-   transitions.
-2. **View source**: `views/*.view.yaml` defines boards, node placement,
-   compactness, drilldown, and visible edges.
-3. **Pseudocode source**: `pseudocode/*.yaml` defines line-level traces and
+1. **Bibliography source**: `references/bibliography.yaml` owns canonical
+   paper, code, documentation, specification, and local-source metadata.
+2. **Architecture source**: `architectures/*.yaml` defines modules,
+   representations, value sites, hierarchy/decomposition, relations, evidence,
+   state semantics, conditioning, and scale transitions.
+3. **View source**: `views/*.view.yaml` defines boards, node placement,
+   compactness, drilldown, visibility decisions, and edge presentation
+   overrides. Normal edges are not authored here.
+4. **Pseudocode source**: `pseudocode/*.yaml` defines line-level traces and
    source references.
-4. **Standard blocks**: `standard_blocks/*.yaml` defines reusable visual and
+5. **Standard blocks**: `standard_blocks/*.yaml` defines reusable visual and
    mathematical motifs.
-5. **Manifest builder**: `renderer/architecture/build-manifest.rb` compiles the
+6. **Manifest builder**: `renderer/architecture/build-manifest.rb` compiles the
    registered YAML source sets into `renderer/architecture/manifest-<id>.js`
-   files plus `manifest-index.js`.
-6. **Browser renderer**: `renderer/architecture/renderer.js` renders boards,
+   files plus `manifest-index.js`, including relation-derived interfaces and
+   top-down decomposition coverage.
+7. **Browser renderer**: `renderer/architecture/renderer.js` renders boards,
    semantic navigation, audience explanation panels, MathJax equations,
    pan/zoom controls, and source links.
 
-The builder compiles current architecture-v0.3 / visualization-v0.4 sources
-into architecture-manifest-v0.3 projected boards. A narrow legacy path still
+The builder compiles current architecture-v0.4 / visualization-v0.4 sources
+into architecture-manifest-v0.4 projected boards. A narrow legacy path still
 accepts old architecture `edges` and v0.2 `relations` and normalizes them into
 architecture-manifest-v0.2. Manifests are generated internal representations,
 not second durable source contracts.
@@ -34,20 +40,23 @@ not second durable source contracts.
 `protocol/architecture-projection-model.md` defines the implemented semantic
 layer between sources and browser rendering.
 
-The current pipeline uses a shared build/lint-time semantic projector:
+The current pipeline is implemented in Ruby through shared build/lint
+components:
 
 ```text
-architecture-v0.3 + visualization-v0.4
+architecture-v0.4 + visualization-v0.4
                   ↓
-shared normalizer and semantic board projector
+ownership validation + decomposition coverage compilation
                   ↓
-lossless architecture-manifest-v0.3 projected boards
+semantic board projector
+                  ↓
+lossless architecture-manifest-v0.4 projected boards
                   ↓
 browser layout and geometric wire router
 ```
 
 The projector derives normal board edges from canonical architecture
-relations, remap hidden descendants to visible aggregate modules, contract
+relations, remaps hidden descendants to visible aggregate modules, contracts
 explicitly elided paths, preserve ordered relation provenance, and reject
 ambiguous or incomplete projections. The browser will continue to own node
 measurement, layout, routing, and interaction; it will not interpret semantic
@@ -62,8 +71,8 @@ source schemas in its drawing code.
 
 The browser renderer may:
 
-- draw nodes and board-local edges from a view source while preserving their
-  architecture `relation_ref` provenance;
+- draw compiled nodes and projected edges while preserving complete canonical
+  `relation_path` provenance;
 - translate authored semantic column ranks into measured content-width tracks
   when a board requests content sizing, without changing the YAML order;
 - choose visual styling from generic fields such as `scale`, `prominence`,
@@ -90,14 +99,22 @@ registered in `architectures/index.yaml`; the current sets are `generic` and
 
 The prototype supports:
 
-- one canonical audience view with a location guide, model map, and stable
-  explanation surface;
+- one canonical audience view with a location guide, a model map switchable
+  between the whole model and immediate parent board, and one compact bottom
+  dock whose resting takeaway is replaced by hover previews or pinned details;
+- a model map rendered as a non-interactive miniature of the selected board,
+  reusing the canvas vocabulary for module cards, tensor glyphs, operations,
+  wire tones, and drillable/current-region emphasis;
 - full-width board layout;
+- an unbanded canvas by default, with optional lane guides authored explicitly
+  per board in view YAML;
 - uniform authoring grids plus opt-in compact, content-measured column tracks;
 - orthogonal automatic wiring with reusable explicit outer lanes;
 - pan and zoom controls;
 - hoverable edge ports;
 - focus-panel summaries that do not resize the canvas;
+- bibliography-resolved paper and code citations with typed roles and local
+  evidence locators;
 - compact and micro node treatments;
 - MathJax rendering for standard-block equations.
 
@@ -109,11 +126,12 @@ the source files and renderer rules, followed by manifest regeneration.
 ## Extension Points
 
 Prefer adding source-language fields before adding special-case renderer code.
-Useful generic extensions include:
+Potential generic extensions below are design candidates, not currently
+supported authoring fields:
 
 - `node.icon` for stable visual symbols;
 - `edge.geometry` for explicit routing hints;
 - `standard_block.visual_template` variants;
 - `board.layers` for optional overlays;
 - `comparison_refs` for multi-architecture tables;
-- `source_ref` deep links for code, docs, papers, or specs.
+- graph views derived from typed `source_ref` links to the central bibliography.

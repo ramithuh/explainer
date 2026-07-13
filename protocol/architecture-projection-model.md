@@ -1,16 +1,16 @@
 # Architecture-Derived Board Projection v0.1
 
-Status: **implemented vertical slice**.
+Status: **current implemented semantic-projection contract**.
 
 Current contracts:
 
-- `architecture-v0.3`
+- `architecture-v0.4`
 - `visualization-v0.4`
-- `architecture-manifest-v0.3`
+- `architecture-manifest-v0.4`
 
-Both registered source sets use architecture-v0.3 and visualization-v0.4. The
+Both registered source sets use architecture-v0.4 and visualization-v0.4. The
 shared Ruby projector is called by both the manifest builder and linter, and
-the audience renderer consumes architecture-manifest-v0.3 projected boards.
+the audience renderer consumes architecture-manifest-v0.4 projected boards.
 The v0.2/v0.3 authored-board adapter remains only for compatibility with old
 manifests.
 
@@ -56,7 +56,8 @@ The first implementation uses these constraints deliberately:
 
 | Layer | Owns |
 | --- | --- |
-| Architecture | Canonical objects, hierarchy, value identity, relations, semantics, evidence |
+| Bibliography | Canonical identity and metadata for papers, code, docs, specs, and local sources |
+| Architecture | Canonical objects, hierarchy, value identity, relations, semantics, evidence and typed citation roles |
 | Board/view | Subject, relative depth, visible occurrences, layout, navigation, elide/exclude choices, presentation overrides |
 | Projector | Visible graph derivation, collapse, contraction, boundary preservation, provenance, validation |
 | Renderer | Node presentation, geometric layout, wire routing, pan/zoom, inspector and navigation interaction |
@@ -64,7 +65,18 @@ The first implementation uses these constraints deliberately:
 A board may choose whether a relation is visible through its node selection,
 but it may not create or redefine an architectural relation.
 
-## Architecture-v0.3 Semantic Graph
+Architecture decomposition coverage is compiled separately from board
+projection. Each scope declares whether its derived immediate child set is
+complete, partial, terminal, or opaque; see
+`protocol/architecture-coverage.md`. Projector classifications measure board
+accounting over declared objects, not completeness relative to an unknown real
+system.
+
+## Architecture-v0.4 Semantic Graph
+
+Architecture-v0.4 retains the v0.3 hierarchy, value-site, relation, and board
+projection model and adds enforceable ownership rules within the architecture
+source. See `protocol/fact-ownership.md`.
 
 ### Typed References
 
@@ -125,8 +137,8 @@ them.
 ### Representation Types and Value Sites
 
 Architecture-v0.2 representations often conflate tensor type, semantic state,
-and temporal occurrence. V0.3 separates reusable representation description
-from canonical value sites.
+and temporal occurrence. Architecture-v0.4 retains v0.3's separation of
+reusable representation descriptions from canonical value sites.
 
 ```yaml
 representations:
@@ -134,7 +146,11 @@ representations:
     scale: spatial
     shape: "B x 4 x I x I"
     semantic_role: latent state in the reverse diffusion process
-    evidence: {}
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 
 value_sites:
   - id: latent_before_step
@@ -165,9 +181,9 @@ value_sites:
     boundary: output
 ```
 
-The first migration may normalize existing representation objects into value
-sites internally, but repeated or mutable states must become distinct
-canonical sites before automatic occurrence binding is considered complete.
+Legacy migration may normalize old representation objects into value sites,
+but repeated or mutable states must become distinct canonical sites before
+automatic occurrence binding is considered complete.
 
 Value sites are scoped but are not hierarchy nodes and do not have an
 independent `hierarchy_depth`. For board eligibility, a value site inherits the
@@ -198,7 +214,11 @@ relations:
     carries:
       - representations.diffusion_latent
     operation: denoise_latent
-    evidence: {}
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 
   - id: reverse_step_produces_next_latent
     from: modules.reverse_diffusion_step
@@ -207,7 +227,11 @@ relations:
     carries:
       - representations.diffusion_latent
     operation: update_sampling_state
-    evidence: {}
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
 
 Relations own:
@@ -635,12 +659,17 @@ The dashed edge records all three canonical relation IDs between
 
 ### Architecture
 
-- strict schema with unknown-key rejection;
+- supported schema-version checks and targeted forbidden duplicate-field
+  rejection;
 - globally unambiguous typed refs;
 - unique semantic snake_case IDs;
 - acyclic single-parent hierarchy;
+- explicit, structurally consistent decomposition status on the root and every
+  module;
 - valid value-site representation/scope refs;
 - valid relation endpoints, kinds, carries, and evidence;
+- one-owner conditioning, state, scale-transition, and module-interface fields;
+- resolved bibliography source refs with typed roles;
 - complete canonical task-boundary reachability; and
 - derivable module IO/state producer-consumer facts without contradiction.
 
@@ -653,6 +682,7 @@ The dashed edge records all three canonical relation IDs between
 - reasons for exclusions;
 - resolvable repeated occurrences;
 - child-board subject compatibility;
+- no child board expansion of a `leaf` or `opaque` module;
 - presentation-only overrides;
 - complete accounting for subject-boundary and in-horizon flow; and
 - visible root task inputs and outputs.
@@ -675,16 +705,23 @@ Projection belongs in a shared build/lint library, not the geometric wiring
 engine. The manifest builder and linter must call the same projector so their
 semantics cannot drift.
 
-Suggested structure:
+Implemented structure:
 
 ```text
 lib/architecture_projection.rb
-  validate architecture-v0.3 hierarchy and refs
+  validate architecture-v0.3/v0.4 hierarchy and refs
   project one visualization-v0.4 board
   emit normalized projected graph
 
+lib/architecture_ownership.rb
+  enforce architecture-v0.4 one-owner rules
+
+lib/architecture_coverage.rb
+  validate decomposition closure
+  compile breadth scopes and depth frontiers
+
 renderer/architecture/build-manifest.rb
-  compile lossless architecture-manifest-v0.3
+  compile lossless architecture-manifest-v0.4
   include projected boards
 
 scripts/lint_sources.rb
@@ -719,7 +756,7 @@ authored label, tone, and connection prose.
   invent missing architectural semantics. This variant is emitted only by the
   temporary v0.2/v0.3 adapter and is forbidden for visualization-v0.4.
 
-Current architecture-manifest-v0.3 files emit only `origin: canonical`. Old
+Current architecture-manifest-v0.4 files emit only `origin: canonical`. Old
 architecture-manifest-v0.2 files remain readable through the browser's narrow
 authored-board/elision adapter; they are not rewritten into the reserved
 `legacy_authored` variant. For current projected boards, the browser consumes
@@ -733,11 +770,14 @@ Compatibility during migration is explicit:
 | --- | --- | --- |
 | v0.2 | v0.3 | Accepted through the legacy authored-board adapter |
 | v0.3 | v0.3 | Rejected; v0.3 value-site semantics require derived boards |
-| v0.3 | v0.4 | Accepted through derived projection |
+| v0.3 | v0.4 | Accepted by the projector for compatibility |
+| v0.4 | v0.4 | Current contract; accepted through derived projection and one-owner validation |
 | v0.2 | v0.4 | Rejected because hierarchy/value-site projection semantics are unavailable |
 
-The current v0.3/v0.4 combination emits architecture-manifest-v0.3 canonical
-edges. The v0.2/v0.3 combination remains on architecture-manifest-v0.2 and is
+The current architecture-v0.4/visualization-v0.4 combination emits
+architecture-manifest-v0.4 canonical edges. Architecture-v0.3 remains readable
+by the projector for fixtures and migration. The v0.2/v0.3 combination remains
+on architecture-manifest-v0.2 and is
 read through the browser's narrow legacy adapter. This does not make
 architecture-v0.3 and visualization-v0.3 a supported authoring combination.
 

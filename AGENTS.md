@@ -20,17 +20,24 @@ When updating an architecture, prefer editing the declarative sources first:
 - Use stable IDs in snake_case. Keep IDs semantic, not visual:
   `input_adapter`, `context_memory`, `refinement_stack`, not `left_box_1`.
 - Give every architectural fact one owner. Reference that fact from other
-  sections and views instead of copying it. In architecture-v0.3, top-level
+  sections and views instead of copying it. In architecture-v0.4, top-level
   `relations` own information-flow identity, semantics, and evidence.
 - Give every relation a stable semantic snake_case `id`; do not author
   anonymous architecture `edges`.
 - Give every module exactly one `parent_ref`, rooted at `architecture`.
+- Declare `decomposition.status` on the architecture root and every module:
+  `complete`, `partial`, `leaf`, or `opaque`. Child membership is still derived
+  only from `parent_ref`; never repeat a child list or expected count. Use
+  `opaque` for an accounted component whose internals are intentionally not
+  modeled, and `partial` when sibling breadth may still be missing.
 - Model reusable tensor/stream types in `representations` and concrete
   architectural occurrences in `value_sites`. Split mutable before/after state
   into distinct value sites; never encode a state update as an ambiguous
   self-edge.
 - Derive module interfaces from canonical relations. Do not separately author
-  module `inputs`/`outputs` in architecture-v0.3.
+  module `inputs`/`outputs` in architecture-v0.4. Conditioning references one
+  relation without copying endpoints; scale transitions reference an ordered
+  relation path; state lifecycle groups never copy producer/consumer lists.
 - Every nontrivial claim should have `evidence.status` and `evidence.refs`.
 - Mark certainty explicitly:
   - `confirmed_from_code`: directly checked in source code.
@@ -120,8 +127,16 @@ editing the scripts. Current sets:
 
 Shared infrastructure:
 
+- Central bibliography: `references/bibliography.yaml` (canonical metadata for
+  papers, code, docs, specs, and local sources; facts cite it through typed
+  `source_ref` roles). See `protocol/bibliography.md`.
 - Semantic projector: `lib/architecture_projection.rb` (used by both builder
   and linter; emits deterministic projected edges with relation provenance).
+- Ownership validator: `lib/architecture_ownership.rb` (rejects duplicated
+  relation endpoints, interfaces, and derived state/scale fields).
+- Coverage compiler: `lib/architecture_coverage.rb` (validates top-down
+  decomposition closure and derives breadth/depth frontier reports without a
+  guessed percentage).
 - Renderer manifest builder: `renderer/architecture/build-manifest.rb`
   (emits one `manifest-<id>.js` per registry entry plus `manifest-index.js`).
 - Browser renderer: `renderer/architecture/renderer.js` (architecture chosen
@@ -151,7 +166,11 @@ Useful validation:
 
 ```bash
 ruby -Ilib:test test/architecture_projection_test.rb
+ruby -Ilib:test test/architecture_ownership_test.rb
+ruby -Ilib:test test/architecture_coverage_test.rb
 ruby -Ilib:test test/source_projection_integration_test.rb
+ruby -Ilib:test test/bibliography_test.rb
+ruby -Ilib:test test/documentation_test.rb
 ruby scripts/lint_sources.rb
 ruby -c renderer/architecture/build-manifest.rb
 ```

@@ -1,5 +1,7 @@
 # Pseudocode Language v0.1
 
+Status: **implemented current trace contract**.
+
 This source format records algorithm or code traces that can be linked back to
 architecture modules, representations, relations, claims, and standard visual
 blocks.
@@ -12,13 +14,15 @@ id: stable_trace_id
 title: Human Readable Trace
 sources:
   - id: implementation
-    kind: code
-    path: src/model.py
-    note: optional note
+    source_ref: canonical_code_source
 symbols: []
 lines: []
 claims: []
 ```
+
+The local `id` is a short alias used by trace lines. `source_ref` resolves its
+metadata through `references/bibliography.yaml`; see
+`protocol/bibliography.md`.
 
 ## Symbols
 
@@ -34,8 +38,9 @@ symbols:
 ```
 
 Architecture references may target `modules.*`, `representations.*`,
-`relations.*`, or `claims.*` IDs. Use a relation reference when a trace line
-supports a particular information-flow boundary rather than a whole module.
+`value_sites.*`, `relations.*`, or `claims.*` IDs. Use a value-site reference
+for a concrete occurrence and a relation reference when a trace line supports
+a particular information-flow boundary rather than a whole module.
 
 Common symbol types:
 
@@ -97,7 +102,10 @@ claims:
     line_refs: [pair_bias_refine]
     evidence:
       status: confirmed_from_code
-      refs: []
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
+          lines: "120-140"
 ```
 
 ## Visual Hooks

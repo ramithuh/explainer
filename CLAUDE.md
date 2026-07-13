@@ -28,6 +28,12 @@ last:
   `inferred`, `open_question`.
 - Keep unresolved questions in `open_questions` — they are part of the
   artifact.
+- In architecture-v0.4, canonical `relations` alone own flow endpoints and
+  interfaces. Do not author module `inputs`/`outputs`, conditioning endpoints,
+  state producer/consumer lists, or duplicate scale-transition endpoints.
+- The architecture root and every module declare `decomposition.status` as
+  `complete`, `partial`, `leaf`, or `opaque`. Children remain derived solely
+  from `parent_ref`; never repeat child lists or counts.
 - Don't duplicate architecture facts (module order, names, relations) in renderer
   JS if they can live in YAML. New visual concepts go into the view language
   first unless purely presentational.
@@ -39,11 +45,10 @@ last:
   child, not a one-box root. Each child board expands exactly one conceptual
   unit; drilldown uses an explicit valid `board_ref`; layout uses `col`/`row`
   in view YAML, not renderer JS.
-- Edges describe information flow: `from`, `to`, `label`, optional `tone`
-  (`conditioning`, `skip`), and `connection.title/role/inside` explaining how
-  the source is used inside the target. Every edge must use either
-  `relation_ref` or, for a board-local decomposition involving a view-local
-  node, `view_only: true`.
+- Visualization-v0.4 boards never author normal `edges` or `view_only` flow.
+  Select typed module/value-site occurrences, then use `edge_overrides` matched
+  by one canonical `relation_ref` or ordered `relation_path` for labels, tone,
+  routing hints, and `connection` prose. The projector derives all endpoints.
 
 ## After any YAML/view change
 
@@ -51,6 +56,12 @@ Regenerate manifests, then validate:
 
 ```bash
 ruby renderer/architecture/build-manifest.rb   # emits manifest-<id>.js per registry entry
+ruby -Ilib:test test/architecture_projection_test.rb
+ruby -Ilib:test test/architecture_ownership_test.rb
+ruby -Ilib:test test/architecture_coverage_test.rb
+ruby -Ilib:test test/source_projection_integration_test.rb
+ruby -Ilib:test test/bibliography_test.rb
+ruby -Ilib:test test/documentation_test.rb
 ruby scripts/lint_sources.rb
 ```
 
@@ -69,10 +80,11 @@ it; register new architectures there, never in the scripts. Sets:
   demonstrates `elide: true` edge contraction and derived conditioning
   badges.
 
-Renderer: `renderer/architecture/renderer.js`, architecture selected via
-`?arch=<id>`. Architecture-backed view edges must reference canonical
-architecture `relations` (linted); conditioning badges derive from linked
-`conditioning` entries — don't write modes into edge labels.
+Compiler/projector: Ruby (`renderer/architecture/build-manifest.rb` and
+`lib/*.rb`). Renderer: `renderer/architecture/renderer.js`, architecture
+selected via `?arch=<id>`. Projected view edges derive from canonical
+architecture `relations`; conditioning badges derive from linked
+`conditioning` entries—do not write modes into edge labels.
 
 ## Writing style
 

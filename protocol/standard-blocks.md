@@ -1,5 +1,7 @@
 # Standard Visual Blocks v0.1
 
+Status: **implemented current reusable-block contract**.
+
 Standard blocks are reusable visual/mathematical motifs. They are smaller than
 an architecture and larger than a single pseudocode line.
 
@@ -63,10 +65,19 @@ lines:
 ```yaml
 modules:
   - id: group_refiner
+    parent_ref: architecture
+    decomposition:
+      status: leaf
+    standard_block_ref: standard_blocks/pair-biased-attention.yaml
     attention:
       pattern: full
       pair_bias: true
       standard_block_ref: standard_blocks/pair-biased-attention.yaml
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 ```
 
 ## Renderer Contract
@@ -91,3 +102,5 @@ usage must still be attached to architecture or pseudocode evidence.
 - `standard_blocks/pair-biased-attention.yaml`
 - `standard_blocks/per-item-adaln-conditioning.yaml`
 - `standard_blocks/additive-conditioning.yaml`
+- `standard_blocks/adaln-zero-conditioning.yaml`
+- `standard_blocks/sinusoidal-timestep-embedding.yaml`

@@ -1,5 +1,7 @@
 # Architecture Comparison Protocol v0.1
 
+Status: **design proposal; not yet compiled or rendered**.
+
 This protocol is for comparing architecture slices without binding the
 comparison to a specific domain.
 
@@ -53,7 +55,9 @@ findings:
     statement: Short evidence-backed statement.
     evidence:
       status: confirmed_from_code
-      refs: []
+      refs:
+        - source_ref: implementation_source
+          role: implementation_evidence
 open_questions: []
 ```
 

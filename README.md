@@ -11,12 +11,23 @@ focus panels, evidence summaries, and reusable standard-block views.
 
 Source layers:
 
+- `protocol/README.md`: status index for implemented and proposed design
+  contracts.
+- `references/bibliography.yaml`: canonical metadata for papers, code,
+  documentation, specifications, and local source artifacts.
+- `protocol/bibliography.md`: citation ownership, typed roles, historical
+  attribution, and provenance-graph rules.
 - `protocol/architecture-language.md`: YAML vocabulary for methods, modules,
   representations, attention patterns, relations, claims, and evidence.
 - `protocol/architecture-projection-model.md`: current projection contract for
   architecture hierarchy, scoped board projection, automatic edges, elision,
   provenance, and migration.
-- `protocol/architecture-comparison-protocol.md`: comparison workflow and axes.
+- `protocol/fact-ownership.md`: architecture-v0.4 one-owner rules and the
+  interfaces derived from canonical relations.
+- `protocol/architecture-coverage.md`: explicit top-down breadth closure,
+  depth frontiers, and compiled non-percentage coverage reports.
+- `protocol/architecture-comparison-protocol.md`: proposed comparison workflow
+  and axes; not yet part of the compiler pipeline.
 - `protocol/pseudocode-language.md`: YAML vocabulary for algorithm lines,
   symbols, source refs, claims, and visual scenes.
 - `protocol/standard-blocks.md`: reusable visual/mathematical motifs.
@@ -31,7 +42,7 @@ Source layers:
 Stories should increasingly be rendered from these source files instead of
 hardcoding every module diagram in HTML or JavaScript.
 
-The current architecture-v0.3 / visualization-v0.4 contracts enforce the
+The current architecture-v0.4 / visualization-v0.4 contracts enforce the
 one-fact/one-owner rule. Architecture sources own a strict module hierarchy,
 typed value sites, canonical relations, semantics, and evidence. Boards select
 a subject, relative expansion depth, exact visible occurrences, explicit
@@ -39,6 +50,18 @@ elisions/exclusions, and presentation overrides; they do not author semantic
 edges. A shared build/lint-time projector derives direct, boundary, and
 contracted edges with ordered relation provenance. Drilldown remains explicit
 through `board_ref`. See `protocol/architecture-projection-model.md`.
+
+Within the architecture source, relations alone own flow endpoints. Modules do
+not repeat inputs/outputs; conditioning refers to one relation; scale
+transitions refer to ordered relation paths; and state lifecycle groups refer
+to concrete value sites. The manifest builder derives renderer-friendly
+producer/consumer and endpoint indexes. See `protocol/fact-ownership.md`.
+
+Architecture coverage is also explicit rather than guessed. The root and
+every module declare whether their decomposition is complete, partial, a leaf,
+or intentionally opaque. Child sets and coverage counts are derived from
+`parent_ref`; compilation reports breadth scopes and depth frontiers without
+inventing an overall percentage. See `protocol/architecture-coverage.md`.
 
 For architecture-aware authoring, read `AGENTS.md` first. It defines the
 source-first update order, evidence rules, semantic-zoom board conventions,
@@ -95,7 +118,11 @@ After changing YAML/view sources:
 ```bash
 ruby renderer/architecture/build-manifest.rb   # regenerates manifest-<id>.js per registry entry
 ruby -Ilib:test test/architecture_projection_test.rb
+ruby -Ilib:test test/architecture_ownership_test.rb
+ruby -Ilib:test test/architecture_coverage_test.rb
 ruby -Ilib:test test/source_projection_integration_test.rb
+ruby -Ilib:test test/bibliography_test.rb
+ruby -Ilib:test test/documentation_test.rb
 ruby scripts/lint_sources.rb
 ruby -c renderer/architecture/build-manifest.rb
 ```
@@ -105,11 +132,14 @@ If a JS runtime is available, also syntax-check the ES modules (they use
 copy):
 
 ```bash
-node --check renderer/architecture/renderer.js
+cp renderer/architecture/renderer.js /tmp/explainer-renderer.mjs
+node --check /tmp/explainer-renderer.mjs
 ```
 
 Both scripts read `architectures/index.yaml`; register new source sets there,
-not in the scripts.
+not in the scripts. The registry also points to the shared bibliography;
+architecture evidence should cite stable `source_ref` IDs rather than repeat
+paper or repository metadata.
 
 Serve locally with any static file server, for example:
 
