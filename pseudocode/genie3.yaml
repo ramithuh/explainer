@@ -1,0 +1,187 @@
+schema_version: pseudocode-v0.1
+id: genie3
+title: Genie 3 Sampling and Denoiser Trace
+sources:
+  - id: sampler_code
+    source_ref: genie3_sampler_code
+  - id: ddim_code
+    source_ref: genie3_ddim_code
+  - id: model_code
+    source_ref: genie3_model_code
+  - id: feature_code
+    source_ref: genie3_feature_code
+  - id: geometry_code
+    source_ref: genie3_geometry_code
+  - id: latent_code
+    source_ref: genie3_latent_transformer_code
+  - id: structure_code
+    source_ref: genie3_structure_code
+symbols:
+  - id: feature_bundle
+    name: features
+    type: input
+    shape: "B x N token fields + pair masks"
+    architecture_ref: representations.feature_bundle
+  - id: current_coordinates
+    name: x_t
+    tex: 'x_t'
+    type: state
+    shape: "B x N x 3"
+    architecture_ref: representations.token_coordinates
+  - id: current_frames
+    name: T_t
+    tex: 'T_t'
+    type: representation
+    shape: "B x N frames"
+    architecture_ref: representations.token_frames
+  - id: timestep
+    name: t
+    type: input
+    shape: "B"
+    architecture_ref: representations.timestep
+  - id: single_features
+    name: s
+    type: representation
+    shape: "B x N x 384"
+    architecture_ref: representations.single_features
+  - id: pair_features
+    name: z
+    type: representation
+    shape: "B x N x N x 128"
+    architecture_ref: representations.pair_features
+  - id: coordinate_prediction
+    name: x_hat
+    tex: '\hat{x}_0'
+    type: output
+    shape: "B x N x 3"
+    architecture_ref: representations.token_coordinates
+  - id: predicted_noise
+    name: epsilon_theta
+    tex: '\epsilon_\theta'
+    type: output
+    shape: "B x N x 3"
+    architecture_ref: representations.coordinate_noise
+  - id: next_coordinates
+    name: x_(t-10)
+    tex: 'x_{t-10}'
+    type: state
+    shape: "B x N x 3"
+    architecture_ref: representations.token_coordinates
+  - id: sequence_logits
+    name: sequence_logits
+    tex: '\ell_{aa}'
+    type: output
+    shape: "B x N x 20"
+    architecture_ref: representations.sequence_logits
+lines:
+  - id: prepare_tokens
+    text: "features = tokenize(request)  # C-alpha per unknown residue; atom14 heavy atoms only for known atomized residues"
+    operation: task_dependent_partial_atomization
+    inputs: []
+    outputs: [feature_bundle]
+    architecture_refs:
+      - modules.feature_builder
+      - claims.atomization_is_task_dependent
+    source_refs:
+      - source: feature_code
+        locator: create_np_features_from_chain and create_np_features_from_length
+  - id: initialize_coordinates
+    text: "x_t = randn_like(features.gt_atom_positions)"
+    operation: gaussian_coordinate_initialization
+    inputs: [feature_bundle]
+    outputs: [current_coordinates]
+    architecture_refs:
+      - modules.coordinate_initializer
+    source_refs:
+      - source: sampler_code
+        locator: Sampler._sample
+  - id: derive_frames
+    text: "T_t = FrenetFrames(x_t, features.left_center_right_indices)"
+    operation: derive_branched_frenet_frames
+    inputs: [current_coordinates, feature_bundle]
+    outputs: [current_frames]
+    architecture_refs:
+      - modules.frenet_frame_builder
+      - claims.frames_are_derived_not_diffused
+    source_refs:
+      - source: geometry_code
+        locator: compute_noisy_structure_frames
+  - id: embed_single_pair
+    text: "s = SingleEmbedder(features, t); z = PairEmbedder(features, T_t, s)"
+    operation: invariant_input_embedding
+    inputs: [feature_bundle, timestep, current_frames]
+    outputs: [single_features, pair_features]
+    architecture_refs:
+      - modules.single_feature_embedder
+      - modules.pair_feature_embedder
+    source_refs:
+      - source: model_code
+        locator: V1Denoiser.forward
+  - id: latent_transform
+    text: "append 10 globals; repeat 5: s += PairBiasedAttention(s,z); z += OuterProduct(s); z += TriMulOut(z) + TriMulIn(z); z += PairTransition(z); remove globals"
+    operation: bidirectional_single_pair_refinement
+    inputs: [single_features, pair_features]
+    outputs: [single_features, pair_features]
+    architecture_refs:
+      - modules.latent_transformer
+      - claims.latent_communication_is_bidirectional_per_block
+    source_refs:
+      - source: latent_code
+        locator: LatentTransformer.forward and LatentTransformerBlock.forward
+  - id: decode_structure
+    text: "repeat 8: s = Transition(LayerNorm(s + IPA(s,z,T_t))); T_t = T_t.compose(BackboneUpdate(s)); x_hat = T_t.trans"
+    operation: equivariant_structure_refinement
+    inputs: [single_features, pair_features, current_frames]
+    outputs: [coordinate_prediction]
+    architecture_refs:
+      - modules.structure_decoder
+    source_refs:
+      - source: structure_code
+        locator: StructureNet.forward and StructureLayer.forward
+  - id: predict_sequence
+    text: "sequence_logits = SequenceHead(s)  # sampled only when predict_sequence is enabled"
+    operation: optional_sequence_prediction
+    inputs: [single_features]
+    outputs: [sequence_logits]
+    architecture_refs:
+      - modules.sequence_head
+      - modules.sequence_sampler
+    source_refs:
+      - source: model_code
+        locator: V1Denoiser.forward
+      - source: ddim_code
+        locator: DDIMSampler._sample_sequence
+  - id: read_noise
+    text: "epsilon_theta = x_t - x_hat"
+    operation: coordinate_displacement_readout
+    inputs: [current_coordinates, coordinate_prediction]
+    outputs: [predicted_noise]
+    architecture_refs:
+      - modules.noise_readout
+      - claims.sampler_math_is_outside_the_denoiser
+    source_refs:
+      - source: ddim_code
+        locator: DDIMSampler._step
+  - id: ddim_step
+    text: "x_(t-10) = sqrt(alpha_bar_prev)*x0_hat + direction_scale*direction(epsilon_theta) + noise_scale*sigma*z"
+    operation: directional_ddim_update
+    inputs: [current_coordinates, predicted_noise, timestep]
+    outputs: [next_coordinates]
+    architecture_refs:
+      - modules.ddim_update
+    source_refs:
+      - source: ddim_code
+        locator: DDIMSampler._step
+claims:
+  - id: point_cloud_is_the_diffusion_state
+    statement: Genie 3 samples a coordinate point cloud. Frenet frames are a derived denoiser representation, even though the paper describes the reverse process in frame-cloud terms.
+    line_refs: [initialize_coordinates, derive_frames, ddim_step]
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_sampler_code
+          role: implementation_evidence
+          locator: Sampler._sample
+        - source_ref: genie3_geometry_code
+          role: implementation_evidence
+          locator: compute_noisy_structure_frames

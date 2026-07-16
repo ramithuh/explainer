@@ -8,7 +8,7 @@ Current contracts:
 - `visualization-v0.4`
 - `architecture-manifest-v0.4`
 
-Both registered source sets use architecture-v0.4 and visualization-v0.4. The
+All registered source sets use architecture-v0.4 and visualization-v0.4. The
 shared Ruby projector is called by both the manifest builder and linter, and
 the audience renderer consumes architecture-manifest-v0.4 projected boards.
 The v0.2/v0.3 authored-board adapter remains only for compatibility with old

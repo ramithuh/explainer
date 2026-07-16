@@ -88,6 +88,16 @@ dropdown or a `?arch=<id>` query parameter:
   decoder scaling and intermediate value sites are contracted into dashed
   edges with complete canonical relation paths; hover the edge port to peek at
   the hidden chain, click to pin.
+- `?arch=genie2`: Genie 2 protein-backbone diffusion (Lin et al.,
+  arXiv:2405.15489), covering unconditional generation and motif scaffolding
+  from request preparation through the 1,000-step C-alpha reverse process,
+  invariant single/pair encoding, equivariant structure updates, and PDB
+  export.
+- `?arch=genie3`: Genie 3 atom-aware protein diffusion (Lin et al., bioRxiv
+  2026), covering unconditional generation, motif scaffolding, and binder
+  design through task-dependent partial atomization, 100-step directional
+  DDIM sampling, bidirectional single/pair latent reasoning, and equivariant
+  structure decoding.
 
 There is one renderer interface: the audience view. Navigation, location,
 hover explanations, focus details, pan, and zoom all belong to that same
@@ -100,7 +110,7 @@ Conditioning badges on edges (adaLN-Zero, pair bias, per-item AdaLN) are
 derived from the architecture `conditioning` section, never hand-authored in
 views.
 
-Both registered demos are compiled through the semantic projector. The generic
+All registered demos are compiled through the semantic projector. The generic
 demo models a feature-refinement pipeline:
 
 - input records become item states;

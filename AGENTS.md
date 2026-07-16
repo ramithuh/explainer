@@ -127,6 +127,17 @@ editing the scripts. Current sets:
   `pseudocode/diffusion-transformer.yaml`, and
   `standard_blocks/adaln-zero-conditioning.yaml`. Its view demonstrates
   architecture-derived edge elision and conditioning badges.
+- `genie2`: Genie 2 protein-backbone diffusion (Lin et al., arXiv:2405.15489)
+  in `architectures/genie2.yaml`, `views/genie2-semantic-zoom.view.yaml`, and
+  `pseudocode/genie2.yaml`. Its view separates optional motif conditioning,
+  invariant single/pair encoding, equivariant frame refinement, and fixed
+  DDPM sampler math.
+- `genie3`: Genie 3 atom-aware protein diffusion (Lin et al., bioRxiv 2026)
+  in `architectures/genie3.yaml`, `views/genie3-semantic-zoom.view.yaml`, and
+  `pseudocode/genie3.yaml`. Its view distinguishes the coordinate diffusion
+  state from derived branched Frenet frames and expands partial atomization,
+  bidirectional latent reasoning, directional DDIM sampling, and equivariant
+  structure decoding.
 
 Shared infrastructure:
 

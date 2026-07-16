@@ -1,0 +1,8368 @@
+export const manifest = {
+  "schemaVersion": "architecture-manifest-v0.4",
+  "build": {
+    "generator": "architecture-manifest-builder-v0.4.1",
+    "inputDigests": {
+      "references/bibliography.yaml": "2c238cc39ff866cfb41c1b60c3e7a142df5707d3a9292efb8051aabbd5c8f336",
+      "architectures/genie3.yaml": "1f9f6ad86865f5e7bf58c9f7f0985c79e0a6ee805a0de0cb7b0709a19f86073c",
+      "views/genie3-semantic-zoom.view.yaml": "aaaf783a8cb21d357c2e18427effbd383c9858c3fa2985a1afa784fa997c498a",
+      "pseudocode/genie3.yaml": "2547263f81df8b0a9ba86e4b15037fe0f8a46ca57394a1fb167dcb28ad15252c"
+    }
+  },
+  "architecture": {
+    "schemaVersion": "architecture-v0.4",
+    "id": "genie3",
+    "name": "Genie 3 Atom-Aware Protein Diffusion",
+    "family": "protein_structure_diffusion",
+    "status": "draft",
+    "taskModes": [
+      "unconditional_generation",
+      "single_motif_scaffolding",
+      "multi_motif_scaffolding",
+      "binder_design"
+    ],
+    "referenceConfiguration": {
+      "checkpoint": "pretrained_v1_step_600000",
+      "protein_representation": "atom14_capable_partial_atomization",
+      "diffusion_steps": 1000,
+      "default_sampling_steps": 100,
+      "single_feature_dimension": 384,
+      "pair_feature_dimension": 128,
+      "latent_transformer_blocks": 5,
+      "global_tokens": 10,
+      "structure_layers": 8,
+      "ipa_heads": 12,
+      "evidence": {
+        "status": "confirmed_from_code",
+        "refs": [
+          {
+            "source_ref": "genie3_config_code",
+            "role": "configuration_evidence",
+            "locator": "config"
+          },
+          {
+            "source_ref": "genie3_ddim_code",
+            "role": "implementation_evidence",
+            "locator": "DDIMSampler._step"
+          }
+        ]
+      }
+    },
+    "sourceYaml": "../../architectures/genie3.yaml",
+    "sources": [
+      {
+        "source_ref": "genie3_2026",
+        "role": "architecture_description"
+      },
+      {
+        "source_ref": "genie3_model_code",
+        "role": "reference_implementation"
+      },
+      {
+        "source_ref": "genie3_sampler_code",
+        "role": "sampling_implementation"
+      },
+      {
+        "source_ref": "genie3_diffusion_code",
+        "role": "training_implementation"
+      }
+    ],
+    "decomposition": {
+      "status": "complete",
+      "evidence": {
+        "status": "confirmed_from_code",
+        "refs": [
+          {
+            "source_ref": "genie3_sampler_code",
+            "role": "implementation_evidence",
+            "locator": "Sampler.sample",
+            "note": "The source set accounts for feature preparation, reverse diffusion, optional sequence sampling, and PDB postprocessing."
+          }
+        ]
+      }
+    },
+    "coverage": {
+      "method": "declared_decomposition_closure",
+      "scopes": {
+        "architecture": {
+          "status": "complete",
+          "depth": 0,
+          "immediateModuleCount": 3,
+          "immediateModuleRefs": [
+            "modules.feature_builder",
+            "modules.diffusion_sampler",
+            "modules.pdb_exporter"
+          ]
+        },
+        "modules.feature_builder": {
+          "status": "leaf",
+          "depth": 1,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.diffusion_sampler": {
+          "status": "complete",
+          "depth": 1,
+          "immediateModuleCount": 7,
+          "immediateModuleRefs": [
+            "modules.coordinate_initializer",
+            "modules.timestep_controller",
+            "modules.frenet_frame_builder",
+            "modules.denoiser",
+            "modules.noise_readout",
+            "modules.ddim_update",
+            "modules.sequence_sampler"
+          ]
+        },
+        "modules.pdb_exporter": {
+          "status": "leaf",
+          "depth": 1,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.coordinate_initializer": {
+          "status": "leaf",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.timestep_controller": {
+          "status": "leaf",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.frenet_frame_builder": {
+          "status": "leaf",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.denoiser": {
+          "status": "complete",
+          "depth": 2,
+          "immediateModuleCount": 5,
+          "immediateModuleRefs": [
+            "modules.single_feature_embedder",
+            "modules.pair_feature_embedder",
+            "modules.latent_transformer",
+            "modules.sequence_head",
+            "modules.structure_decoder"
+          ]
+        },
+        "modules.noise_readout": {
+          "status": "leaf",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.ddim_update": {
+          "status": "leaf",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.sequence_sampler": {
+          "status": "leaf",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.single_feature_embedder": {
+          "status": "leaf",
+          "depth": 3,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.pair_feature_embedder": {
+          "status": "leaf",
+          "depth": 3,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.latent_transformer": {
+          "status": "complete",
+          "depth": 3,
+          "immediateModuleCount": 5,
+          "immediateModuleRefs": [
+            "modules.global_token_adapter",
+            "modules.pair_biased_attention_update",
+            "modules.single_to_pair_update",
+            "modules.triangle_multiplication_stack",
+            "modules.pair_transition"
+          ]
+        },
+        "modules.sequence_head": {
+          "status": "leaf",
+          "depth": 3,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.structure_decoder": {
+          "status": "complete",
+          "depth": 3,
+          "immediateModuleCount": 3,
+          "immediateModuleRefs": [
+            "modules.invariant_point_attention",
+            "modules.structure_transition",
+            "modules.frame_update"
+          ]
+        },
+        "modules.global_token_adapter": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.pair_biased_attention_update": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.single_to_pair_update": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.triangle_multiplication_stack": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.pair_transition": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.invariant_point_attention": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.structure_transition": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.frame_update": {
+          "status": "leaf",
+          "depth": 4,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        }
+      },
+      "summary": {
+        "scopeCount": 24,
+        "expandedScopeCount": 5,
+        "completeExpandedScopeCount": 5,
+        "partialScopeCount": 0,
+        "leafFrontierCount": 19,
+        "opaqueFrontierCount": 0,
+        "partialFrontierCount": 0,
+        "maximumAuthoredDepth": 4
+      },
+      "opaqueFrontierRefs": [
+
+      ],
+      "partialScopeRefs": [
+
+      ]
+    },
+    "modules": [
+      {
+        "id": "feature_builder",
+        "parent_ref": "architecture",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Task Feature Builder",
+        "kind": "input_adapter",
+        "role": "translate an unconditional, motif, or binder request into tokenization and conditioning features",
+        "scale": "mixed",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        }
+      },
+      {
+        "id": "diffusion_sampler",
+        "parent_ref": "architecture",
+        "decomposition": {
+          "status": "complete"
+        },
+        "label": "Genie 3 Diffusion Sampler",
+        "kind": "iterative_sampler",
+        "role": "initialize random token coordinates and run the default 100-step directional DDIM reverse chain",
+        "scale": "token",
+        "repeats": 100,
+        "pseudocode_ref": "../../pseudocode/genie3.yaml",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pdb_exporter",
+        "parent_ref": "architecture",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Protein PDB Exporter",
+        "kind": "serializer",
+        "role": "combine generated token coordinates with conditioned or optionally predicted identities and write PDB structures",
+        "scale": "output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save"
+            }
+          ]
+        }
+      },
+      {
+        "id": "coordinate_initializer",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Gaussian Coordinate Initializer",
+        "kind": "state_initializer",
+        "role": "sample one standard-normal coordinate for every active C-alpha or atomized heavy-atom token",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_controller",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Strided Timestep Controller",
+        "kind": "loop_controller",
+        "role": "select 100 descending noise levels from the 1000-step training schedule",
+        "scale": "sample",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "frenet_frame_builder",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Branched Frenet Frame Builder",
+        "kind": "geometric_adapter",
+        "role": "derive rotations along C-alpha and atom14-ordered sidechain traces while preserving current coordinate translations",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames and compute_frenet_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "denoiser",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "complete"
+        },
+        "label": "V1 SE(3)-Equivariant Denoiser",
+        "kind": "denoiser",
+        "role": "map current frames, timestep, and task features to denoised token coordinates plus optional sequence logits",
+        "scale": "mixed",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_model_code",
+              "role": "implementation_evidence",
+              "locator": "V1Denoiser.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "noise_readout",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Coordinate Noise Readout",
+        "kind": "vector_difference",
+        "role": "subtract the denoiser coordinate estimate from x_t to recover predicted coordinate noise",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ddim_update",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Directional DDIM Update",
+        "kind": "sampling_formula",
+        "role": "combine reconstructed x_0, scaled denoising direction, and Gaussian noise into x_(t-10)",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sequence_sampler",
+        "parent_ref": "modules.diffusion_sampler",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Optional Sequence Sampler",
+        "kind": "categorical_sampler",
+        "role": "after structure sampling, make a final model call and sample residue identities when sequence prediction is enabled",
+        "scale": "residue",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_feature_embedder",
+        "parent_ref": "modules.denoiser",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Single-Feature Embedder",
+        "kind": "feature_encoder",
+        "role": "project token, residue, chain, atom, timestep, and task-conditioning fields into 384-dimensional single features",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_feature_embedder",
+        "parent_ref": "modules.denoiser",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Pair-Feature Embedder",
+        "kind": "feature_encoder",
+        "role": "combine single outer sums, relative indices, noisy frame geometry, and conditioned geometry into 128-dimensional pair features",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            },
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "latent_transformer",
+        "parent_ref": "modules.denoiser",
+        "decomposition": {
+          "status": "complete"
+        },
+        "label": "Bidirectional Latent Transformer",
+        "kind": "coupled_single_pair_refiner",
+        "role": "refine single and pair states through five blocks with communication in both directions at every block",
+        "scale": "mixed",
+        "repeats": 5,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sequence_head",
+        "parent_ref": "modules.denoiser",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Optional Sequence Head",
+        "kind": "classifier",
+        "role": "map refined single features to 20 amino-acid logits per token",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_decoder",
+        "parent_ref": "modules.denoiser",
+        "decomposition": {
+          "status": "complete"
+        },
+        "label": "SE(3)-Equivariant Structure Decoder",
+        "kind": "structure_refiner",
+        "role": "use eight IPA layers to update invariant single states and compose rigid increments into the input frames",
+        "scale": "token",
+        "repeats": 8,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "global_token_adapter",
+        "parent_ref": "modules.latent_transformer",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Global Token Adapter",
+        "kind": "latent_adapter",
+        "role": "append ten zero-initialized global tokens and remove them after latent reasoning",
+        "scale": "mixed",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_biased_attention_update",
+        "parent_ref": "modules.latent_transformer",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Pair-Biased Single Attention",
+        "kind": "attention",
+        "role": "update single features using pair-biased self-attention with pair-derived value injection and no frame geometry",
+        "scale": "token",
+        "attention": {
+          "pattern": "full",
+          "query_scale": "token",
+          "key_value_scale": "token",
+          "heads": 12,
+          "pair_bias": true,
+          "pair_bias_source": "pair_with_global_tokens",
+          "positional_encoding": {
+            "kind": "none"
+          }
+        },
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_to_pair_update",
+        "parent_ref": "modules.latent_transformer",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Single-to-Pair Outer Product",
+        "kind": "outer_product_update",
+        "role": "project the updated single state into a residual pair update",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "triangle_multiplication_stack",
+        "parent_ref": "modules.latent_transformer",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Outgoing + Incoming Triangle Updates",
+        "kind": "triangular_multiplicative_update",
+        "role": "apply row-dropped outgoing and incoming triangular multiplication updates to the pair state",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_transition",
+        "parent_ref": "modules.latent_transformer",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Pair Transition",
+        "kind": "feed_forward",
+        "role": "apply the residual pair-wise transition at the end of each latent block",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "invariant_point_attention",
+        "parent_ref": "modules.structure_decoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Invariant Point Attention",
+        "kind": "geometric_attention",
+        "role": "update the decoder single state using pair bias and points expressed in the current token frames",
+        "scale": "token",
+        "attention": {
+          "pattern": "full",
+          "query_scale": "token",
+          "key_value_scale": "token",
+          "heads": 12,
+          "pair_bias": true,
+          "pair_bias_source": "refined_pair_features",
+          "positional_encoding": {
+            "kind": "rigid_frame_points"
+          }
+        },
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_transition",
+        "parent_ref": "modules.structure_decoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Structure Transition",
+        "kind": "feed_forward",
+        "role": "normalize and transform the IPA-updated single state",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "frame_update",
+        "parent_ref": "modules.structure_decoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Token Frame Update",
+        "kind": "rigid_transform_update",
+        "role": "regress and compose a six-parameter rigid increment for every valid token frame",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      }
+    ],
+    "representations": [
+      {
+        "id": "design_request",
+        "scale": "sample",
+        "semantic_role": "unconditional, motif-scaffolding, or binder-design request",
+        "shape": "B x request fields",
+        "carries": [
+          "target length or conditional structure specification",
+          "optional motif groups, target chains, and hotspot/interface annotations"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_length, create_np_features_from_motif_config, and create_np_features_from_target_config"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle",
+        "scale": "mixed",
+        "semantic_role": "token layout and task-dependent sequence, structure, atomization, and interface conditioning",
+        "shape": "B x N fields + B x N x N masks",
+        "carries": [
+          "token, residue, chain, entity, and atom identities",
+          "atomization and valid-frame masks",
+          "optional sequence, coordinate, motif-group, and interface masks"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        }
+      },
+      {
+        "id": "token_coordinates",
+        "scale": "token",
+        "semantic_role": "point-cloud diffusion state over C-alpha and optionally atomized heavy-atom tokens",
+        "shape": "B x N x 3",
+        "carries": [
+          "one three-dimensional coordinate per active token"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        }
+      },
+      {
+        "id": "token_frames",
+        "scale": "token",
+        "semantic_role": "Frenet-Serret frames derived along C-alpha and atom14-ordered sidechain traces",
+        "shape": "B x N x (3 x 3 + 3)",
+        "carries": [
+          "derived rotation",
+          "current token translation"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames and compute_frenet_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep",
+        "scale": "sample",
+        "semantic_role": "selected diffusion noise level",
+        "shape": "B",
+        "carries": [
+          "one of 100 selected reverse steps from the 1000-step schedule"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "coordinate_noise",
+        "scale": "token",
+        "semantic_role": "predicted or sampled coordinate noise",
+        "shape": "B x N x 3",
+        "carries": [
+          "one displacement vector per active token"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_features",
+        "scale": "token",
+        "semantic_role": "SE(3)-invariant per-token latent state",
+        "shape": "B x N x 384",
+        "carries": [
+          "token, residue, chain, atom, timestep, and task-conditioning features"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_features",
+        "scale": "pair",
+        "semantic_role": "SE(3)-invariant token-pair latent state",
+        "shape": "B x N x N x 128",
+        "carries": [
+          "relative index and chain features",
+          "noisy and conditioned frame geometry",
+          "learned single-to-pair communication"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            },
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sequence_logits",
+        "scale": "token",
+        "semantic_role": "optional amino-acid logits for C-alpha tokens",
+        "shape": "B x N x 20",
+        "carries": [
+          "categorical residue-type scores"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "protein_sequence",
+        "scale": "residue",
+        "semantic_role": "optional sampled amino-acid identities",
+        "shape": "B x R",
+        "carries": [
+          "one residue type per designed residue"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "protein_pdb",
+        "scale": "output",
+        "semantic_role": "serialized generated protein design",
+        "shape": "modeled atom records",
+        "carries": [
+          "generated coordinates",
+          "conditioned or optionally predicted residue identities"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save"
+            }
+          ]
+        }
+      }
+    ],
+    "valueSites": [
+      {
+        "id": "design_request",
+        "representation_ref": "representations.design_request",
+        "scope_ref": "architecture",
+        "boundary": "input",
+        "role": "task_input",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_length, create_np_features_from_motif_config, and create_np_features_from_target_config"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle",
+        "representation_ref": "representations.feature_bundle",
+        "scope_ref": "architecture",
+        "role": "prepared_conditioning",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_coordinates",
+        "representation_ref": "representations.token_coordinates",
+        "scope_ref": "modules.diffusion_sampler",
+        "role": "initial_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_coordinates",
+        "representation_ref": "representations.token_coordinates",
+        "scope_ref": "modules.diffusion_sampler",
+        "role": "state_read",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_frames",
+        "representation_ref": "representations.token_frames",
+        "scope_ref": "modules.denoiser",
+        "role": "derived_model_input",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames and compute_frenet_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep",
+        "representation_ref": "representations.timestep",
+        "scope_ref": "modules.diffusion_sampler",
+        "role": "loop_control",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "coordinate_prediction",
+        "representation_ref": "representations.token_coordinates",
+        "scope_ref": "modules.denoiser",
+        "role": "denoised_coordinate_estimate",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_model_code",
+              "role": "implementation_evidence",
+              "locator": "V1Denoiser.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "predicted_noise",
+        "representation_ref": "representations.coordinate_noise",
+        "scope_ref": "modules.diffusion_sampler",
+        "role": "model_prediction",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "fresh_step_noise",
+        "representation_ref": "representations.coordinate_noise",
+        "scope_ref": "modules.diffusion_sampler",
+        "role": "stochastic_input",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "next_coordinates",
+        "representation_ref": "representations.token_coordinates",
+        "scope_ref": "modules.diffusion_sampler",
+        "role": "state_write",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "final_coordinates",
+        "representation_ref": "representations.token_coordinates",
+        "scope_ref": "architecture",
+        "role": "sampler_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_single_features",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.denoiser",
+        "role": "embedder_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_pair_features",
+        "representation_ref": "representations.pair_features",
+        "scope_ref": "modules.denoiser",
+        "role": "embedder_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            },
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_with_global_tokens",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.latent_transformer",
+        "role": "expanded_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_with_global_tokens",
+        "representation_ref": "representations.pair_features",
+        "scope_ref": "modules.latent_transformer",
+        "role": "expanded_pair_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_after_pair_attention",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.latent_transformer",
+        "role": "pair_updated_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_after_single_update",
+        "representation_ref": "representations.pair_features",
+        "scope_ref": "modules.latent_transformer",
+        "role": "single_updated_pair_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_after_triangle_updates",
+        "representation_ref": "representations.pair_features",
+        "scope_ref": "modules.latent_transformer",
+        "role": "triangle_updated_pair_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_single_features",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.denoiser",
+        "role": "latent_transformer_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_pair_features",
+        "representation_ref": "representations.pair_features",
+        "scope_ref": "modules.denoiser",
+        "role": "latent_transformer_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "decoder_single_state",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.structure_decoder",
+        "role": "structure_layer_state_read",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "decoder_frames",
+        "representation_ref": "representations.token_frames",
+        "scope_ref": "modules.structure_decoder",
+        "role": "structure_layer_frame_read",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_after_ipa",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.structure_decoder",
+        "role": "attention_updated_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_after_transition",
+        "representation_ref": "representations.single_features",
+        "scope_ref": "modules.structure_decoder",
+        "role": "transition_updated_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "updated_frames",
+        "representation_ref": "representations.token_frames",
+        "scope_ref": "modules.structure_decoder",
+        "role": "frame_state_write",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sequence_logits",
+        "representation_ref": "representations.sequence_logits",
+        "scope_ref": "modules.denoiser",
+        "role": "optional_model_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "predicted_sequence",
+        "representation_ref": "representations.protein_sequence",
+        "scope_ref": "architecture",
+        "role": "optional_sampler_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "generated_design_pdb",
+        "representation_ref": "representations.protein_pdb",
+        "scope_ref": "architecture",
+        "boundary": "output",
+        "role": "task_output",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save"
+            }
+          ]
+        }
+      }
+    ],
+    "valueSiteInterfaces": {
+      "design_request": {
+        "incomingRelationRefs": [
+
+        ],
+        "outgoingRelationRefs": [
+          "relations.design_request_enters_feature_builder"
+        ],
+        "producerRefs": [
+
+        ],
+        "consumerRefs": [
+          "modules.feature_builder"
+        ]
+      },
+      "feature_bundle": {
+        "incomingRelationRefs": [
+          "relations.feature_builder_produces_feature_bundle"
+        ],
+        "outgoingRelationRefs": [
+          "relations.feature_bundle_sizes_coordinate_initializer",
+          "relations.feature_bundle_conditions_frame_builder",
+          "relations.feature_bundle_conditions_single_embedder",
+          "relations.feature_bundle_conditions_pair_embedder",
+          "relations.feature_bundle_masks_ipa",
+          "relations.feature_bundle_conditions_sequence_sampler"
+        ],
+        "producerRefs": [
+          "modules.feature_builder"
+        ],
+        "consumerRefs": [
+          "modules.coordinate_initializer",
+          "modules.frenet_frame_builder",
+          "modules.single_feature_embedder",
+          "modules.pair_feature_embedder",
+          "modules.invariant_point_attention",
+          "modules.sequence_sampler"
+        ]
+      },
+      "initial_coordinates": {
+        "incomingRelationRefs": [
+          "relations.coordinate_initializer_produces_initial_coordinates"
+        ],
+        "outgoingRelationRefs": [
+          "relations.initial_coordinates_begin_sampling_state"
+        ],
+        "producerRefs": [
+          "modules.coordinate_initializer"
+        ],
+        "consumerRefs": [
+          "value_sites.current_coordinates"
+        ]
+      },
+      "current_coordinates": {
+        "incomingRelationRefs": [
+          "relations.initial_coordinates_begin_sampling_state",
+          "relations.next_coordinates_reenter_sampling_state"
+        ],
+        "outgoingRelationRefs": [
+          "relations.current_coordinates_enter_frame_builder",
+          "relations.current_coordinates_enter_noise_readout",
+          "relations.current_coordinates_enter_ddim_update"
+        ],
+        "producerRefs": [
+          "value_sites.initial_coordinates",
+          "value_sites.next_coordinates"
+        ],
+        "consumerRefs": [
+          "modules.frenet_frame_builder",
+          "modules.noise_readout",
+          "modules.ddim_update"
+        ]
+      },
+      "current_frames": {
+        "incomingRelationRefs": [
+          "relations.frame_builder_produces_current_frames"
+        ],
+        "outgoingRelationRefs": [
+          "relations.current_frames_enter_pair_embedder",
+          "relations.current_frames_initialize_decoder_frames"
+        ],
+        "producerRefs": [
+          "modules.frenet_frame_builder"
+        ],
+        "consumerRefs": [
+          "modules.pair_feature_embedder",
+          "value_sites.decoder_frames"
+        ]
+      },
+      "timestep": {
+        "incomingRelationRefs": [
+          "relations.timestep_controller_produces_timestep"
+        ],
+        "outgoingRelationRefs": [
+          "relations.timestep_conditions_single_embedder",
+          "relations.timestep_enters_ddim_update"
+        ],
+        "producerRefs": [
+          "modules.timestep_controller"
+        ],
+        "consumerRefs": [
+          "modules.single_feature_embedder",
+          "modules.ddim_update"
+        ]
+      },
+      "coordinate_prediction": {
+        "incomingRelationRefs": [
+          "relations.updated_frames_produce_coordinate_prediction"
+        ],
+        "outgoingRelationRefs": [
+          "relations.coordinate_prediction_enters_noise_readout"
+        ],
+        "producerRefs": [
+          "value_sites.updated_frames"
+        ],
+        "consumerRefs": [
+          "modules.noise_readout"
+        ]
+      },
+      "predicted_noise": {
+        "incomingRelationRefs": [
+          "relations.noise_readout_produces_predicted_noise"
+        ],
+        "outgoingRelationRefs": [
+          "relations.predicted_noise_enters_ddim_update"
+        ],
+        "producerRefs": [
+          "modules.noise_readout"
+        ],
+        "consumerRefs": [
+          "modules.ddim_update"
+        ]
+      },
+      "fresh_step_noise": {
+        "incomingRelationRefs": [
+          "relations.ddim_update_samples_fresh_noise"
+        ],
+        "outgoingRelationRefs": [
+          "relations.fresh_noise_reenters_ddim_update"
+        ],
+        "producerRefs": [
+          "modules.ddim_update"
+        ],
+        "consumerRefs": [
+          "modules.ddim_update"
+        ]
+      },
+      "next_coordinates": {
+        "incomingRelationRefs": [
+          "relations.ddim_update_produces_next_coordinates"
+        ],
+        "outgoingRelationRefs": [
+          "relations.next_coordinates_reenter_sampling_state",
+          "relations.terminal_coordinates_become_final_coordinates"
+        ],
+        "producerRefs": [
+          "modules.ddim_update"
+        ],
+        "consumerRefs": [
+          "value_sites.current_coordinates",
+          "value_sites.final_coordinates"
+        ]
+      },
+      "final_coordinates": {
+        "incomingRelationRefs": [
+          "relations.terminal_coordinates_become_final_coordinates"
+        ],
+        "outgoingRelationRefs": [
+          "relations.final_coordinates_enter_sequence_sampler",
+          "relations.final_coordinates_enter_pdb_exporter"
+        ],
+        "producerRefs": [
+          "value_sites.next_coordinates"
+        ],
+        "consumerRefs": [
+          "modules.sequence_sampler",
+          "modules.pdb_exporter"
+        ]
+      },
+      "initial_single_features": {
+        "incomingRelationRefs": [
+          "relations.single_embedder_produces_initial_single_features"
+        ],
+        "outgoingRelationRefs": [
+          "relations.initial_single_features_enter_pair_embedder",
+          "relations.initial_single_features_enter_global_adapter"
+        ],
+        "producerRefs": [
+          "modules.single_feature_embedder"
+        ],
+        "consumerRefs": [
+          "modules.pair_feature_embedder",
+          "modules.global_token_adapter"
+        ]
+      },
+      "initial_pair_features": {
+        "incomingRelationRefs": [
+          "relations.pair_embedder_produces_initial_pair_features"
+        ],
+        "outgoingRelationRefs": [
+          "relations.initial_pair_features_enter_global_adapter"
+        ],
+        "producerRefs": [
+          "modules.pair_feature_embedder"
+        ],
+        "consumerRefs": [
+          "modules.global_token_adapter"
+        ]
+      },
+      "single_with_global_tokens": {
+        "incomingRelationRefs": [
+          "relations.global_adapter_produces_single_state",
+          "relations.refined_single_features_reenter_latent_stack"
+        ],
+        "outgoingRelationRefs": [
+          "relations.single_with_global_tokens_enters_attention"
+        ],
+        "producerRefs": [
+          "modules.global_token_adapter",
+          "value_sites.single_after_pair_attention"
+        ],
+        "consumerRefs": [
+          "modules.pair_biased_attention_update"
+        ]
+      },
+      "pair_with_global_tokens": {
+        "incomingRelationRefs": [
+          "relations.global_adapter_produces_pair_state",
+          "relations.refined_pair_features_reenter_latent_stack"
+        ],
+        "outgoingRelationRefs": [
+          "relations.pair_with_global_tokens_bias_attention",
+          "relations.pair_with_global_tokens_enters_single_to_pair_update"
+        ],
+        "producerRefs": [
+          "modules.global_token_adapter",
+          "value_sites.refined_pair_features"
+        ],
+        "consumerRefs": [
+          "modules.pair_biased_attention_update",
+          "modules.single_to_pair_update"
+        ]
+      },
+      "single_after_pair_attention": {
+        "incomingRelationRefs": [
+          "relations.pair_attention_produces_single_state"
+        ],
+        "outgoingRelationRefs": [
+          "relations.single_after_pair_attention_enters_single_to_pair_update",
+          "relations.single_attention_state_becomes_refined_single_features",
+          "relations.refined_single_features_reenter_latent_stack"
+        ],
+        "producerRefs": [
+          "modules.pair_biased_attention_update"
+        ],
+        "consumerRefs": [
+          "modules.single_to_pair_update",
+          "value_sites.refined_single_features",
+          "value_sites.single_with_global_tokens"
+        ]
+      },
+      "pair_after_single_update": {
+        "incomingRelationRefs": [
+          "relations.single_to_pair_update_produces_pair_state"
+        ],
+        "outgoingRelationRefs": [
+          "relations.pair_after_single_update_enters_triangle_stack"
+        ],
+        "producerRefs": [
+          "modules.single_to_pair_update"
+        ],
+        "consumerRefs": [
+          "modules.triangle_multiplication_stack"
+        ]
+      },
+      "pair_after_triangle_updates": {
+        "incomingRelationRefs": [
+          "relations.triangle_stack_produces_pair_state"
+        ],
+        "outgoingRelationRefs": [
+          "relations.pair_after_triangle_updates_enter_transition"
+        ],
+        "producerRefs": [
+          "modules.triangle_multiplication_stack"
+        ],
+        "consumerRefs": [
+          "modules.pair_transition"
+        ]
+      },
+      "refined_single_features": {
+        "incomingRelationRefs": [
+          "relations.single_attention_state_becomes_refined_single_features"
+        ],
+        "outgoingRelationRefs": [
+          "relations.refined_single_features_enter_sequence_head",
+          "relations.refined_single_features_initialize_decoder_state"
+        ],
+        "producerRefs": [
+          "value_sites.single_after_pair_attention"
+        ],
+        "consumerRefs": [
+          "modules.sequence_head",
+          "value_sites.decoder_single_state"
+        ]
+      },
+      "refined_pair_features": {
+        "incomingRelationRefs": [
+          "relations.pair_transition_produces_refined_pair_features"
+        ],
+        "outgoingRelationRefs": [
+          "relations.refined_pair_features_reenter_latent_stack",
+          "relations.refined_pair_features_bias_ipa"
+        ],
+        "producerRefs": [
+          "modules.pair_transition"
+        ],
+        "consumerRefs": [
+          "value_sites.pair_with_global_tokens",
+          "modules.invariant_point_attention"
+        ]
+      },
+      "decoder_single_state": {
+        "incomingRelationRefs": [
+          "relations.refined_single_features_initialize_decoder_state",
+          "relations.transition_state_reenters_decoder"
+        ],
+        "outgoingRelationRefs": [
+          "relations.decoder_single_state_enters_ipa"
+        ],
+        "producerRefs": [
+          "value_sites.refined_single_features",
+          "value_sites.single_after_transition"
+        ],
+        "consumerRefs": [
+          "modules.invariant_point_attention"
+        ]
+      },
+      "decoder_frames": {
+        "incomingRelationRefs": [
+          "relations.current_frames_initialize_decoder_frames",
+          "relations.updated_frames_reenter_decoder"
+        ],
+        "outgoingRelationRefs": [
+          "relations.decoder_frames_condition_ipa",
+          "relations.decoder_frames_enter_frame_update"
+        ],
+        "producerRefs": [
+          "value_sites.current_frames",
+          "value_sites.updated_frames"
+        ],
+        "consumerRefs": [
+          "modules.invariant_point_attention",
+          "modules.frame_update"
+        ]
+      },
+      "single_after_ipa": {
+        "incomingRelationRefs": [
+          "relations.ipa_produces_updated_single_state"
+        ],
+        "outgoingRelationRefs": [
+          "relations.ipa_state_enters_structure_transition"
+        ],
+        "producerRefs": [
+          "modules.invariant_point_attention"
+        ],
+        "consumerRefs": [
+          "modules.structure_transition"
+        ]
+      },
+      "single_after_transition": {
+        "incomingRelationRefs": [
+          "relations.structure_transition_produces_single_state"
+        ],
+        "outgoingRelationRefs": [
+          "relations.transition_state_enters_frame_update",
+          "relations.transition_state_reenters_decoder"
+        ],
+        "producerRefs": [
+          "modules.structure_transition"
+        ],
+        "consumerRefs": [
+          "modules.frame_update",
+          "value_sites.decoder_single_state"
+        ]
+      },
+      "updated_frames": {
+        "incomingRelationRefs": [
+          "relations.frame_update_produces_updated_frames"
+        ],
+        "outgoingRelationRefs": [
+          "relations.updated_frames_reenter_decoder",
+          "relations.updated_frames_produce_coordinate_prediction"
+        ],
+        "producerRefs": [
+          "modules.frame_update"
+        ],
+        "consumerRefs": [
+          "value_sites.decoder_frames",
+          "value_sites.coordinate_prediction"
+        ]
+      },
+      "sequence_logits": {
+        "incomingRelationRefs": [
+          "relations.sequence_head_produces_logits"
+        ],
+        "outgoingRelationRefs": [
+
+        ],
+        "producerRefs": [
+          "modules.sequence_head"
+        ],
+        "consumerRefs": [
+
+        ]
+      },
+      "predicted_sequence": {
+        "incomingRelationRefs": [
+          "relations.sequence_sampler_produces_predicted_sequence"
+        ],
+        "outgoingRelationRefs": [
+          "relations.predicted_sequence_enters_pdb_exporter"
+        ],
+        "producerRefs": [
+          "modules.sequence_sampler"
+        ],
+        "consumerRefs": [
+          "modules.pdb_exporter"
+        ]
+      },
+      "generated_design_pdb": {
+        "incomingRelationRefs": [
+          "relations.pdb_exporter_writes_design_pdb"
+        ],
+        "outgoingRelationRefs": [
+
+        ],
+        "producerRefs": [
+          "modules.pdb_exporter"
+        ],
+        "consumerRefs": [
+
+        ]
+      }
+    },
+    "execution": {
+      "loops": [
+        {
+          "id": "reverse_diffusion_loop",
+          "repeats": 100,
+          "reruns": [
+            "modules.timestep_controller",
+            "modules.frenet_frame_builder",
+            "modules.denoiser",
+            "modules.noise_readout",
+            "modules.ddim_update"
+          ],
+          "cached": [
+            "value_sites.feature_bundle"
+          ],
+          "notes": [
+            "The released inference path defaults to DDIM with 100 selected timesteps from the 1000-step training schedule.",
+            "Frenet-Serret frames are reconstructed from the current token coordinates before every denoiser call."
+          ],
+          "evidence": {
+            "status": "confirmed_from_code",
+            "refs": [
+              {
+                "source_ref": "genie3_sampler_code",
+                "role": "implementation_evidence",
+                "locator": "Sampler.sample and Sampler._sample"
+              },
+              {
+                "source_ref": "genie3_ddim_code",
+                "role": "implementation_evidence",
+                "locator": "DDIMSampler._step"
+              }
+            ]
+          }
+        },
+        {
+          "id": "latent_reasoning_stack",
+          "repeats": 5,
+          "reruns": [
+            "modules.pair_biased_attention_update",
+            "modules.single_to_pair_update",
+            "modules.triangle_multiplication_stack",
+            "modules.pair_transition"
+          ],
+          "cached": [
+
+          ],
+          "notes": [
+            "Every block communicates pair information into singles, then singles back into pairs before triangular pair refinement."
+          ],
+          "evidence": {
+            "status": "confirmed_from_code",
+            "refs": [
+              {
+                "source_ref": "genie3_latent_transformer_code",
+                "role": "implementation_evidence",
+                "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+              }
+            ]
+          }
+        },
+        {
+          "id": "structure_refinement_stack",
+          "repeats": 8,
+          "reruns": [
+            "modules.invariant_point_attention",
+            "modules.structure_transition",
+            "modules.frame_update"
+          ],
+          "cached": [
+            "value_sites.refined_pair_features"
+          ],
+          "notes": [
+            "Each layer updates single features and composes a learned rigid increment into the current token frames."
+          ],
+          "evidence": {
+            "status": "confirmed_from_code",
+            "refs": [
+              {
+                "source_ref": "genie3_structure_code",
+                "role": "implementation_evidence",
+                "locator": "StructureNet.forward and StructureLayer.forward"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "stateSemantics": {
+      "diffusion_coordinates": {
+        "representation_ref": "representations.token_coordinates",
+        "value_site_refs": [
+          "value_sites.initial_coordinates",
+          "value_sites.current_coordinates",
+          "value_sites.next_coordinates",
+          "value_sites.final_coordinates"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Coordinates are the stochastic state; rotations are deterministically reconstructed from neighboring token coordinates.",
+          "A token is one C-alpha for an unatomized residue or one modeled heavy atom for an atomized known residue."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        }
+      },
+      "denoiser_frames": {
+        "representation_ref": "representations.token_frames",
+        "value_site_refs": [
+          "value_sites.current_frames",
+          "value_sites.decoder_frames",
+          "value_sites.updated_frames"
+        ],
+        "lifecycle": "derived_then_transformed_within_denoiser",
+        "notes": [
+          "Current frames package x_t translations with Frenet rotations derived from x_t; frames are not independently noised."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            },
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward"
+            }
+          ]
+        }
+      },
+      "latent_single_state": {
+        "representation_ref": "representations.single_features",
+        "value_site_refs": [
+          "value_sites.initial_single_features",
+          "value_sites.single_with_global_tokens",
+          "value_sites.single_after_pair_attention",
+          "value_sites.refined_single_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        }
+      },
+      "latent_pair_state": {
+        "representation_ref": "representations.pair_features",
+        "value_site_refs": [
+          "value_sites.initial_pair_features",
+          "value_sites.pair_with_global_tokens",
+          "value_sites.pair_after_single_update",
+          "value_sites.pair_after_triangle_updates",
+          "value_sites.refined_pair_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      "conditioning_features": {
+        "representation_ref": "representations.feature_bundle",
+        "value_site_refs": [
+          "value_sites.feature_bundle"
+        ],
+        "lifecycle": "read_only_across_sampling",
+        "notes": [
+          "The bundle carries task-dependent sequence, structure, atomization, chain, and interface masks."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        }
+      }
+    },
+    "stateSemanticsBySite": {
+      "initial_coordinates": {
+        "representation_ref": "representations.token_coordinates",
+        "value_site_refs": [
+          "value_sites.initial_coordinates",
+          "value_sites.current_coordinates",
+          "value_sites.next_coordinates",
+          "value_sites.final_coordinates"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Coordinates are the stochastic state; rotations are deterministically reconstructed from neighboring token coordinates.",
+          "A token is one C-alpha for an unatomized residue or one modeled heavy atom for an atomized known residue."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        },
+        "groupId": "diffusion_coordinates"
+      },
+      "current_coordinates": {
+        "representation_ref": "representations.token_coordinates",
+        "value_site_refs": [
+          "value_sites.initial_coordinates",
+          "value_sites.current_coordinates",
+          "value_sites.next_coordinates",
+          "value_sites.final_coordinates"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Coordinates are the stochastic state; rotations are deterministically reconstructed from neighboring token coordinates.",
+          "A token is one C-alpha for an unatomized residue or one modeled heavy atom for an atomized known residue."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        },
+        "groupId": "diffusion_coordinates"
+      },
+      "next_coordinates": {
+        "representation_ref": "representations.token_coordinates",
+        "value_site_refs": [
+          "value_sites.initial_coordinates",
+          "value_sites.current_coordinates",
+          "value_sites.next_coordinates",
+          "value_sites.final_coordinates"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Coordinates are the stochastic state; rotations are deterministically reconstructed from neighboring token coordinates.",
+          "A token is one C-alpha for an unatomized residue or one modeled heavy atom for an atomized known residue."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        },
+        "groupId": "diffusion_coordinates"
+      },
+      "final_coordinates": {
+        "representation_ref": "representations.token_coordinates",
+        "value_site_refs": [
+          "value_sites.initial_coordinates",
+          "value_sites.current_coordinates",
+          "value_sites.next_coordinates",
+          "value_sites.final_coordinates"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Coordinates are the stochastic state; rotations are deterministically reconstructed from neighboring token coordinates.",
+          "A token is one C-alpha for an unatomized residue or one modeled heavy atom for an atomized known residue."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        },
+        "groupId": "diffusion_coordinates"
+      },
+      "current_frames": {
+        "representation_ref": "representations.token_frames",
+        "value_site_refs": [
+          "value_sites.current_frames",
+          "value_sites.decoder_frames",
+          "value_sites.updated_frames"
+        ],
+        "lifecycle": "derived_then_transformed_within_denoiser",
+        "notes": [
+          "Current frames package x_t translations with Frenet rotations derived from x_t; frames are not independently noised."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            },
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward"
+            }
+          ]
+        },
+        "groupId": "denoiser_frames"
+      },
+      "decoder_frames": {
+        "representation_ref": "representations.token_frames",
+        "value_site_refs": [
+          "value_sites.current_frames",
+          "value_sites.decoder_frames",
+          "value_sites.updated_frames"
+        ],
+        "lifecycle": "derived_then_transformed_within_denoiser",
+        "notes": [
+          "Current frames package x_t translations with Frenet rotations derived from x_t; frames are not independently noised."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            },
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward"
+            }
+          ]
+        },
+        "groupId": "denoiser_frames"
+      },
+      "updated_frames": {
+        "representation_ref": "representations.token_frames",
+        "value_site_refs": [
+          "value_sites.current_frames",
+          "value_sites.decoder_frames",
+          "value_sites.updated_frames"
+        ],
+        "lifecycle": "derived_then_transformed_within_denoiser",
+        "notes": [
+          "Current frames package x_t translations with Frenet rotations derived from x_t; frames are not independently noised."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            },
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward"
+            }
+          ]
+        },
+        "groupId": "denoiser_frames"
+      },
+      "initial_single_features": {
+        "representation_ref": "representations.single_features",
+        "value_site_refs": [
+          "value_sites.initial_single_features",
+          "value_sites.single_with_global_tokens",
+          "value_sites.single_after_pair_attention",
+          "value_sites.refined_single_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        },
+        "groupId": "latent_single_state"
+      },
+      "single_with_global_tokens": {
+        "representation_ref": "representations.single_features",
+        "value_site_refs": [
+          "value_sites.initial_single_features",
+          "value_sites.single_with_global_tokens",
+          "value_sites.single_after_pair_attention",
+          "value_sites.refined_single_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        },
+        "groupId": "latent_single_state"
+      },
+      "single_after_pair_attention": {
+        "representation_ref": "representations.single_features",
+        "value_site_refs": [
+          "value_sites.initial_single_features",
+          "value_sites.single_with_global_tokens",
+          "value_sites.single_after_pair_attention",
+          "value_sites.refined_single_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        },
+        "groupId": "latent_single_state"
+      },
+      "refined_single_features": {
+        "representation_ref": "representations.single_features",
+        "value_site_refs": [
+          "value_sites.initial_single_features",
+          "value_sites.single_with_global_tokens",
+          "value_sites.single_after_pair_attention",
+          "value_sites.refined_single_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward"
+            }
+          ]
+        },
+        "groupId": "latent_single_state"
+      },
+      "initial_pair_features": {
+        "representation_ref": "representations.pair_features",
+        "value_site_refs": [
+          "value_sites.initial_pair_features",
+          "value_sites.pair_with_global_tokens",
+          "value_sites.pair_after_single_update",
+          "value_sites.pair_after_triangle_updates",
+          "value_sites.refined_pair_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        },
+        "groupId": "latent_pair_state"
+      },
+      "pair_with_global_tokens": {
+        "representation_ref": "representations.pair_features",
+        "value_site_refs": [
+          "value_sites.initial_pair_features",
+          "value_sites.pair_with_global_tokens",
+          "value_sites.pair_after_single_update",
+          "value_sites.pair_after_triangle_updates",
+          "value_sites.refined_pair_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        },
+        "groupId": "latent_pair_state"
+      },
+      "pair_after_single_update": {
+        "representation_ref": "representations.pair_features",
+        "value_site_refs": [
+          "value_sites.initial_pair_features",
+          "value_sites.pair_with_global_tokens",
+          "value_sites.pair_after_single_update",
+          "value_sites.pair_after_triangle_updates",
+          "value_sites.refined_pair_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        },
+        "groupId": "latent_pair_state"
+      },
+      "pair_after_triangle_updates": {
+        "representation_ref": "representations.pair_features",
+        "value_site_refs": [
+          "value_sites.initial_pair_features",
+          "value_sites.pair_with_global_tokens",
+          "value_sites.pair_after_single_update",
+          "value_sites.pair_after_triangle_updates",
+          "value_sites.refined_pair_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        },
+        "groupId": "latent_pair_state"
+      },
+      "refined_pair_features": {
+        "representation_ref": "representations.pair_features",
+        "value_site_refs": [
+          "value_sites.initial_pair_features",
+          "value_sites.pair_with_global_tokens",
+          "value_sites.pair_after_single_update",
+          "value_sites.pair_after_triangle_updates",
+          "value_sites.refined_pair_features"
+        ],
+        "lifecycle": "transformed_within_denoiser",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        },
+        "groupId": "latent_pair_state"
+      },
+      "feature_bundle": {
+        "representation_ref": "representations.feature_bundle",
+        "value_site_refs": [
+          "value_sites.feature_bundle"
+        ],
+        "lifecycle": "read_only_across_sampling",
+        "notes": [
+          "The bundle carries task-dependent sequence, structure, atomization, chain, and interface masks."
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain"
+            }
+          ]
+        },
+        "groupId": "conditioning_features"
+      }
+    },
+    "conditioning": [
+      {
+        "id": "sequence_and_task_conditioning",
+        "relation_ref": "relations.feature_bundle_conditions_single_embedder",
+        "mode": "masked_sequence_and_task_features",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        },
+        "source": "value_sites.feature_bundle",
+        "target": "modules.single_feature_embedder"
+      },
+      {
+        "id": "conditioned_geometry_injection",
+        "relation_ref": "relations.feature_bundle_conditions_pair_embedder",
+        "mode": "masked_structure_frames_and_group_geometry",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            }
+          ]
+        },
+        "source": "value_sites.feature_bundle",
+        "target": "modules.pair_feature_embedder"
+      },
+      {
+        "id": "pair_biases_single_attention",
+        "relation_ref": "relations.pair_with_global_tokens_bias_attention",
+        "mode": "pair_bias_and_value_injection",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "ReducedInvariantPointAttention.forward"
+            }
+          ]
+        },
+        "source": "value_sites.pair_with_global_tokens",
+        "target": "modules.pair_biased_attention_update"
+      },
+      {
+        "id": "pair_conditioned_structure_attention",
+        "relation_ref": "relations.refined_pair_features_bias_ipa",
+        "mode": "pair_bias",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureLayer.forward"
+            }
+          ]
+        },
+        "source": "value_sites.refined_pair_features",
+        "target": "modules.invariant_point_attention"
+      },
+      {
+        "id": "frame_conditioned_structure_attention",
+        "relation_ref": "relations.decoder_frames_condition_ipa",
+        "mode": "invariant_point_geometry",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureLayer.forward"
+            }
+          ]
+        },
+        "source": "value_sites.decoder_frames",
+        "target": "modules.invariant_point_attention"
+      }
+    ],
+    "scaleTransitions": [
+      {
+        "id": "single_to_pair_expansion",
+        "relation_path": [
+          "relations.single_after_pair_attention_enters_single_to_pair_update",
+          "relations.single_to_pair_update_produces_pair_state"
+        ],
+        "aggregation": "projected_outer_product",
+        "copy_vs_pool": "expand",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        },
+        "source": "value_sites.single_after_pair_attention",
+        "target": "value_sites.pair_after_single_update",
+        "from_scale": "token",
+        "to_scale": "pair",
+        "projection_refs": [
+          "modules.single_to_pair_update"
+        ]
+      },
+      {
+        "id": "coordinates_to_pdb_records",
+        "relation_path": [
+          "relations.final_coordinates_enter_pdb_exporter",
+          "relations.pdb_exporter_writes_design_pdb"
+        ],
+        "aggregation": "serialize_modeled_atom_records",
+        "copy_vs_pool": "copy",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save and PostProcessor._update_structure"
+            }
+          ]
+        },
+        "source": "value_sites.final_coordinates",
+        "target": "value_sites.generated_design_pdb",
+        "from_scale": "token",
+        "to_scale": "output",
+        "projection_refs": [
+          "modules.pdb_exporter"
+        ]
+      }
+    ],
+    "trainingInference": {
+      "objective": {
+        "kind": "coordinate_noise_prediction_with_auxiliary_structure_and_sequence_losses",
+        "notes": [
+          "Training adds isotropic Gaussian noise to token coordinates and minimizes coordinate-noise error.",
+          "The V1 training configuration also supports auxiliary FAPE and sequence losses."
+        ]
+      },
+      "schedule": {
+        "kind": "cosine_variance",
+        "steps": 1000
+      },
+      "sampler": {
+        "kind": "ddim_directional_scaling",
+        "steps": 100,
+        "configurable": true,
+        "base_schedule_steps": 1000,
+        "timestep_selection": "strided_reverse_chain",
+        "initial_state": "standard_normal_token_coordinates",
+        "guidance": "direction_scale",
+        "update": "reconstructed_x0_plus_scaled_direction_and_noise",
+        "clip_denoised": false
+      },
+      "teacher_forcing": "not_applicable",
+      "self_conditioning": "none",
+      "checkpoint_notes": [
+        "The command-line loader defaults generation to the released V1 checkpoint and the DDIM sampler.",
+        "Sequence and sidechain prediction are optional sampler settings and are disabled by default.",
+        "Unconditional unknown residues remain C-alpha tokens; atom14 sidechain tokens are introduced for known atomized motif or interface residues."
+      ],
+      "evidence": {
+        "status": "confirmed_from_code",
+        "refs": [
+          {
+            "source_ref": "genie3_diffusion_code",
+            "role": "implementation_evidence",
+            "locator": "DDPM.forward and DDPM.loss"
+          },
+          {
+            "source_ref": "genie3_ddim_code",
+            "role": "implementation_evidence",
+            "locator": "DDIMSampler._step and DDIMSampler._sample_sequence"
+          }
+        ]
+      }
+    },
+    "relations": [
+      {
+        "id": "design_request_enters_feature_builder",
+        "from": "value_sites.design_request",
+        "to": "modules.feature_builder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.design_request"
+        ],
+        "operation": "parse_design_request",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_length, create_np_features_from_motif_config, and create_np_features_from_target_config"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_builder_produces_feature_bundle",
+        "from": "modules.feature_builder",
+        "to": "value_sites.feature_bundle",
+        "kind": "data_flow",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "build_token_and_conditioning_features",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_length, create_np_features_from_motif_config, and create_np_features_from_target_config"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle_sizes_coordinate_initializer",
+        "from": "value_sites.feature_bundle",
+        "to": "modules.coordinate_initializer",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "size_active_token_tensor",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "coordinate_initializer_produces_initial_coordinates",
+        "from": "modules.coordinate_initializer",
+        "to": "value_sites.initial_coordinates",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "sample_standard_normal_coordinates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_coordinates_begin_sampling_state",
+        "from": "value_sites.initial_coordinates",
+        "to": "value_sites.current_coordinates",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "initialize_reverse_chain",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_coordinates_enter_frame_builder",
+        "from": "value_sites.current_coordinates",
+        "to": "modules.frenet_frame_builder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "provide_current_point_cloud",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle_conditions_frame_builder",
+        "from": "value_sites.feature_bundle",
+        "to": "modules.frenet_frame_builder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "provide_frame_neighbor_indices_and_masks",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "frame_builder_produces_current_frames",
+        "from": "modules.frenet_frame_builder",
+        "to": "value_sites.current_frames",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "derive_branched_frenet_frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_controller_produces_timestep",
+        "from": "modules.timestep_controller",
+        "to": "value_sites.timestep",
+        "kind": "control",
+        "carries": [
+          "representations.timestep"
+        ],
+        "operation": "select_reverse_timestep",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle_conditions_single_embedder",
+        "from": "value_sites.feature_bundle",
+        "to": "modules.single_feature_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "provide_token_and_task_features",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_conditions_single_embedder",
+        "from": "value_sites.timestep",
+        "to": "modules.single_feature_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.timestep"
+        ],
+        "operation": "sinusoidal_timestep_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_produces_initial_single_features",
+        "from": "modules.single_feature_embedder",
+        "to": "value_sites.initial_single_features",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "concatenate_and_project",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_single_features_enter_pair_embedder",
+        "from": "value_sites.initial_single_features",
+        "to": "modules.pair_feature_embedder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "project_outer_sum",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_frames_enter_pair_embedder",
+        "from": "value_sites.current_frames",
+        "to": "modules.pair_feature_embedder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "encode_noisy_frame_geometry",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle_conditions_pair_embedder",
+        "from": "value_sites.feature_bundle",
+        "to": "modules.pair_feature_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "provide_relative_and_conditioned_geometry",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_embedder_produces_initial_pair_features",
+        "from": "modules.pair_feature_embedder",
+        "to": "value_sites.initial_pair_features",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "sum_projected_pair_terms",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_single_features_enter_global_adapter",
+        "from": "value_sites.initial_single_features",
+        "to": "modules.global_token_adapter",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "append_global_single_tokens",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_pair_features_enter_global_adapter",
+        "from": "value_sites.initial_pair_features",
+        "to": "modules.global_token_adapter",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "append_global_pair_rows_and_columns",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "global_adapter_produces_single_state",
+        "from": "modules.global_token_adapter",
+        "to": "value_sites.single_with_global_tokens",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "expand_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "global_adapter_produces_pair_state",
+        "from": "modules.global_token_adapter",
+        "to": "value_sites.pair_with_global_tokens",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "expand_pair_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_with_global_tokens_enters_attention",
+        "from": "value_sites.single_with_global_tokens",
+        "to": "modules.pair_biased_attention_update",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "attend_over_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_with_global_tokens_bias_attention",
+        "from": "value_sites.pair_with_global_tokens",
+        "to": "modules.pair_biased_attention_update",
+        "kind": "conditioning",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "bias_attention_and_inject_pair_values",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_attention_produces_single_state",
+        "from": "modules.pair_biased_attention_update",
+        "to": "value_sites.single_after_pair_attention",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "residual_single_update",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_after_pair_attention_enters_single_to_pair_update",
+        "from": "value_sites.single_after_pair_attention",
+        "to": "modules.single_to_pair_update",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "projected_outer_product",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_with_global_tokens_enters_single_to_pair_update",
+        "from": "value_sites.pair_with_global_tokens",
+        "to": "modules.single_to_pair_update",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "receive_residual_pair_update",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_to_pair_update_produces_pair_state",
+        "from": "modules.single_to_pair_update",
+        "to": "value_sites.pair_after_single_update",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "add_outer_product_update",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_after_single_update_enters_triangle_stack",
+        "from": "value_sites.pair_after_single_update",
+        "to": "modules.triangle_multiplication_stack",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "outgoing_then_incoming_triangle_updates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "triangle_stack_produces_pair_state",
+        "from": "modules.triangle_multiplication_stack",
+        "to": "value_sites.pair_after_triangle_updates",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "residual_triangle_updates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_after_triangle_updates_enter_transition",
+        "from": "value_sites.pair_after_triangle_updates",
+        "to": "modules.pair_transition",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "pair_transition_mlp",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_transition_produces_refined_pair_features",
+        "from": "modules.pair_transition",
+        "to": "value_sites.refined_pair_features",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "remove_global_pair_tokens_after_final_block",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_attention_state_becomes_refined_single_features",
+        "from": "value_sites.single_after_pair_attention",
+        "to": "value_sites.refined_single_features",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "remove_global_single_tokens_after_final_block",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_single_features_reenter_latent_stack",
+        "from": "value_sites.single_after_pair_attention",
+        "to": "value_sites.single_with_global_tokens",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "continue_latent_blocks",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_pair_features_reenter_latent_stack",
+        "from": "value_sites.refined_pair_features",
+        "to": "value_sites.pair_with_global_tokens",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "continue_latent_blocks",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformer.forward and LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_single_features_enter_sequence_head",
+        "from": "value_sites.refined_single_features",
+        "to": "modules.sequence_head",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "classify_residue_identity",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._sample_sequence"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sequence_head_produces_logits",
+        "from": "modules.sequence_head",
+        "to": "value_sites.sequence_logits",
+        "kind": "data_flow",
+        "carries": [
+          "representations.sequence_logits"
+        ],
+        "operation": "project_amino_acid_logits",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._sample_sequence"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_single_features_initialize_decoder_state",
+        "from": "value_sites.refined_single_features",
+        "to": "value_sites.decoder_single_state",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "initialize_structure_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_frames_initialize_decoder_frames",
+        "from": "value_sites.current_frames",
+        "to": "value_sites.decoder_frames",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "initialize_structure_frame_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "decoder_single_state_enters_ipa",
+        "from": "value_sites.decoder_single_state",
+        "to": "modules.invariant_point_attention",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "attend_from_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "refined_pair_features_bias_ipa",
+        "from": "value_sites.refined_pair_features",
+        "to": "modules.invariant_point_attention",
+        "kind": "conditioning",
+        "carries": [
+          "representations.pair_features"
+        ],
+        "operation": "pair_conditioned_attention",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "decoder_frames_condition_ipa",
+        "from": "value_sites.decoder_frames",
+        "to": "modules.invariant_point_attention",
+        "kind": "conditioning",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "express_attention_points_in_frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle_masks_ipa",
+        "from": "value_sites.feature_bundle",
+        "to": "modules.invariant_point_attention",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "mask_invalid_token_frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ipa_produces_updated_single_state",
+        "from": "modules.invariant_point_attention",
+        "to": "value_sites.single_after_ipa",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "residual_attention_update",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ipa_state_enters_structure_transition",
+        "from": "value_sites.single_after_ipa",
+        "to": "modules.structure_transition",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "transition_single_state",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_transition_produces_single_state",
+        "from": "modules.structure_transition",
+        "to": "value_sites.single_after_transition",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "feed_forward_update",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "transition_state_enters_frame_update",
+        "from": "value_sites.single_after_transition",
+        "to": "modules.frame_update",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "regress_rigid_increment",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "decoder_frames_enter_frame_update",
+        "from": "value_sites.decoder_frames",
+        "to": "modules.frame_update",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "compose_rigid_increment",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "frame_update_produces_updated_frames",
+        "from": "modules.frame_update",
+        "to": "value_sites.updated_frames",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "compose_updated_frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "transition_state_reenters_decoder",
+        "from": "value_sites.single_after_transition",
+        "to": "value_sites.decoder_single_state",
+        "kind": "state_update",
+        "carries": [
+          "representations.single_features"
+        ],
+        "operation": "continue_structure_layers",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "updated_frames_reenter_decoder",
+        "from": "value_sites.updated_frames",
+        "to": "value_sites.decoder_frames",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_frames"
+        ],
+        "operation": "continue_structure_layers",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "updated_frames_produce_coordinate_prediction",
+        "from": "value_sites.updated_frames",
+        "to": "value_sites.coordinate_prediction",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "read_updated_frame_translations",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "implementation_evidence",
+              "locator": "StructureNet.forward and StructureLayer.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_coordinates_enter_noise_readout",
+        "from": "value_sites.current_coordinates",
+        "to": "modules.noise_readout",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "retain_noisy_coordinates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "coordinate_prediction_enters_noise_readout",
+        "from": "value_sites.coordinate_prediction",
+        "to": "modules.noise_readout",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "provide_denoised_coordinate_estimate",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "noise_readout_produces_predicted_noise",
+        "from": "modules.noise_readout",
+        "to": "value_sites.predicted_noise",
+        "kind": "data_flow",
+        "carries": [
+          "representations.coordinate_noise"
+        ],
+        "operation": "subtract_prediction_from_current_coordinates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_coordinates_enter_ddim_update",
+        "from": "value_sites.current_coordinates",
+        "to": "modules.ddim_update",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "provide_current_coordinates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "predicted_noise_enters_ddim_update",
+        "from": "value_sites.predicted_noise",
+        "to": "modules.ddim_update",
+        "kind": "data_flow",
+        "carries": [
+          "representations.coordinate_noise"
+        ],
+        "operation": "reconstruct_x0_and_direction",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_enters_ddim_update",
+        "from": "value_sites.timestep",
+        "to": "modules.ddim_update",
+        "kind": "control",
+        "carries": [
+          "representations.timestep"
+        ],
+        "operation": "select_schedule_coefficients",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ddim_update_samples_fresh_noise",
+        "from": "modules.ddim_update",
+        "to": "value_sites.fresh_step_noise",
+        "kind": "data_flow",
+        "carries": [
+          "representations.coordinate_noise"
+        ],
+        "operation": "sample_gaussian_noise",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "fresh_noise_reenters_ddim_update",
+        "from": "value_sites.fresh_step_noise",
+        "to": "modules.ddim_update",
+        "kind": "data_flow",
+        "carries": [
+          "representations.coordinate_noise"
+        ],
+        "operation": "add_scaled_step_noise",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ddim_update_produces_next_coordinates",
+        "from": "modules.ddim_update",
+        "to": "value_sites.next_coordinates",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "sample_next_token_coordinates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "next_coordinates_reenter_sampling_state",
+        "from": "value_sites.next_coordinates",
+        "to": "value_sites.current_coordinates",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "continue_reverse_chain",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "terminal_coordinates_become_final_coordinates",
+        "from": "value_sites.next_coordinates",
+        "to": "value_sites.final_coordinates",
+        "kind": "state_update",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "select_terminal_coordinates",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sampler_code",
+              "role": "implementation_evidence",
+              "locator": "Sampler._sample"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "final_coordinates_enter_sequence_sampler",
+        "from": "value_sites.final_coordinates",
+        "to": "modules.sequence_sampler",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "optionally_request_terminal_sequence",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._sample_sequence"
+            }
+          ]
+        }
+      },
+      {
+        "id": "feature_bundle_conditions_sequence_sampler",
+        "from": "value_sites.feature_bundle",
+        "to": "modules.sequence_sampler",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "retain_known_sequence_and_sample_unknown_residues",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._sample_sequence"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sequence_sampler_produces_predicted_sequence",
+        "from": "modules.sequence_sampler",
+        "to": "value_sites.predicted_sequence",
+        "kind": "data_flow",
+        "carries": [
+          "representations.protein_sequence"
+        ],
+        "operation": "sample_categorical_sequence",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_sequence_code",
+              "role": "implementation_evidence",
+              "locator": "SequenceNet.forward"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._sample_sequence"
+            }
+          ]
+        }
+      },
+      {
+        "id": "final_coordinates_enter_pdb_exporter",
+        "from": "value_sites.final_coordinates",
+        "to": "modules.pdb_exporter",
+        "kind": "data_flow",
+        "carries": [
+          "representations.token_coordinates"
+        ],
+        "operation": "prepare_modeled_atom_records",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save and PostProcessor._update_structure"
+            }
+          ]
+        }
+      },
+      {
+        "id": "predicted_sequence_enters_pdb_exporter",
+        "from": "value_sites.predicted_sequence",
+        "to": "modules.pdb_exporter",
+        "kind": "conditioning",
+        "carries": [
+          "representations.protein_sequence"
+        ],
+        "operation": "optionally_assign_predicted_residue_types",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save and PostProcessor._update_structure"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pdb_exporter_writes_design_pdb",
+        "from": "modules.pdb_exporter",
+        "to": "value_sites.generated_design_pdb",
+        "kind": "data_flow",
+        "carries": [
+          "representations.protein_pdb"
+        ],
+        "operation": "serialize_pdb",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_export_code",
+              "role": "implementation_evidence",
+              "locator": "PostProcessor.save and PostProcessor._update_structure"
+            }
+          ]
+        }
+      }
+    ],
+    "claims": [
+      {
+        "id": "atomization_is_task_dependent",
+        "statement": "Genie 3 does not represent every generated residue with atom14 coordinates. Unknown scaffold residues use one C-alpha token, while known motif or interface residues can be expanded into atom14-ordered heavy-atom tokens.",
+        "scope": {
+          "module_ref": "modules.feature_builder"
+        },
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_feature_code",
+              "role": "implementation_evidence",
+              "locator": "create_np_features_from_chain and create_np_features_from_length"
+            },
+            {
+              "source_ref": "genie3_2026",
+              "role": "supporting_evidence",
+              "locator": "Sections 3.1-3.2 and Figure 1"
+            }
+          ]
+        }
+      },
+      {
+        "id": "frames_are_derived_not_diffused",
+        "statement": "The reverse-chain state is a token-coordinate point cloud. Frenet-Serret rotations are rebuilt from that point cloud at each denoiser call and are not an independently noised state.",
+        "scope": {
+          "module_ref": "modules.frenet_frame_builder"
+        },
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_model_code",
+              "role": "implementation_evidence",
+              "locator": "V1Denoiser.forward"
+            },
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_noisy_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "latent_communication_is_bidirectional_per_block",
+        "statement": "Unlike Genie 2's separated single and pair reasoning, every Genie 3 latent block updates singles from pairs and then pairs from the updated singles before triangular refinement.",
+        "scope": {
+          "module_ref": "modules.latent_transformer"
+        },
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "genie3_2026",
+              "role": "supporting_evidence",
+              "locator": "Section 3.1 and Appendix A.2 Algorithm 1"
+            },
+            {
+              "source_ref": "genie3_latent_transformer_code",
+              "role": "implementation_evidence",
+              "locator": "LatentTransformerBlock.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "sampler_math_is_outside_the_denoiser",
+        "statement": "The learned denoiser returns a coordinate estimate; subtraction into predicted noise and the directional DDIM update are fixed sampler operations outside the model.",
+        "scope": {
+          "module_ref": "modules.diffusion_sampler"
+        },
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_model_code",
+              "role": "implementation_evidence",
+              "locator": "V1Denoiser.forward"
+            },
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "implementation_evidence",
+              "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      }
+    ],
+    "openQuestions": [
+      {
+        "id": "released_sequence_prediction_quality",
+        "question": "Which released V1 checkpoints are intended for sequence prediction, and how should that optional output be validated independently of structure generation?",
+        "status": "unresolved",
+        "affected_refs": [
+          "modules.sequence_head",
+          "modules.sequence_sampler"
+        ],
+        "blocking": false,
+        "resolution_criteria": "Identify a released evaluation protocol and checkpoint-specific sequence-recovery metrics.",
+        "evidence": {
+          "status": "open_question",
+          "refs": [
+            {
+              "source_ref": "genie3_ddim_code",
+              "role": "question_source",
+              "locator": "DDIMSampler._sample_sequence",
+              "note": "The sampler exposes sequence prediction as an optional flag, disabled by default."
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "bibliography": {
+    "schemaVersion": "bibliography-v0.1",
+    "sourceYaml": "../../references/bibliography.yaml",
+    "sources": [
+      {
+        "id": "dit_2022",
+        "kind": "paper",
+        "title": "Scalable Diffusion Models with Transformers",
+        "authors": [
+          "William Peebles",
+          "Saining Xie"
+        ],
+        "year": 2022,
+        "identifiers": {
+          "arxiv": "2212.09748"
+        },
+        "url": "https://arxiv.org/abs/2212.09748",
+        "href": "https://arxiv.org/abs/2212.09748"
+      },
+      {
+        "id": "dit_models_code",
+        "kind": "code",
+        "title": "DiT model implementation",
+        "organization": "facebookresearch",
+        "repository": "facebookresearch/DiT",
+        "revision": "ed81ce2229091fd4ecc9a223645f95cf379d582b",
+        "path": "facebookresearch/DiT/models.py",
+        "url": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/models.py",
+        "href": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/models.py"
+      },
+      {
+        "id": "dit_sample_code",
+        "kind": "code",
+        "title": "DiT sampling entry point",
+        "organization": "facebookresearch",
+        "repository": "facebookresearch/DiT",
+        "revision": "ed81ce2229091fd4ecc9a223645f95cf379d582b",
+        "path": "facebookresearch/DiT/sample.py",
+        "url": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/sample.py",
+        "href": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/sample.py"
+      },
+      {
+        "id": "dit_gaussian_diffusion_code",
+        "kind": "code",
+        "title": "DiT Gaussian diffusion implementation",
+        "organization": "facebookresearch",
+        "repository": "facebookresearch/DiT",
+        "revision": "ed81ce2229091fd4ecc9a223645f95cf379d582b",
+        "path": "facebookresearch/DiT/diffusion/gaussian_diffusion.py",
+        "url": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/diffusion/gaussian_diffusion.py",
+        "href": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/diffusion/gaussian_diffusion.py"
+      },
+      {
+        "id": "dit_train_code",
+        "kind": "code",
+        "title": "DiT training entry point",
+        "organization": "facebookresearch",
+        "repository": "facebookresearch/DiT",
+        "revision": "ed81ce2229091fd4ecc9a223645f95cf379d582b",
+        "path": "facebookresearch/DiT/train.py",
+        "url": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/train.py",
+        "href": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/train.py"
+      },
+      {
+        "id": "genie2_2024",
+        "kind": "paper",
+        "title": "Out of Many, One: Designing and Scaffolding Proteins at the Scale of the Structural Universe with Genie 2",
+        "authors": [
+          "Yeqing Lin",
+          "Minji Lee",
+          "Zhao Zhang",
+          "Mohammed AlQuraishi"
+        ],
+        "year": 2024,
+        "identifiers": {
+          "arxiv": "2405.15489"
+        },
+        "url": "https://arxiv.org/abs/2405.15489",
+        "href": "https://arxiv.org/abs/2405.15489"
+      },
+      {
+        "id": "genie2_model_code",
+        "kind": "code",
+        "title": "Genie 2 denoiser composition",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/model.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/model.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/model.py"
+      },
+      {
+        "id": "genie2_single_feature_code",
+        "kind": "code",
+        "title": "Genie 2 single-feature network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/single_feature_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/single_feature_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/single_feature_net.py"
+      },
+      {
+        "id": "genie2_pair_feature_code",
+        "kind": "code",
+        "title": "Genie 2 pair-feature network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/pair_feature_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_feature_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_feature_net.py"
+      },
+      {
+        "id": "genie2_pair_transform_code",
+        "kind": "code",
+        "title": "Genie 2 pair-transform network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/pair_transform_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_transform_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_transform_net.py"
+      },
+      {
+        "id": "genie2_structure_code",
+        "kind": "code",
+        "title": "Genie 2 equivariant structure network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/structure_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/structure_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/structure_net.py"
+      },
+      {
+        "id": "genie2_sampler_code",
+        "kind": "code",
+        "title": "Genie 2 reverse-diffusion sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/sampler/base.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/base.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/base.py"
+      },
+      {
+        "id": "genie2_scaffold_sampler_code",
+        "kind": "code",
+        "title": "Genie 2 motif-scaffolding sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/sampler/scaffold.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/scaffold.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/scaffold.py"
+      },
+      {
+        "id": "genie2_training_code",
+        "kind": "code",
+        "title": "Genie 2 diffusion training step",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/diffusion/genie.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/diffusion/genie.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/diffusion/genie.py"
+      },
+      {
+        "id": "genie2_config_code",
+        "kind": "code",
+        "title": "Genie 2 model and diffusion configuration",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/config.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/config.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/config.py"
+      },
+      {
+        "id": "genie2_base_config",
+        "kind": "code",
+        "title": "Genie 2 released base-checkpoint configuration",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "results/base/configuration",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/results/base/configuration",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/results/base/configuration"
+      },
+      {
+        "id": "genie3_2026",
+        "kind": "paper",
+        "title": "Fast and Ultra-Capable Protein Design: Advancing the Frontier Through Atomistic SE(3)-Equivariance with Genie 3",
+        "authors": [
+          "Yeqing Lin",
+          "Minji Lee",
+          "Siddharth Vermani",
+          "Yuwei Jiang",
+          "Robbe De Cooman",
+          "Bryan Spetko",
+          "Mohammed AlQuraishi"
+        ],
+        "year": 2026,
+        "identifiers": {
+          "doi": "10.64898/2026.05.01.722168"
+        },
+        "url": "https://www.biorxiv.org/content/10.64898/2026.05.01.722168v1",
+        "href": "https://www.biorxiv.org/content/10.64898/2026.05.01.722168v1"
+      },
+      {
+        "id": "genie3_model_code",
+        "kind": "code",
+        "title": "Genie 3 V1 denoiser composition",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/implementation/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/implementation/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/implementation/v1.py"
+      },
+      {
+        "id": "genie3_single_feature_code",
+        "kind": "code",
+        "title": "Genie 3 V1 single-feature embedder",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/embedder/single/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/single/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/single/v1.py"
+      },
+      {
+        "id": "genie3_pair_feature_code",
+        "kind": "code",
+        "title": "Genie 3 V1 pair-feature embedder",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/embedder/pair/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/pair/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/pair/v1.py"
+      },
+      {
+        "id": "genie3_latent_transformer_code",
+        "kind": "code",
+        "title": "Genie 3 latent transformer",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/latent/transformer.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/latent/transformer.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/latent/transformer.py"
+      },
+      {
+        "id": "genie3_structure_code",
+        "kind": "code",
+        "title": "Genie 3 equivariant structure decoder",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/structure_net.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py"
+      },
+      {
+        "id": "genie3_sequence_code",
+        "kind": "code",
+        "title": "Genie 3 optional sequence head",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/sequence_net.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/sequence_net.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/sequence_net.py"
+      },
+      {
+        "id": "genie3_geometry_code",
+        "kind": "code",
+        "title": "Genie 3 Frenet frame construction",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/geo_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/geo_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/geo_utils.py"
+      },
+      {
+        "id": "genie3_feature_code",
+        "kind": "code",
+        "title": "Genie 3 protein tokenization and conditioning features",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/feat_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py"
+      },
+      {
+        "id": "genie3_diffusion_code",
+        "kind": "code",
+        "title": "Genie 3 DDPM training objective",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/diffusion/ddpm.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/ddpm.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/ddpm.py"
+      },
+      {
+        "id": "genie3_sampler_code",
+        "kind": "code",
+        "title": "Genie 3 base reverse-diffusion sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/diffusion/sampler/sampler.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/sampler.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/sampler.py"
+      },
+      {
+        "id": "genie3_ddim_code",
+        "kind": "code",
+        "title": "Genie 3 DDIM directional-scaling sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/diffusion/sampler/ddim.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/ddim.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/ddim.py"
+      },
+      {
+        "id": "genie3_config_code",
+        "kind": "code",
+        "title": "Genie 3 V1 architecture configuration",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/config/model/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/config/model/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/config/model/v1.py"
+      },
+      {
+        "id": "genie3_export_code",
+        "kind": "code",
+        "title": "Genie 3 generated-structure postprocessing",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/runner/postprocess.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/runner/postprocess.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/runner/postprocess.py"
+      },
+      {
+        "id": "generic_feature_refinement_source",
+        "kind": "source",
+        "title": "Generic Feature Refinement architecture source",
+        "path": "architectures/generic-feature-refinement.yaml",
+        "href": "../../architectures/generic-feature-refinement.yaml"
+      },
+      {
+        "id": "architecture_language_protocol",
+        "kind": "protocol",
+        "title": "Architecture language protocol",
+        "path": "protocol/architecture-language.md",
+        "href": "../../protocol/architecture-language.md"
+      }
+    ]
+  },
+  "standardBlocks": {
+  },
+  "pseudocode": {
+    "genie3": {
+      "sourceYaml": "../../pseudocode/genie3.yaml",
+      "sources": [
+        {
+          "id": "sampler_code",
+          "source_ref": "genie3_sampler_code"
+        },
+        {
+          "id": "ddim_code",
+          "source_ref": "genie3_ddim_code"
+        },
+        {
+          "id": "model_code",
+          "source_ref": "genie3_model_code"
+        },
+        {
+          "id": "feature_code",
+          "source_ref": "genie3_feature_code"
+        },
+        {
+          "id": "geometry_code",
+          "source_ref": "genie3_geometry_code"
+        },
+        {
+          "id": "latent_code",
+          "source_ref": "genie3_latent_transformer_code"
+        },
+        {
+          "id": "structure_code",
+          "source_ref": "genie3_structure_code"
+        }
+      ],
+      "symbols": [
+        {
+          "id": "feature_bundle",
+          "name": "features",
+          "architectureRef": "representations.feature_bundle"
+        },
+        {
+          "id": "current_coordinates",
+          "name": "x_t",
+          "tex": "x_t",
+          "architectureRef": "representations.token_coordinates"
+        },
+        {
+          "id": "current_frames",
+          "name": "T_t",
+          "tex": "T_t",
+          "architectureRef": "representations.token_frames"
+        },
+        {
+          "id": "timestep",
+          "name": "t",
+          "architectureRef": "representations.timestep"
+        },
+        {
+          "id": "single_features",
+          "name": "s",
+          "architectureRef": "representations.single_features"
+        },
+        {
+          "id": "pair_features",
+          "name": "z",
+          "architectureRef": "representations.pair_features"
+        },
+        {
+          "id": "coordinate_prediction",
+          "name": "x_hat",
+          "tex": "\\hat{x}_0",
+          "architectureRef": "representations.token_coordinates"
+        },
+        {
+          "id": "predicted_noise",
+          "name": "epsilon_theta",
+          "tex": "\\epsilon_\\theta",
+          "architectureRef": "representations.coordinate_noise"
+        },
+        {
+          "id": "next_coordinates",
+          "name": "x_(t-10)",
+          "tex": "x_{t-10}",
+          "architectureRef": "representations.token_coordinates"
+        },
+        {
+          "id": "sequence_logits",
+          "name": "sequence_logits",
+          "tex": "\\ell_{aa}",
+          "architectureRef": "representations.sequence_logits"
+        }
+      ],
+      "lines": [
+        {
+          "id": "prepare_tokens",
+          "text": "features = tokenize(request)  # C-alpha per unknown residue; atom14 heavy atoms only for known atomized residues",
+          "refs": "create_np_features_from_chain and create_np_features_from_length",
+          "architectureRefs": [
+            "modules.feature_builder",
+            "claims.atomization_is_task_dependent"
+          ]
+        },
+        {
+          "id": "initialize_coordinates",
+          "text": "x_t = randn_like(features.gt_atom_positions)",
+          "refs": "Sampler._sample",
+          "architectureRefs": [
+            "modules.coordinate_initializer"
+          ]
+        },
+        {
+          "id": "derive_frames",
+          "text": "T_t = FrenetFrames(x_t, features.left_center_right_indices)",
+          "refs": "compute_noisy_structure_frames",
+          "architectureRefs": [
+            "modules.frenet_frame_builder",
+            "claims.frames_are_derived_not_diffused"
+          ]
+        },
+        {
+          "id": "embed_single_pair",
+          "text": "s = SingleEmbedder(features, t); z = PairEmbedder(features, T_t, s)",
+          "refs": "V1Denoiser.forward",
+          "architectureRefs": [
+            "modules.single_feature_embedder",
+            "modules.pair_feature_embedder"
+          ]
+        },
+        {
+          "id": "latent_transform",
+          "text": "append 10 globals; repeat 5: s += PairBiasedAttention(s,z); z += OuterProduct(s); z += TriMulOut(z) + TriMulIn(z); z += PairTransition(z); remove globals",
+          "refs": "LatentTransformer.forward and LatentTransformerBlock.forward",
+          "architectureRefs": [
+            "modules.latent_transformer",
+            "claims.latent_communication_is_bidirectional_per_block"
+          ]
+        },
+        {
+          "id": "decode_structure",
+          "text": "repeat 8: s = Transition(LayerNorm(s + IPA(s,z,T_t))); T_t = T_t.compose(BackboneUpdate(s)); x_hat = T_t.trans",
+          "refs": "StructureNet.forward and StructureLayer.forward",
+          "architectureRefs": [
+            "modules.structure_decoder"
+          ]
+        },
+        {
+          "id": "predict_sequence",
+          "text": "sequence_logits = SequenceHead(s)  # sampled only when predict_sequence is enabled",
+          "refs": "V1Denoiser.forward, DDIMSampler._sample_sequence",
+          "architectureRefs": [
+            "modules.sequence_head",
+            "modules.sequence_sampler"
+          ]
+        },
+        {
+          "id": "read_noise",
+          "text": "epsilon_theta = x_t - x_hat",
+          "refs": "DDIMSampler._step",
+          "architectureRefs": [
+            "modules.noise_readout",
+            "claims.sampler_math_is_outside_the_denoiser"
+          ]
+        },
+        {
+          "id": "ddim_step",
+          "text": "x_(t-10) = sqrt(alpha_bar_prev)*x0_hat + direction_scale*direction(epsilon_theta) + noise_scale*sigma*z",
+          "refs": "DDIMSampler._step",
+          "architectureRefs": [
+            "modules.ddim_update"
+          ]
+        }
+      ],
+      "claims": [
+        {
+          "id": "point_cloud_is_the_diffusion_state",
+          "statement": "Genie 3 samples a coordinate point cloud. Frenet frames are a derived denoiser representation, even though the paper describes the reverse process in frame-cloud terms.",
+          "line_refs": [
+            "initialize_coordinates",
+            "derive_frames",
+            "ddim_step"
+          ],
+          "evidence": {
+            "status": "confirmed_from_code",
+            "refs": [
+              {
+                "source_ref": "genie3_sampler_code",
+                "role": "implementation_evidence",
+                "locator": "Sampler._sample"
+              },
+              {
+                "source_ref": "genie3_geometry_code",
+                "role": "implementation_evidence",
+                "locator": "compute_noisy_structure_frames"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "boards": {
+    "schemaVersion": "visualization-v0.4",
+    "sourceYaml": "../../views/genie3-semantic-zoom.view.yaml",
+    "rootBoard": "design_overview",
+    "items": [
+      {
+        "id": "design_overview",
+        "title": "Genie 3 Protein Design",
+        "summary": "A length, motif, or binder request becomes task-dependent token features. Genie 3 denoises a coordinate point cloud, optionally predicts residue identities, and exports a protein design.",
+        "subject_ref": "architecture",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 9,
+          "rows": 4,
+          "column_sizing": "content",
+          "col_gap": 44
+        },
+        "nodes": [
+          {
+            "id": "design_request",
+            "ref": "value_sites.design_request",
+            "label": "design request",
+            "notation": "length / motif / target",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "vector",
+            "col": 1,
+            "row": 2
+          },
+          {
+            "id": "feature_builder",
+            "ref": "modules.feature_builder",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 2,
+            "row": 2
+          },
+          {
+            "id": "feature_bundle",
+            "ref": "value_sites.feature_bundle",
+            "label": "token + conditioning features",
+            "notation": "F",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 3,
+            "row": 2
+          },
+          {
+            "id": "diffusion_sampler",
+            "ref": "modules.diffusion_sampler",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 4,
+            "row": 2,
+            "board_ref": "sampling_loop"
+          },
+          {
+            "id": "final_coordinates",
+            "ref": "value_sites.final_coordinates",
+            "label": "generated token coordinates",
+            "notation": "x_0",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 5,
+            "row": 2
+          },
+          {
+            "id": "predicted_sequence",
+            "ref": "value_sites.predicted_sequence",
+            "label": "optional sequence",
+            "notation": "a",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "vector",
+            "col": 5,
+            "row": 3
+          },
+          {
+            "id": "pdb_exporter",
+            "ref": "modules.pdb_exporter",
+            "prominence": "primary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 2
+          },
+          {
+            "id": "generated_design_pdb",
+            "ref": "value_sites.generated_design_pdb",
+            "label": "generated protein PDB",
+            "notation": ".pdb",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "volume",
+            "col": 7,
+            "row": 2
+          }
+        ],
+        "exclude": [
+          {
+            "ref": "modules.single_feature_embedder",
+            "reason": "Internal uses of task features are expanded on the denoiser board; the root keeps one feature-bundle-to-sampler connection."
+          },
+          {
+            "ref": "modules.pair_feature_embedder",
+            "reason": "Pair geometry construction is internal to the denoiser."
+          },
+          {
+            "ref": "modules.invariant_point_attention",
+            "reason": "Token masks and frame conditioning inside IPA are expanded on the structure-decoder board."
+          },
+          {
+            "ref": "modules.frenet_frame_builder",
+            "reason": "Frame construction is expanded inside the sampling loop."
+          },
+          {
+            "ref": "modules.sequence_sampler",
+            "reason": "The optional sequence branch is represented by its root-level output rather than another task-level module."
+          }
+        ],
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_ref": "relations.design_request_enters_feature_builder"
+            },
+            "label": "task + constraints",
+            "connection": {
+              "title": "Design request",
+              "role": "task boundary input",
+              "inside": "The request selects unconditional generation, motif scaffolding, or binder design and supplies the corresponding length or structural constraints."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.feature_builder_produces_feature_bundle"
+            },
+            "label": "partial atomization",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Task-dependent tokenization",
+              "role": "prepared conditioning",
+              "inside": "Unknown scaffold residues become C-alpha tokens; known motif or interface residues can expand into atom14-ordered heavy-atom tokens."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.feature_bundle_sizes_coordinate_initializer"
+            },
+            "label": "100 DDIM steps",
+            "connection": {
+              "title": "Features enter sampling",
+              "role": "cached sampling context",
+              "inside": "The bundle fixes the active token layout and remains read-only throughout reverse diffusion."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.terminal_coordinates_become_final_coordinates"
+            },
+            "label": "x_0",
+            "connection": {
+              "title": "Generated point cloud",
+              "role": "sampler output",
+              "inside": "The terminal state contains one coordinate for every active C-alpha or atomized heavy-atom token."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.predicted_sequence_enters_pdb_exporter"
+            },
+            "label": "optional identities",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Optional sequence assignment",
+              "role": "export context",
+              "inside": "When sequence prediction is enabled, sampled residue identities fill unknown designed positions before serialization."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.pdb_exporter_writes_design_pdb"
+            },
+            "label": "PDB records",
+            "connection": {
+              "title": "Generated protein design",
+              "role": "task boundary output",
+              "inside": "The exporter restores coordinates and identities to PDB records for the modeled token set."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_b02be531dc86",
+            "from": "design_request",
+            "to": "feature_builder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.design_request_enters_feature_builder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.design_request_enters_feature_builder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.design_request"
+            ],
+            "presentation": {
+              "label": "task + constraints",
+              "connection": {
+                "title": "Design request",
+                "role": "task boundary input",
+                "inside": "The request selects unconditional generation, motif scaffolding, or binder design and supplies the corresponding length or structural constraints."
+              }
+            }
+          },
+          {
+            "id": "projection_0da62da4ae92",
+            "from": "diffusion_sampler",
+            "to": "final_coordinates",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.terminal_coordinates_become_final_coordinates"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.terminal_coordinates_become_final_coordinates"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "x_0",
+              "connection": {
+                "title": "Generated point cloud",
+                "role": "sampler output",
+                "inside": "The terminal state contains one coordinate for every active C-alpha or atomized heavy-atom token."
+              }
+            }
+          },
+          {
+            "id": "projection_58ea1b4c269a",
+            "from": "feature_builder",
+            "to": "feature_bundle",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.feature_builder_produces_feature_bundle"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_builder_produces_feature_bundle"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "partial atomization",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Task-dependent tokenization",
+                "role": "prepared conditioning",
+                "inside": "Unknown scaffold residues become C-alpha tokens; known motif or interface residues can expand into atom14-ordered heavy-atom tokens."
+              }
+            }
+          },
+          {
+            "id": "projection_0ea228223cf3",
+            "from": "feature_bundle",
+            "to": "diffusion_sampler",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_sizes_coordinate_initializer"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_sizes_coordinate_initializer"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "100 DDIM steps",
+              "connection": {
+                "title": "Features enter sampling",
+                "role": "cached sampling context",
+                "inside": "The bundle fixes the active token layout and remains read-only throughout reverse diffusion."
+              }
+            }
+          },
+          {
+            "id": "projection_60325d5ce7a8",
+            "from": "final_coordinates",
+            "to": "pdb_exporter",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.final_coordinates_enter_pdb_exporter"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.final_coordinates_enter_pdb_exporter"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_811bc68c0781",
+            "from": "pdb_exporter",
+            "to": "generated_design_pdb",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.pdb_exporter_writes_design_pdb"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pdb_exporter_writes_design_pdb"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.protein_pdb"
+            ],
+            "presentation": {
+              "label": "PDB records",
+              "connection": {
+                "title": "Generated protein design",
+                "role": "task boundary output",
+                "inside": "The exporter restores coordinates and identities to PDB records for the modeled token set."
+              }
+            }
+          },
+          {
+            "id": "projection_f1d7065222ba",
+            "from": "predicted_sequence",
+            "to": "pdb_exporter",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.predicted_sequence_enters_pdb_exporter"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.predicted_sequence_enters_pdb_exporter"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.protein_sequence"
+            ],
+            "presentation": {
+              "label": "optional identities",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Optional sequence assignment",
+                "role": "export context",
+                "inside": "When sequence prediction is enabled, sampled residue identities fill unknown designed positions before serialization."
+              }
+            }
+          }
+        ],
+        "classifications": {
+          "modules.coordinate_initializer": "collapsed:modules.diffusion_sampler",
+          "modules.ddim_update": "collapsed:modules.diffusion_sampler",
+          "modules.diffusion_sampler": "visible",
+          "modules.feature_builder": "visible",
+          "modules.frame_update": "collapsed:modules.diffusion_sampler",
+          "modules.frenet_frame_builder": "excluded",
+          "modules.global_token_adapter": "collapsed:modules.diffusion_sampler",
+          "modules.invariant_point_attention": "excluded",
+          "modules.noise_readout": "collapsed:modules.diffusion_sampler",
+          "modules.pair_biased_attention_update": "collapsed:modules.diffusion_sampler",
+          "modules.pair_feature_embedder": "excluded",
+          "modules.pair_transition": "collapsed:modules.diffusion_sampler",
+          "modules.pdb_exporter": "visible",
+          "modules.sequence_head": "collapsed:modules.diffusion_sampler",
+          "modules.sequence_sampler": "excluded",
+          "modules.single_feature_embedder": "excluded",
+          "modules.single_to_pair_update": "collapsed:modules.diffusion_sampler",
+          "modules.structure_transition": "collapsed:modules.diffusion_sampler",
+          "modules.timestep_controller": "collapsed:modules.diffusion_sampler",
+          "modules.triangle_multiplication_stack": "collapsed:modules.diffusion_sampler",
+          "value_sites.coordinate_prediction": "collapsed:modules.diffusion_sampler",
+          "value_sites.current_coordinates": "collapsed:modules.diffusion_sampler",
+          "value_sites.current_frames": "collapsed:modules.diffusion_sampler",
+          "value_sites.decoder_frames": "collapsed:modules.diffusion_sampler",
+          "value_sites.decoder_single_state": "collapsed:modules.diffusion_sampler",
+          "value_sites.design_request": "visible",
+          "value_sites.feature_bundle": "visible",
+          "value_sites.final_coordinates": "visible",
+          "value_sites.fresh_step_noise": "collapsed:modules.diffusion_sampler",
+          "value_sites.generated_design_pdb": "visible",
+          "value_sites.initial_coordinates": "collapsed:modules.diffusion_sampler",
+          "value_sites.initial_pair_features": "collapsed:modules.diffusion_sampler",
+          "value_sites.initial_single_features": "collapsed:modules.diffusion_sampler",
+          "value_sites.next_coordinates": "collapsed:modules.diffusion_sampler",
+          "value_sites.pair_after_single_update": "collapsed:modules.diffusion_sampler",
+          "value_sites.pair_after_triangle_updates": "collapsed:modules.diffusion_sampler",
+          "value_sites.pair_with_global_tokens": "collapsed:modules.diffusion_sampler",
+          "value_sites.predicted_noise": "collapsed:modules.diffusion_sampler",
+          "value_sites.predicted_sequence": "visible",
+          "value_sites.refined_pair_features": "collapsed:modules.diffusion_sampler",
+          "value_sites.refined_single_features": "collapsed:modules.diffusion_sampler",
+          "value_sites.sequence_logits": "collapsed:modules.diffusion_sampler",
+          "value_sites.single_after_ipa": "collapsed:modules.diffusion_sampler",
+          "value_sites.single_after_pair_attention": "collapsed:modules.diffusion_sampler",
+          "value_sites.single_after_transition": "collapsed:modules.diffusion_sampler",
+          "value_sites.single_with_global_tokens": "collapsed:modules.diffusion_sampler",
+          "value_sites.timestep": "collapsed:modules.diffusion_sampler",
+          "value_sites.updated_frames": "collapsed:modules.diffusion_sampler"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "sampling_loop",
+        "title": "100-Step Directional DDIM Sampling",
+        "summary": "Gaussian token coordinates initialize x_T. Each selected step rebuilds frames, calls the learned denoiser, reads coordinate noise, and applies fixed DDIM math; optional sequence sampling happens only after structure generation.",
+        "parent": "design_overview",
+        "subject_ref": "modules.diffusion_sampler",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 9,
+          "rows": 6,
+          "column_sizing": "content",
+          "col_gap": 40
+        },
+        "nodes": [
+          {
+            "id": "feature_bundle",
+            "ref": "value_sites.feature_bundle",
+            "label": "cached task features",
+            "notation": "F",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 1,
+            "row": 1
+          },
+          {
+            "id": "coordinate_initializer",
+            "ref": "modules.coordinate_initializer",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 1,
+            "row": 3
+          },
+          {
+            "id": "current_coordinates",
+            "ref": "value_sites.current_coordinates",
+            "label": "current coordinate point cloud",
+            "notation": "x_t",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 2,
+            "row": 3
+          },
+          {
+            "id": "timestep_controller",
+            "ref": "modules.timestep_controller",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 1
+          },
+          {
+            "id": "timestep",
+            "ref": "value_sites.timestep",
+            "label": "selected timestep",
+            "notation": "t",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "scalar",
+            "col": 3,
+            "row": 1
+          },
+          {
+            "id": "frenet_frame_builder",
+            "ref": "modules.frenet_frame_builder",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 3,
+            "row": 3
+          },
+          {
+            "id": "current_frames",
+            "ref": "value_sites.current_frames",
+            "label": "derived token frames",
+            "notation": "T_t",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 4,
+            "row": 4
+          },
+          {
+            "id": "denoiser",
+            "ref": "modules.denoiser",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 4,
+            "row": 3,
+            "board_ref": "denoiser_forward"
+          },
+          {
+            "id": "coordinate_prediction",
+            "ref": "value_sites.coordinate_prediction",
+            "label": "denoised coordinate estimate",
+            "notation": "x_hat",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 5,
+            "row": 3
+          },
+          {
+            "id": "noise_readout",
+            "ref": "modules.noise_readout",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 3
+          },
+          {
+            "id": "predicted_noise",
+            "ref": "value_sites.predicted_noise",
+            "label": "predicted coordinate noise",
+            "notation": "epsilon_theta",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 7,
+            "row": 3
+          },
+          {
+            "id": "ddim_update",
+            "ref": "modules.ddim_update",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 8,
+            "row": 3
+          },
+          {
+            "id": "next_coordinates",
+            "ref": "value_sites.next_coordinates",
+            "label": "next coordinate point cloud",
+            "notation": "x_(t-10)",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 9,
+            "row": 3
+          },
+          {
+            "id": "final_coordinates",
+            "ref": "value_sites.final_coordinates",
+            "label": "final coordinates",
+            "notation": "x_0",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 9,
+            "row": 5
+          },
+          {
+            "id": "sequence_sampler",
+            "ref": "modules.sequence_sampler",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 7,
+            "row": 5
+          },
+          {
+            "id": "predicted_sequence",
+            "ref": "value_sites.predicted_sequence",
+            "label": "optional sequence",
+            "notation": "a",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "vector",
+            "col": 8,
+            "row": 5
+          }
+        ],
+        "elide": [
+          {
+            "ref": "value_sites.initial_coordinates"
+          },
+          {
+            "ref": "value_sites.fresh_step_noise"
+          }
+        ],
+        "exclude": [
+          {
+            "ref": "modules.single_feature_embedder",
+            "reason": "All feature and timestep uses inside the learned model are represented by the denoiser node on this board."
+          },
+          {
+            "ref": "modules.pair_feature_embedder",
+            "reason": "Noisy frame geometry is expanded on the denoiser board."
+          },
+          {
+            "ref": "modules.invariant_point_attention",
+            "reason": "Frame-point attention is expanded on the structure-decoder board."
+          },
+          {
+            "ref": "modules.frame_update",
+            "reason": "The coordinate estimate summarizes the structure decoder's internal frame updates."
+          },
+          {
+            "ref": "value_sites.sequence_logits",
+            "reason": "The sampling-loop board shows the optional terminal sequence rather than the denoiser's intermediate logits."
+          }
+        ],
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_path": [
+                "relations.coordinate_initializer_produces_initial_coordinates",
+                "relations.initial_coordinates_begin_sampling_state"
+              ]
+            },
+            "label": "Gaussian x_T",
+            "connection": {
+              "title": "Initial point cloud",
+              "role": "reverse-chain initialization",
+              "inside": "The active token layout sizes a standard-normal B by N by 3 coordinate tensor."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.frame_builder_produces_current_frames"
+            },
+            "label": "derived frames",
+            "connection": {
+              "title": "Frames enter the denoiser",
+              "role": "derived geometric input",
+              "inside": "Frenet rotations are computed from x_t while the frame translations remain the current token coordinates."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.coordinate_prediction_enters_noise_readout"
+            },
+            "label": "x_hat",
+            "connection": {
+              "title": "Denoised coordinate estimate",
+              "role": "noise-readout input",
+              "inside": "The learned model returns updated frame translations as its coordinate estimate."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.noise_readout_produces_predicted_noise"
+            },
+            "label": "x_t - x_hat",
+            "connection": {
+              "title": "Predicted coordinate noise",
+              "role": "sampler parameter",
+              "inside": "Fixed subtraction outside the model converts the coordinate estimate into epsilon_theta."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.predicted_noise_enters_ddim_update"
+            },
+            "label": "direction scale",
+            "connection": {
+              "title": "Directional DDIM update",
+              "role": "reverse-step parameter",
+              "inside": "The sampler reconstructs x_0 and scales the denoising direction independently from the stochastic noise term."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.next_coordinates_reenter_sampling_state"
+            },
+            "label": "continue if steps remain",
+            "connection": {
+              "title": "Reverse-chain recurrence",
+              "role": "loop state update",
+              "inside": "The next point cloud becomes x_t for the next selected schedule index."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.final_coordinates_enter_sequence_sampler"
+            },
+            "label": "optional final call",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Optional sequence prediction",
+              "role": "post-structure branch",
+              "inside": "When enabled, the sampler calls the model once more on the generated structure and samples residue identities."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_588713236286",
+            "from": "coordinate_initializer",
+            "to": "current_coordinates",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.coordinate_initializer_produces_initial_coordinates",
+              "relations.initial_coordinates_begin_sampling_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.coordinate_initializer_produces_initial_coordinates"
+              },
+              {
+                "relation_ref": "relations.initial_coordinates_begin_sampling_state"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.initial_coordinates"
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "Gaussian x_T",
+              "connection": {
+                "title": "Initial point cloud",
+                "role": "reverse-chain initialization",
+                "inside": "The active token layout sizes a standard-normal B by N by 3 coordinate tensor."
+              }
+            }
+          },
+          {
+            "id": "projection_7f2ec4d518ac",
+            "from": "coordinate_prediction",
+            "to": "noise_readout",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.coordinate_prediction_enters_noise_readout"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.coordinate_prediction_enters_noise_readout"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "x_hat",
+              "connection": {
+                "title": "Denoised coordinate estimate",
+                "role": "noise-readout input",
+                "inside": "The learned model returns updated frame translations as its coordinate estimate."
+              }
+            }
+          },
+          {
+            "id": "projection_a48c574ecb8e",
+            "from": "current_coordinates",
+            "to": "ddim_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.current_coordinates_enter_ddim_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.current_coordinates_enter_ddim_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_6f1181f50581",
+            "from": "current_coordinates",
+            "to": "frenet_frame_builder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.current_coordinates_enter_frame_builder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.current_coordinates_enter_frame_builder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_e648ec0e567b",
+            "from": "current_coordinates",
+            "to": "noise_readout",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.current_coordinates_enter_noise_readout"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.current_coordinates_enter_noise_readout"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_2a08227b3a1a",
+            "from": "current_frames",
+            "to": "denoiser",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.current_frames_initialize_decoder_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.current_frames_initialize_decoder_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_32578393a767",
+            "from": "ddim_update",
+            "to": "ddim_update",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.ddim_update_samples_fresh_noise",
+              "relations.fresh_noise_reenters_ddim_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.ddim_update_samples_fresh_noise"
+              },
+              {
+                "relation_ref": "relations.fresh_noise_reenters_ddim_update"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.fresh_step_noise"
+            ],
+            "carries": [
+              "representations.coordinate_noise"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_b8016fdd8fac",
+            "from": "ddim_update",
+            "to": "next_coordinates",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.ddim_update_produces_next_coordinates"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.ddim_update_produces_next_coordinates"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_82fe1ca673d2",
+            "from": "denoiser",
+            "to": "coordinate_prediction",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.updated_frames_produce_coordinate_prediction"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.updated_frames_produce_coordinate_prediction"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_8cdda49e0892",
+            "from": "feature_bundle",
+            "to": "coordinate_initializer",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_sizes_coordinate_initializer"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_sizes_coordinate_initializer"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_ee48aa752294",
+            "from": "feature_bundle",
+            "to": "frenet_frame_builder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_frame_builder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_frame_builder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_7d68a4f2ddd3",
+            "from": "feature_bundle",
+            "to": "sequence_sampler",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_sequence_sampler"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_sequence_sampler"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_650c3880a40d",
+            "from": "final_coordinates",
+            "to": "sequence_sampler",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.final_coordinates_enter_sequence_sampler"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.final_coordinates_enter_sequence_sampler"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "optional final call",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Optional sequence prediction",
+                "role": "post-structure branch",
+                "inside": "When enabled, the sampler calls the model once more on the generated structure and samples residue identities."
+              }
+            }
+          },
+          {
+            "id": "projection_f4bf0ac38f6f",
+            "from": "frenet_frame_builder",
+            "to": "current_frames",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.frame_builder_produces_current_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.frame_builder_produces_current_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+              "label": "derived frames",
+              "connection": {
+                "title": "Frames enter the denoiser",
+                "role": "derived geometric input",
+                "inside": "Frenet rotations are computed from x_t while the frame translations remain the current token coordinates."
+              }
+            }
+          },
+          {
+            "id": "projection_78bbb80c24c9",
+            "from": "next_coordinates",
+            "to": "current_coordinates",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.next_coordinates_reenter_sampling_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.next_coordinates_reenter_sampling_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "continue if steps remain",
+              "connection": {
+                "title": "Reverse-chain recurrence",
+                "role": "loop state update",
+                "inside": "The next point cloud becomes x_t for the next selected schedule index."
+              }
+            }
+          },
+          {
+            "id": "projection_bc3b2cb9c02f",
+            "from": "next_coordinates",
+            "to": "final_coordinates",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.terminal_coordinates_become_final_coordinates"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.terminal_coordinates_become_final_coordinates"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_d101c5d80bd0",
+            "from": "noise_readout",
+            "to": "predicted_noise",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.noise_readout_produces_predicted_noise"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.noise_readout_produces_predicted_noise"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.coordinate_noise"
+            ],
+            "presentation": {
+              "label": "x_t - x_hat",
+              "connection": {
+                "title": "Predicted coordinate noise",
+                "role": "sampler parameter",
+                "inside": "Fixed subtraction outside the model converts the coordinate estimate into epsilon_theta."
+              }
+            }
+          },
+          {
+            "id": "projection_00f9fb97d841",
+            "from": "predicted_noise",
+            "to": "ddim_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.predicted_noise_enters_ddim_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.predicted_noise_enters_ddim_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.coordinate_noise"
+            ],
+            "presentation": {
+              "label": "direction scale",
+              "connection": {
+                "title": "Directional DDIM update",
+                "role": "reverse-step parameter",
+                "inside": "The sampler reconstructs x_0 and scales the denoising direction independently from the stochastic noise term."
+              }
+            }
+          },
+          {
+            "id": "projection_2d4ef6842316",
+            "from": "sequence_sampler",
+            "to": "predicted_sequence",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.sequence_sampler_produces_predicted_sequence"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.sequence_sampler_produces_predicted_sequence"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.protein_sequence"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_9d5b548158b4",
+            "from": "timestep",
+            "to": "ddim_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "control",
+            "relation_path": [
+              "relations.timestep_enters_ddim_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.timestep_enters_ddim_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.timestep"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_f8f49300f3a2",
+            "from": "timestep_controller",
+            "to": "timestep",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "control",
+            "relation_path": [
+              "relations.timestep_controller_produces_timestep"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.timestep_controller_produces_timestep"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.timestep"
+            ],
+            "presentation": {
+            }
+          }
+        ],
+        "classifications": {
+          "modules.coordinate_initializer": "visible",
+          "modules.ddim_update": "visible",
+          "modules.denoiser": "visible",
+          "modules.frame_update": "excluded",
+          "modules.frenet_frame_builder": "visible",
+          "modules.global_token_adapter": "collapsed:modules.denoiser",
+          "modules.invariant_point_attention": "excluded",
+          "modules.noise_readout": "visible",
+          "modules.pair_biased_attention_update": "collapsed:modules.denoiser",
+          "modules.pair_feature_embedder": "excluded",
+          "modules.pair_transition": "collapsed:modules.denoiser",
+          "modules.sequence_head": "collapsed:modules.denoiser",
+          "modules.sequence_sampler": "visible",
+          "modules.single_feature_embedder": "excluded",
+          "modules.single_to_pair_update": "collapsed:modules.denoiser",
+          "modules.structure_transition": "collapsed:modules.denoiser",
+          "modules.timestep_controller": "visible",
+          "modules.triangle_multiplication_stack": "collapsed:modules.denoiser",
+          "value_sites.coordinate_prediction": "visible",
+          "value_sites.current_coordinates": "visible",
+          "value_sites.current_frames": "visible",
+          "value_sites.decoder_frames": "collapsed:modules.denoiser",
+          "value_sites.decoder_single_state": "collapsed:modules.denoiser",
+          "value_sites.feature_bundle": "visible",
+          "value_sites.final_coordinates": "visible",
+          "value_sites.fresh_step_noise": "elided",
+          "value_sites.initial_coordinates": "elided",
+          "value_sites.initial_pair_features": "collapsed:modules.denoiser",
+          "value_sites.initial_single_features": "collapsed:modules.denoiser",
+          "value_sites.next_coordinates": "visible",
+          "value_sites.pair_after_single_update": "collapsed:modules.denoiser",
+          "value_sites.pair_after_triangle_updates": "collapsed:modules.denoiser",
+          "value_sites.pair_with_global_tokens": "collapsed:modules.denoiser",
+          "value_sites.predicted_noise": "visible",
+          "value_sites.predicted_sequence": "visible",
+          "value_sites.refined_pair_features": "collapsed:modules.denoiser",
+          "value_sites.refined_single_features": "collapsed:modules.denoiser",
+          "value_sites.sequence_logits": "excluded",
+          "value_sites.single_after_ipa": "collapsed:modules.denoiser",
+          "value_sites.single_after_pair_attention": "collapsed:modules.denoiser",
+          "value_sites.single_after_transition": "collapsed:modules.denoiser",
+          "value_sites.single_with_global_tokens": "collapsed:modules.denoiser",
+          "value_sites.timestep": "visible",
+          "value_sites.updated_frames": "collapsed:modules.denoiser"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "denoiser_forward",
+        "title": "V1 Denoiser Forward Path",
+        "summary": "Task and timestep features form invariant single and pair states. A five-block transformer exchanges information in both directions, then an eight-layer equivariant decoder predicts coordinates while a parallel head emits optional sequence logits.",
+        "parent": "sampling_loop",
+        "subject_ref": "modules.denoiser",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 8,
+          "rows": 6,
+          "column_sizing": "content",
+          "col_gap": 42
+        },
+        "nodes": [
+          {
+            "id": "feature_bundle",
+            "ref": "value_sites.feature_bundle",
+            "label": "task features",
+            "notation": "F",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 1,
+            "row": 1
+          },
+          {
+            "id": "timestep",
+            "ref": "value_sites.timestep",
+            "label": "timestep",
+            "notation": "t",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "scalar",
+            "col": 1,
+            "row": 2
+          },
+          {
+            "id": "current_frames",
+            "ref": "value_sites.current_frames",
+            "label": "frames derived from x_t",
+            "notation": "T_t",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 1,
+            "row": 4
+          },
+          {
+            "id": "single_feature_embedder",
+            "ref": "modules.single_feature_embedder",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 2,
+            "row": 2
+          },
+          {
+            "id": "pair_feature_embedder",
+            "ref": "modules.pair_feature_embedder",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 3,
+            "row": 4
+          },
+          {
+            "id": "latent_transformer",
+            "ref": "modules.latent_transformer",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 4,
+            "row": 3,
+            "board_ref": "latent_transformer"
+          },
+          {
+            "id": "refined_single_features",
+            "ref": "value_sites.refined_single_features",
+            "label": "mature singles",
+            "notation": "s_out",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 5,
+            "row": 2
+          },
+          {
+            "id": "refined_pair_features",
+            "ref": "value_sites.refined_pair_features",
+            "label": "mature pairs",
+            "notation": "z_out",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 5,
+            "row": 4
+          },
+          {
+            "id": "structure_decoder",
+            "ref": "modules.structure_decoder",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 6,
+            "row": 4,
+            "board_ref": "structure_decoder"
+          },
+          {
+            "id": "updated_frames",
+            "ref": "value_sites.updated_frames",
+            "label": "updated token frames",
+            "notation": "T_hat",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 7,
+            "row": 5
+          },
+          {
+            "id": "coordinate_prediction",
+            "ref": "value_sites.coordinate_prediction",
+            "label": "coordinate estimate",
+            "notation": "x_hat",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 8,
+            "row": 4
+          },
+          {
+            "id": "sequence_head",
+            "ref": "modules.sequence_head",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 1
+          },
+          {
+            "id": "sequence_logits",
+            "ref": "value_sites.sequence_logits",
+            "label": "optional amino-acid logits",
+            "notation": "l_aa",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 7,
+            "row": 1
+          }
+        ],
+        "elide": [
+          {
+            "ref": "value_sites.initial_single_features"
+          },
+          {
+            "ref": "value_sites.initial_pair_features"
+          }
+        ],
+        "exclude": [
+          {
+            "ref": "modules.frenet_frame_builder",
+            "reason": "This board starts from the already-derived current frames; Frenet construction belongs to the parent sampling-loop board."
+          },
+          {
+            "ref": "modules.noise_readout",
+            "reason": "Coordinate-noise subtraction belongs to the parent sampling-loop board; this board ends at the denoiser's coordinate estimate."
+          }
+        ],
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_ref": "relations.feature_bundle_conditions_single_embedder"
+            },
+            "label": "token + task fields",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Single-feature inputs",
+              "role": "invariant conditioning",
+              "inside": "Token identity, chain, atom type, masks, known sequence, and task indicators are concatenated before projection."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.current_frames_enter_pair_embedder"
+            },
+            "label": "noisy geometry",
+            "connection": {
+              "title": "Current frame geometry",
+              "role": "pair-feature input",
+              "inside": "Pair distances and orientations are computed from frames derived from the current coordinate point cloud."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.feature_bundle_conditions_pair_embedder"
+            },
+            "label": "known geometry",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Conditioned geometry",
+              "role": "pair-feature conditioning",
+              "inside": "Motif groups, known structure frames, and relative chain information add task-dependent pair features."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.refined_single_features_initialize_decoder_state"
+            },
+            "label": "mature singles",
+            "connection": {
+              "title": "Latent state to decoder",
+              "role": "structural decoding input",
+              "inside": "The five-block latent transformer removes global tokens and passes mature per-token features into equivariant decoding."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.updated_frames_produce_coordinate_prediction"
+            },
+            "label": "updated translations",
+            "connection": {
+              "title": "Coordinate estimate",
+              "role": "denoiser output",
+              "inside": "The decoder exposes the translation component of its final updated frames."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.sequence_head_produces_logits"
+            },
+            "label": "20 residue types",
+            "connection": {
+              "title": "Optional sequence logits",
+              "role": "auxiliary model output",
+              "inside": "A parallel MLP maps mature single features to categorical amino-acid scores."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_8617456721d2",
+            "from": "current_frames",
+            "to": "pair_feature_embedder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.current_frames_enter_pair_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.current_frames_enter_pair_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+              "label": "noisy geometry",
+              "connection": {
+                "title": "Current frame geometry",
+                "role": "pair-feature input",
+                "inside": "Pair distances and orientations are computed from frames derived from the current coordinate point cloud."
+              }
+            }
+          },
+          {
+            "id": "projection_b2e21d590345",
+            "from": "current_frames",
+            "to": "structure_decoder",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.current_frames_initialize_decoder_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.current_frames_initialize_decoder_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_f8c564c15031",
+            "from": "feature_bundle",
+            "to": "pair_feature_embedder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_pair_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_pair_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "known geometry",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Conditioned geometry",
+                "role": "pair-feature conditioning",
+                "inside": "Motif groups, known structure frames, and relative chain information add task-dependent pair features."
+              }
+            }
+          },
+          {
+            "id": "projection_afe4984a225d",
+            "from": "feature_bundle",
+            "to": "single_feature_embedder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_single_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_single_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "token + task fields",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Single-feature inputs",
+                "role": "invariant conditioning",
+                "inside": "Token identity, chain, atom type, masks, known sequence, and task indicators are concatenated before projection."
+              }
+            }
+          },
+          {
+            "id": "projection_30e9735342cf",
+            "from": "feature_bundle",
+            "to": "structure_decoder",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_masks_ipa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_masks_ipa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_291b9d2aa0cb",
+            "from": "latent_transformer",
+            "to": "refined_pair_features",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.pair_transition_produces_refined_pair_features"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_transition_produces_refined_pair_features"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_e46b73ec09d2",
+            "from": "latent_transformer",
+            "to": "refined_single_features",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.single_attention_state_becomes_refined_single_features"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_attention_state_becomes_refined_single_features"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_c68389374239",
+            "from": "pair_feature_embedder",
+            "to": "latent_transformer",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.pair_embedder_produces_initial_pair_features",
+              "relations.initial_pair_features_enter_global_adapter"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_embedder_produces_initial_pair_features"
+              },
+              {
+                "relation_ref": "relations.initial_pair_features_enter_global_adapter"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.initial_pair_features"
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_ef19560f2357",
+            "from": "refined_pair_features",
+            "to": "latent_transformer",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.refined_pair_features_reenter_latent_stack"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_pair_features_reenter_latent_stack"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_3766d538c25b",
+            "from": "refined_pair_features",
+            "to": "structure_decoder",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.refined_pair_features_bias_ipa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_pair_features_bias_ipa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_34ec5ca69023",
+            "from": "refined_single_features",
+            "to": "sequence_head",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.refined_single_features_enter_sequence_head"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_single_features_enter_sequence_head"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_57e1a910dcf8",
+            "from": "refined_single_features",
+            "to": "structure_decoder",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.refined_single_features_initialize_decoder_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_single_features_initialize_decoder_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+              "label": "mature singles",
+              "connection": {
+                "title": "Latent state to decoder",
+                "role": "structural decoding input",
+                "inside": "The five-block latent transformer removes global tokens and passes mature per-token features into equivariant decoding."
+              }
+            }
+          },
+          {
+            "id": "projection_28c502bba586",
+            "from": "sequence_head",
+            "to": "sequence_logits",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.sequence_head_produces_logits"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.sequence_head_produces_logits"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.sequence_logits"
+            ],
+            "presentation": {
+              "label": "20 residue types",
+              "connection": {
+                "title": "Optional sequence logits",
+                "role": "auxiliary model output",
+                "inside": "A parallel MLP maps mature single features to categorical amino-acid scores."
+              }
+            }
+          },
+          {
+            "id": "projection_93930ba0cad5",
+            "from": "single_feature_embedder",
+            "to": "latent_transformer",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_embedder_produces_initial_single_features",
+              "relations.initial_single_features_enter_global_adapter"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_embedder_produces_initial_single_features"
+              },
+              {
+                "relation_ref": "relations.initial_single_features_enter_global_adapter"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.initial_single_features"
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_04423d70e07a",
+            "from": "single_feature_embedder",
+            "to": "pair_feature_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_embedder_produces_initial_single_features",
+              "relations.initial_single_features_enter_pair_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_embedder_produces_initial_single_features"
+              },
+              {
+                "relation_ref": "relations.initial_single_features_enter_pair_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.initial_single_features"
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_fc0fc79a75ee",
+            "from": "structure_decoder",
+            "to": "updated_frames",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.frame_update_produces_updated_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.frame_update_produces_updated_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_a8946ce7c53f",
+            "from": "timestep",
+            "to": "single_feature_embedder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.timestep_conditions_single_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.timestep_conditions_single_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.timestep"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_11c65f7ec586",
+            "from": "updated_frames",
+            "to": "coordinate_prediction",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.updated_frames_produce_coordinate_prediction"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.updated_frames_produce_coordinate_prediction"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "updated translations",
+              "connection": {
+                "title": "Coordinate estimate",
+                "role": "denoiser output",
+                "inside": "The decoder exposes the translation component of its final updated frames."
+              }
+            }
+          },
+          {
+            "id": "projection_206f02730ddc",
+            "from": "updated_frames",
+            "to": "structure_decoder",
+            "projection": "boundary",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.updated_frames_reenter_decoder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.updated_frames_reenter_decoder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+            }
+          }
+        ],
+        "classifications": {
+          "modules.frame_update": "collapsed:modules.structure_decoder",
+          "modules.frenet_frame_builder": "excluded",
+          "modules.global_token_adapter": "collapsed:modules.latent_transformer",
+          "modules.invariant_point_attention": "collapsed:modules.structure_decoder",
+          "modules.latent_transformer": "visible",
+          "modules.noise_readout": "excluded",
+          "modules.pair_biased_attention_update": "collapsed:modules.latent_transformer",
+          "modules.pair_feature_embedder": "visible",
+          "modules.pair_transition": "collapsed:modules.latent_transformer",
+          "modules.sequence_head": "visible",
+          "modules.single_feature_embedder": "visible",
+          "modules.single_to_pair_update": "collapsed:modules.latent_transformer",
+          "modules.structure_decoder": "visible",
+          "modules.structure_transition": "collapsed:modules.structure_decoder",
+          "modules.triangle_multiplication_stack": "collapsed:modules.latent_transformer",
+          "value_sites.coordinate_prediction": "visible",
+          "value_sites.current_frames": "visible",
+          "value_sites.decoder_frames": "collapsed:modules.structure_decoder",
+          "value_sites.decoder_single_state": "collapsed:modules.structure_decoder",
+          "value_sites.feature_bundle": "visible",
+          "value_sites.initial_pair_features": "elided",
+          "value_sites.initial_single_features": "elided",
+          "value_sites.pair_after_single_update": "collapsed:modules.latent_transformer",
+          "value_sites.pair_after_triangle_updates": "collapsed:modules.latent_transformer",
+          "value_sites.pair_with_global_tokens": "collapsed:modules.latent_transformer",
+          "value_sites.refined_pair_features": "visible",
+          "value_sites.refined_single_features": "visible",
+          "value_sites.sequence_logits": "visible",
+          "value_sites.single_after_ipa": "collapsed:modules.structure_decoder",
+          "value_sites.single_after_pair_attention": "collapsed:modules.latent_transformer",
+          "value_sites.single_after_transition": "collapsed:modules.structure_decoder",
+          "value_sites.single_with_global_tokens": "collapsed:modules.latent_transformer",
+          "value_sites.timestep": "visible",
+          "value_sites.updated_frames": "visible"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "latent_transformer",
+        "title": "Five-Block Bidirectional Latent Transformer",
+        "summary": "Ten global tokens are appended. In each block, pairs update singles through pair-biased attention, the updated singles feed back through an outer product, and triangular operations refine the pair state.",
+        "parent": "denoiser_forward",
+        "subject_ref": "modules.latent_transformer",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 8,
+          "rows": 6,
+          "column_sizing": "content",
+          "col_gap": 42
+        },
+        "nodes": [
+          {
+            "id": "initial_single_features",
+            "ref": "value_sites.initial_single_features",
+            "label": "initial singles",
+            "notation": "s",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 1,
+            "row": 2
+          },
+          {
+            "id": "initial_pair_features",
+            "ref": "value_sites.initial_pair_features",
+            "label": "initial pairs",
+            "notation": "z",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 1,
+            "row": 4
+          },
+          {
+            "id": "global_token_adapter",
+            "ref": "modules.global_token_adapter",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 3
+          },
+          {
+            "id": "single_with_global_tokens",
+            "ref": "value_sites.single_with_global_tokens",
+            "label": "singles + 10 globals",
+            "notation": "s_plus",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 3,
+            "row": 2
+          },
+          {
+            "id": "pair_with_global_tokens",
+            "ref": "value_sites.pair_with_global_tokens",
+            "label": "pairs + global rows/cols",
+            "notation": "z_plus",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 3,
+            "row": 4
+          },
+          {
+            "id": "pair_biased_attention_update",
+            "ref": "modules.pair_biased_attention_update",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 4,
+            "row": 2
+          },
+          {
+            "id": "single_after_pair_attention",
+            "ref": "value_sites.single_after_pair_attention",
+            "label": "pair-updated singles",
+            "notation": "s_prime",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 5,
+            "row": 2
+          },
+          {
+            "id": "single_to_pair_update",
+            "ref": "modules.single_to_pair_update",
+            "prominence": "primary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 5,
+            "row": 4
+          },
+          {
+            "id": "pair_after_single_update",
+            "ref": "value_sites.pair_after_single_update",
+            "label": "single-updated pairs",
+            "notation": "z_prime",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 6,
+            "row": 4
+          },
+          {
+            "id": "triangle_multiplication_stack",
+            "ref": "modules.triangle_multiplication_stack",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 7,
+            "row": 4
+          },
+          {
+            "id": "pair_after_triangle_updates",
+            "ref": "value_sites.pair_after_triangle_updates",
+            "label": "triangle-updated pairs",
+            "notation": "z_tri",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 8,
+            "row": 4
+          },
+          {
+            "id": "pair_transition",
+            "ref": "modules.pair_transition",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 8,
+            "row": 5
+          },
+          {
+            "id": "refined_single_features",
+            "ref": "value_sites.refined_single_features",
+            "label": "mature singles",
+            "notation": "s_out",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 8,
+            "row": 1
+          },
+          {
+            "id": "refined_pair_features",
+            "ref": "value_sites.refined_pair_features",
+            "label": "mature pairs",
+            "notation": "z_out",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 8,
+            "row": 6
+          }
+        ],
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_ref": "relations.pair_with_global_tokens_bias_attention"
+            },
+            "label": "pair bias + values",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Pairs update singles",
+              "role": "pair-to-single communication",
+              "inside": "Pair features bias self-attention and also contribute projected values to the single residual stream."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.single_after_pair_attention_enters_single_to_pair_update"
+            },
+            "label": "outer product",
+            "connection": {
+              "title": "Singles update pairs",
+              "role": "single-to-pair communication",
+              "inside": "Projected updated singles form an outer product that is added to the pair state."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.triangle_stack_produces_pair_state"
+            },
+            "label": "outgoing + incoming",
+            "connection": {
+              "title": "Triangular pair reasoning",
+              "role": "pair refinement",
+              "inside": "Outgoing and incoming triangular multiplication propagate information around three-token paths before the pair MLP."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.refined_pair_features_reenter_latent_stack"
+            },
+            "label": "repeat x5",
+            "connection": {
+              "title": "Five latent blocks",
+              "role": "repeated state",
+              "inside": "The refined pair state becomes the pair input to the next bidirectional block; global tokens are removed only after block five."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_c7f5b87b6b4f",
+            "from": "global_token_adapter",
+            "to": "pair_with_global_tokens",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.global_adapter_produces_pair_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.global_adapter_produces_pair_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_b456f42fcf82",
+            "from": "global_token_adapter",
+            "to": "single_with_global_tokens",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.global_adapter_produces_single_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.global_adapter_produces_single_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_dbfc26f83475",
+            "from": "initial_pair_features",
+            "to": "global_token_adapter",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.initial_pair_features_enter_global_adapter"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.initial_pair_features_enter_global_adapter"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_0ca8f8cb557f",
+            "from": "initial_single_features",
+            "to": "global_token_adapter",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.initial_single_features_enter_global_adapter"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.initial_single_features_enter_global_adapter"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_f36b8072189a",
+            "from": "pair_after_single_update",
+            "to": "triangle_multiplication_stack",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.pair_after_single_update_enters_triangle_stack"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_after_single_update_enters_triangle_stack"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_67fc06360f07",
+            "from": "pair_after_triangle_updates",
+            "to": "pair_transition",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.pair_after_triangle_updates_enter_transition"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_after_triangle_updates_enter_transition"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_e79c6de090ae",
+            "from": "pair_biased_attention_update",
+            "to": "single_after_pair_attention",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.pair_attention_produces_single_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_attention_produces_single_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_27e5ae66f16b",
+            "from": "pair_transition",
+            "to": "refined_pair_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.pair_transition_produces_refined_pair_features"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_transition_produces_refined_pair_features"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_0a454bdfebee",
+            "from": "pair_with_global_tokens",
+            "to": "pair_biased_attention_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.pair_with_global_tokens_bias_attention"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_with_global_tokens_bias_attention"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+              "label": "pair bias + values",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Pairs update singles",
+                "role": "pair-to-single communication",
+                "inside": "Pair features bias self-attention and also contribute projected values to the single residual stream."
+              }
+            }
+          },
+          {
+            "id": "projection_06bd2ed5d31d",
+            "from": "pair_with_global_tokens",
+            "to": "single_to_pair_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.pair_with_global_tokens_enters_single_to_pair_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_with_global_tokens_enters_single_to_pair_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_888ec7810e93",
+            "from": "refined_pair_features",
+            "to": "pair_with_global_tokens",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.refined_pair_features_reenter_latent_stack"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_pair_features_reenter_latent_stack"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+              "label": "repeat x5",
+              "connection": {
+                "title": "Five latent blocks",
+                "role": "repeated state",
+                "inside": "The refined pair state becomes the pair input to the next bidirectional block; global tokens are removed only after block five."
+              }
+            }
+          },
+          {
+            "id": "projection_052dbdf296c8",
+            "from": "single_after_pair_attention",
+            "to": "refined_single_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.single_attention_state_becomes_refined_single_features"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_attention_state_becomes_refined_single_features"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_48d272b07aa3",
+            "from": "single_after_pair_attention",
+            "to": "single_to_pair_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_after_pair_attention_enters_single_to_pair_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_after_pair_attention_enters_single_to_pair_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+              "label": "outer product",
+              "connection": {
+                "title": "Singles update pairs",
+                "role": "single-to-pair communication",
+                "inside": "Projected updated singles form an outer product that is added to the pair state."
+              }
+            }
+          },
+          {
+            "id": "projection_5241921d370f",
+            "from": "single_after_pair_attention",
+            "to": "single_with_global_tokens",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.refined_single_features_reenter_latent_stack"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_single_features_reenter_latent_stack"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_162a900ee1ac",
+            "from": "single_to_pair_update",
+            "to": "pair_after_single_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.single_to_pair_update_produces_pair_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_to_pair_update_produces_pair_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_92dbab50c8f3",
+            "from": "single_with_global_tokens",
+            "to": "pair_biased_attention_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_with_global_tokens_enters_attention"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_with_global_tokens_enters_attention"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_d09b81537023",
+            "from": "triangle_multiplication_stack",
+            "to": "pair_after_triangle_updates",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.triangle_stack_produces_pair_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.triangle_stack_produces_pair_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+              "label": "outgoing + incoming",
+              "connection": {
+                "title": "Triangular pair reasoning",
+                "role": "pair refinement",
+                "inside": "Outgoing and incoming triangular multiplication propagate information around three-token paths before the pair MLP."
+              }
+            }
+          }
+        ],
+        "classifications": {
+          "modules.global_token_adapter": "visible",
+          "modules.pair_biased_attention_update": "visible",
+          "modules.pair_transition": "visible",
+          "modules.single_to_pair_update": "visible",
+          "modules.triangle_multiplication_stack": "visible",
+          "value_sites.initial_pair_features": "visible",
+          "value_sites.initial_single_features": "visible",
+          "value_sites.pair_after_single_update": "visible",
+          "value_sites.pair_after_triangle_updates": "visible",
+          "value_sites.pair_with_global_tokens": "visible",
+          "value_sites.refined_pair_features": "visible",
+          "value_sites.refined_single_features": "visible",
+          "value_sites.single_after_pair_attention": "visible",
+          "value_sites.single_with_global_tokens": "visible"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "structure_decoder",
+        "title": "Eight-Layer Equivariant Structure Decoder",
+        "summary": "Full IPA uses mature single and pair features plus current frames. A transition updates the invariant state, then a rigid increment moves every valid token frame; the updated state repeats for eight layers.",
+        "parent": "denoiser_forward",
+        "subject_ref": "modules.structure_decoder",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 7,
+          "rows": 5,
+          "column_sizing": "content",
+          "col_gap": 42
+        },
+        "nodes": [
+          {
+            "id": "feature_bundle",
+            "ref": "value_sites.feature_bundle",
+            "label": "valid-frame mask",
+            "notation": "M",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "vector",
+            "col": 1,
+            "row": 1
+          },
+          {
+            "id": "decoder_single_state",
+            "ref": "value_sites.decoder_single_state",
+            "label": "decoder single state",
+            "notation": "s_l",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 1,
+            "row": 2
+          },
+          {
+            "id": "refined_pair_features",
+            "ref": "value_sites.refined_pair_features",
+            "label": "mature pair state",
+            "notation": "z",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 1,
+            "row": 3
+          },
+          {
+            "id": "decoder_frames",
+            "ref": "value_sites.decoder_frames",
+            "label": "current decoder frames",
+            "notation": "T_l",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 1,
+            "row": 4
+          },
+          {
+            "id": "invariant_point_attention",
+            "ref": "modules.invariant_point_attention",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 3,
+            "row": 3
+          },
+          {
+            "id": "single_after_ipa",
+            "ref": "value_sites.single_after_ipa",
+            "label": "attention-updated singles",
+            "notation": "s_attn",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 4,
+            "row": 3
+          },
+          {
+            "id": "structure_transition",
+            "ref": "modules.structure_transition",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 5,
+            "row": 3
+          },
+          {
+            "id": "single_after_transition",
+            "ref": "value_sites.single_after_transition",
+            "label": "transitioned singles",
+            "notation": "s_(l+1)",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 6,
+            "row": 3
+          },
+          {
+            "id": "frame_update",
+            "ref": "modules.frame_update",
+            "prominence": "primary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 4
+          },
+          {
+            "id": "updated_frames",
+            "ref": "value_sites.updated_frames",
+            "label": "updated token frames",
+            "notation": "T_(l+1)",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 7,
+            "row": 4
+          },
+          {
+            "id": "coordinate_prediction",
+            "ref": "value_sites.coordinate_prediction",
+            "label": "final translations",
+            "notation": "x_hat",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 7,
+            "row": 2
+          }
+        ],
+        "exclude": [
+          {
+            "ref": "value_sites.current_frames",
+            "reason": "The board uses the explicit per-layer decoder-frame state initialized from the denoiser's current frames."
+          },
+          {
+            "ref": "value_sites.refined_single_features",
+            "reason": "The explicit decoder single-state site represents the initialized and recurrent structure-layer state."
+          }
+        ],
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_ref": "relations.refined_pair_features_bias_ipa"
+            },
+            "label": "pair bias",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Pair-conditioned IPA",
+              "role": "invariant relational context",
+              "inside": "Mature pair features contribute an attention bias while frame-transformed query, key, and value points carry equivariant geometry."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.decoder_frames_condition_ipa"
+            },
+            "label": "frame points",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Frame-aware point attention",
+              "role": "equivariant geometric context",
+              "inside": "Query, key, and value points are expressed in the current token frames so global rigid motions preserve the update."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.transition_state_enters_frame_update"
+            },
+            "label": "rigid increment",
+            "connection": {
+              "title": "Learned frame motion",
+              "role": "structure update",
+              "inside": "The transitioned single state is projected to a six-parameter rigid increment for each valid token."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.updated_frames_reenter_decoder"
+            },
+            "label": "repeat x8",
+            "connection": {
+              "title": "Frame recurrence",
+              "role": "repeated state",
+              "inside": "Updated frames become the geometric reference for the next of eight structure layers."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.updated_frames_produce_coordinate_prediction"
+            },
+            "label": "translations",
+            "connection": {
+              "title": "Coordinate readout",
+              "role": "decoder output",
+              "inside": "After layer eight, the translation component of every active token frame is returned as the denoised coordinate estimate."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_c27a6988ec3f",
+            "from": "decoder_frames",
+            "to": "frame_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.decoder_frames_enter_frame_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.decoder_frames_enter_frame_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_09522ef9e305",
+            "from": "decoder_frames",
+            "to": "invariant_point_attention",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.decoder_frames_condition_ipa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.decoder_frames_condition_ipa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+              "label": "frame points",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Frame-aware point attention",
+                "role": "equivariant geometric context",
+                "inside": "Query, key, and value points are expressed in the current token frames so global rigid motions preserve the update."
+              }
+            }
+          },
+          {
+            "id": "projection_272296514381",
+            "from": "decoder_single_state",
+            "to": "invariant_point_attention",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.decoder_single_state_enters_ipa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.decoder_single_state_enters_ipa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_adee27c9f987",
+            "from": "feature_bundle",
+            "to": "invariant_point_attention",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_masks_ipa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_masks_ipa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_c98036bbf37b",
+            "from": "frame_update",
+            "to": "updated_frames",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.frame_update_produces_updated_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.frame_update_produces_updated_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_a5d4bbb29495",
+            "from": "invariant_point_attention",
+            "to": "single_after_ipa",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.ipa_produces_updated_single_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.ipa_produces_updated_single_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_ba12da4da645",
+            "from": "refined_pair_features",
+            "to": "invariant_point_attention",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.refined_pair_features_bias_ipa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.refined_pair_features_bias_ipa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+              "label": "pair bias",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Pair-conditioned IPA",
+                "role": "invariant relational context",
+                "inside": "Mature pair features contribute an attention bias while frame-transformed query, key, and value points carry equivariant geometry."
+              }
+            }
+          },
+          {
+            "id": "projection_f5fcbebc460e",
+            "from": "single_after_ipa",
+            "to": "structure_transition",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.ipa_state_enters_structure_transition"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.ipa_state_enters_structure_transition"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_91f79a01c402",
+            "from": "single_after_transition",
+            "to": "decoder_single_state",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.transition_state_reenters_decoder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.transition_state_reenters_decoder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_776d95717f8f",
+            "from": "single_after_transition",
+            "to": "frame_update",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.transition_state_enters_frame_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.transition_state_enters_frame_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+              "label": "rigid increment",
+              "connection": {
+                "title": "Learned frame motion",
+                "role": "structure update",
+                "inside": "The transitioned single state is projected to a six-parameter rigid increment for each valid token."
+              }
+            }
+          },
+          {
+            "id": "projection_63b2834adefb",
+            "from": "structure_transition",
+            "to": "single_after_transition",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.structure_transition_produces_single_state"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.structure_transition_produces_single_state"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_0ac01399c8a1",
+            "from": "updated_frames",
+            "to": "coordinate_prediction",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.updated_frames_produce_coordinate_prediction"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.updated_frames_produce_coordinate_prediction"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_coordinates"
+            ],
+            "presentation": {
+              "label": "translations",
+              "connection": {
+                "title": "Coordinate readout",
+                "role": "decoder output",
+                "inside": "After layer eight, the translation component of every active token frame is returned as the denoised coordinate estimate."
+              }
+            }
+          },
+          {
+            "id": "projection_e6e037484cef",
+            "from": "updated_frames",
+            "to": "decoder_frames",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.updated_frames_reenter_decoder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.updated_frames_reenter_decoder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+              "label": "repeat x8",
+              "connection": {
+                "title": "Frame recurrence",
+                "role": "repeated state",
+                "inside": "Updated frames become the geometric reference for the next of eight structure layers."
+              }
+            }
+          }
+        ],
+        "classifications": {
+          "modules.frame_update": "visible",
+          "modules.invariant_point_attention": "visible",
+          "modules.structure_transition": "visible",
+          "value_sites.coordinate_prediction": "visible",
+          "value_sites.current_frames": "excluded",
+          "value_sites.decoder_frames": "visible",
+          "value_sites.decoder_single_state": "visible",
+          "value_sites.feature_bundle": "visible",
+          "value_sites.refined_pair_features": "visible",
+          "value_sites.refined_single_features": "excluded",
+          "value_sites.single_after_ipa": "visible",
+          "value_sites.single_after_transition": "visible",
+          "value_sites.updated_frames": "visible"
+        },
+        "projectionMode": "derived"
+      }
+    ]
+  }
+};

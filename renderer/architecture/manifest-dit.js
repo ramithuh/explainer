@@ -3,9 +3,9 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.4.1",
     "inputDigests": {
-      "references/bibliography.yaml": "6923dca15429fe45b7ed1e9ca168db61f67b63728abc0e2cda424100b1d6025e",
+      "references/bibliography.yaml": "2c238cc39ff866cfb41c1b60c3e7a142df5707d3a9292efb8051aabbd5c8f336",
       "architectures/diffusion-transformer.yaml": "730bad73b786067fc0b6101e41147dffa4272dce88bbdd9f7a0a8f7413468301",
-      "views/dit-semantic-zoom.view.yaml": "3678d81ee30d5e51f8f5b041d5b63af9331fce80117c36427efee4d10d50f43c",
+      "views/dit-semantic-zoom.view.yaml": "ebca6fefd29f612792b8957db940cc3237132140722d52b76999194823dbc5eb",
       "pseudocode/diffusion-transformer.yaml": "c30de43fb5cb70827e520b7f60c410d348de1c10d72646ab68e6b4a2d6064c65",
       "standard_blocks/adaln-zero-conditioning.yaml": "33cd9afbe3b6867c4ce328c25d41a33210a5e387a195a93b19bc8696ee9e0b32",
       "standard_blocks/sinusoidal-timestep-embedding.yaml": "8cb2d467fe967e9a83da657ef85940406be89836de502d24cb7f557152763039",
@@ -3457,6 +3457,296 @@ export const manifest = {
         "href": "https://github.com/facebookresearch/DiT/blob/ed81ce2229091fd4ecc9a223645f95cf379d582b/train.py"
       },
       {
+        "id": "genie2_2024",
+        "kind": "paper",
+        "title": "Out of Many, One: Designing and Scaffolding Proteins at the Scale of the Structural Universe with Genie 2",
+        "authors": [
+          "Yeqing Lin",
+          "Minji Lee",
+          "Zhao Zhang",
+          "Mohammed AlQuraishi"
+        ],
+        "year": 2024,
+        "identifiers": {
+          "arxiv": "2405.15489"
+        },
+        "url": "https://arxiv.org/abs/2405.15489",
+        "href": "https://arxiv.org/abs/2405.15489"
+      },
+      {
+        "id": "genie2_model_code",
+        "kind": "code",
+        "title": "Genie 2 denoiser composition",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/model.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/model.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/model.py"
+      },
+      {
+        "id": "genie2_single_feature_code",
+        "kind": "code",
+        "title": "Genie 2 single-feature network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/single_feature_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/single_feature_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/single_feature_net.py"
+      },
+      {
+        "id": "genie2_pair_feature_code",
+        "kind": "code",
+        "title": "Genie 2 pair-feature network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/pair_feature_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_feature_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_feature_net.py"
+      },
+      {
+        "id": "genie2_pair_transform_code",
+        "kind": "code",
+        "title": "Genie 2 pair-transform network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/pair_transform_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_transform_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/pair_transform_net.py"
+      },
+      {
+        "id": "genie2_structure_code",
+        "kind": "code",
+        "title": "Genie 2 equivariant structure network",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/model/structure_net.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/structure_net.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/model/structure_net.py"
+      },
+      {
+        "id": "genie2_sampler_code",
+        "kind": "code",
+        "title": "Genie 2 reverse-diffusion sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/sampler/base.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/base.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/base.py"
+      },
+      {
+        "id": "genie2_scaffold_sampler_code",
+        "kind": "code",
+        "title": "Genie 2 motif-scaffolding sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/sampler/scaffold.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/scaffold.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/sampler/scaffold.py"
+      },
+      {
+        "id": "genie2_training_code",
+        "kind": "code",
+        "title": "Genie 2 diffusion training step",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/diffusion/genie.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/diffusion/genie.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/diffusion/genie.py"
+      },
+      {
+        "id": "genie2_config_code",
+        "kind": "code",
+        "title": "Genie 2 model and diffusion configuration",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "genie/config.py",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/config.py",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/genie/config.py"
+      },
+      {
+        "id": "genie2_base_config",
+        "kind": "code",
+        "title": "Genie 2 released base-checkpoint configuration",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie2",
+        "revision": "9a954578f7b5a39552545eebc6d4794447794c87",
+        "path": "results/base/configuration",
+        "url": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/results/base/configuration",
+        "href": "https://github.com/aqlaboratory/genie2/blob/9a954578f7b5a39552545eebc6d4794447794c87/results/base/configuration"
+      },
+      {
+        "id": "genie3_2026",
+        "kind": "paper",
+        "title": "Fast and Ultra-Capable Protein Design: Advancing the Frontier Through Atomistic SE(3)-Equivariance with Genie 3",
+        "authors": [
+          "Yeqing Lin",
+          "Minji Lee",
+          "Siddharth Vermani",
+          "Yuwei Jiang",
+          "Robbe De Cooman",
+          "Bryan Spetko",
+          "Mohammed AlQuraishi"
+        ],
+        "year": 2026,
+        "identifiers": {
+          "doi": "10.64898/2026.05.01.722168"
+        },
+        "url": "https://www.biorxiv.org/content/10.64898/2026.05.01.722168v1",
+        "href": "https://www.biorxiv.org/content/10.64898/2026.05.01.722168v1"
+      },
+      {
+        "id": "genie3_model_code",
+        "kind": "code",
+        "title": "Genie 3 V1 denoiser composition",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/implementation/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/implementation/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/implementation/v1.py"
+      },
+      {
+        "id": "genie3_single_feature_code",
+        "kind": "code",
+        "title": "Genie 3 V1 single-feature embedder",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/embedder/single/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/single/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/single/v1.py"
+      },
+      {
+        "id": "genie3_pair_feature_code",
+        "kind": "code",
+        "title": "Genie 3 V1 pair-feature embedder",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/embedder/pair/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/pair/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/embedder/pair/v1.py"
+      },
+      {
+        "id": "genie3_latent_transformer_code",
+        "kind": "code",
+        "title": "Genie 3 latent transformer",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/latent/transformer.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/latent/transformer.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/latent/transformer.py"
+      },
+      {
+        "id": "genie3_structure_code",
+        "kind": "code",
+        "title": "Genie 3 equivariant structure decoder",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/structure_net.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py"
+      },
+      {
+        "id": "genie3_sequence_code",
+        "kind": "code",
+        "title": "Genie 3 optional sequence head",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/sequence_net.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/sequence_net.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/sequence_net.py"
+      },
+      {
+        "id": "genie3_geometry_code",
+        "kind": "code",
+        "title": "Genie 3 Frenet frame construction",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/geo_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/geo_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/geo_utils.py"
+      },
+      {
+        "id": "genie3_feature_code",
+        "kind": "code",
+        "title": "Genie 3 protein tokenization and conditioning features",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/feat_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py"
+      },
+      {
+        "id": "genie3_diffusion_code",
+        "kind": "code",
+        "title": "Genie 3 DDPM training objective",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/diffusion/ddpm.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/ddpm.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/ddpm.py"
+      },
+      {
+        "id": "genie3_sampler_code",
+        "kind": "code",
+        "title": "Genie 3 base reverse-diffusion sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/diffusion/sampler/sampler.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/sampler.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/sampler.py"
+      },
+      {
+        "id": "genie3_ddim_code",
+        "kind": "code",
+        "title": "Genie 3 DDIM directional-scaling sampler",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/diffusion/sampler/ddim.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/ddim.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/diffusion/sampler/ddim.py"
+      },
+      {
+        "id": "genie3_config_code",
+        "kind": "code",
+        "title": "Genie 3 V1 architecture configuration",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/config/model/v1.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/config/model/v1.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/config/model/v1.py"
+      },
+      {
+        "id": "genie3_export_code",
+        "kind": "code",
+        "title": "Genie 3 generated-structure postprocessing",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/runner/postprocess.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/runner/postprocess.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/runner/postprocess.py"
+      },
+      {
         "id": "generic_feature_refinement_source",
         "kind": "source",
         "title": "Generic Feature Refinement architecture source",
@@ -5421,8 +5711,9 @@ export const manifest = {
         "grid": {
           "columns": 12,
           "rows": 4,
+          "column_sizing": "content",
           "min_col": 88,
-          "col_gap": 14
+          "col_gap": 48
         },
         "nodes": [
           {

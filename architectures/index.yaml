@@ -21,3 +21,15 @@ source_sets:
       - standard_blocks/adaln-zero-conditioning.yaml
       - standard_blocks/sinusoidal-timestep-embedding.yaml
       - standard_blocks/per-item-adaln-conditioning.yaml
+  - id: genie2
+    label: Genie 2 Protein Backbone Diffusion
+    architecture: architectures/genie2.yaml
+    view: views/genie2-semantic-zoom.view.yaml
+    pseudocode: pseudocode/genie2.yaml
+    standard_blocks: []
+  - id: genie3
+    label: Genie 3 Atom-Aware Protein Diffusion
+    architecture: architectures/genie3.yaml
+    view: views/genie3-semantic-zoom.view.yaml
+    pseudocode: pseudocode/genie3.yaml
+    standard_blocks: []

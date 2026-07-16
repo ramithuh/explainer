@@ -471,8 +471,9 @@ boards:
   grid:
     columns: 12
     rows: 4
+    column_sizing: content
     min_col: 88
-    col_gap: 14
+    col_gap: 48
   nodes:
   - id: token_state_in
     ref: value_sites.block_input_tokens
