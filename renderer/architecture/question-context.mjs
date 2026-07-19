@@ -46,6 +46,7 @@ function architectureCollections(manifest) {
     conditioning: values(architecture.conditioning),
     scaleTransitions: values(architecture.scaleTransitions || architecture.scale_transitions),
     openQuestions: values(architecture.openQuestions || architecture.open_questions),
+    blockInstances: values(architecture.blockInstances || architecture.block_instances),
   };
 }
 
@@ -120,6 +121,8 @@ function endpointDescriptor(board, occurrenceId, collections) {
     return compact({
       occurrence_id: occurrenceId,
       canonical_ref: canonicalNodeRef(node),
+      template_fact_ref: node.template_fact_ref || node.templateFactRef,
+      block_instance_ref: node.block_instance_ref || node.blockInstanceRef,
       label: labelForNode(node, entity, representation),
     });
   }
@@ -192,7 +195,11 @@ function edgeDescriptor(edge, board, collections, relationsByRef) {
   return compact({
     kind: "projected_edge",
     projected_id: edge.id,
-    grounding: relationPath.length ? "canonical_relation_path" : "ungrounded",
+    grounding: edge.grounding || (relationPath.length ? "canonical_relation_path" : "ungrounded"),
+    standard_block_ref: edge.standard_block_ref || edge.standardBlockRef,
+    block_instance_ref: edge.block_instance_ref || edge.blockInstanceRef,
+    template_fact_ref: edge.template_fact_ref || edge.templateFactRef,
+    template_data_ref: edge.template_data_ref || edge.templateDataRef,
     from: endpointDescriptor(board, edge.from, collections),
     to: endpointDescriptor(board, edge.to, collections),
     projection: edge.projection,
@@ -346,6 +353,12 @@ function nodeSelection(node, collections) {
     kind: "node_occurrence",
     occurrence_id: node.id,
     canonical_ref: canonicalRef,
+    grounding: node.template_fact_ref || node.templateFactRef
+      ? "standard_block_template"
+      : "canonical_architecture",
+    standard_block_ref: node.standard_block_ref || node.standardBlockRef,
+    block_instance_ref: node.block_instance_ref || node.blockInstanceRef,
+    template_fact_ref: node.template_fact_ref || node.templateFactRef,
     node_kind: node.kind || namespaceFor(canonicalRef),
     display: compact({
       label: labelForNode(node, entity, representation),
@@ -385,9 +398,13 @@ export function buildNodeQuestionContext({
   const entity = entityForNode(node, collections);
   const representation = representationForNode(node, entity, collections);
   const representationRef = selection.related_refs?.representation_ref;
+  const blockInstance = selection.block_instance_ref
+    ? byId(collections.blockInstances, selection.block_instance_ref, "block_instances")
+    : null;
   const evidence = evidenceForFacts([
     evidenceEntry(selection.canonical_ref, entity),
     representationRef ? evidenceEntry(representationRef, representation) : null,
+    blockInstance ? evidenceEntry(selection.block_instance_ref, blockInstance) : null,
     ...relationEvidence(relationRefs, relationsByRef),
   ]);
   return {
@@ -402,6 +419,16 @@ export function buildNodeQuestionContext({
       [selection.canonical_ref, representationRef],
       relationRefs,
     ),
+    reusable_component: blockInstance ? compact({
+      block_instance_ref: selection.block_instance_ref,
+      standard_block_ref: blockInstance.standardBlockRef || blockInstance.standard_block_ref,
+      variant: blockInstance.variant,
+      conformance: blockInstance.conformance,
+      use_scope: blockInstance.useScope || blockInstance.use_scope,
+      difference_summary: blockInstance.differenceSummary || blockInstance.difference_summary,
+      port_bindings: blockInstance.portBindings || blockInstance.port_bindings,
+      template_fact_ref: selection.template_fact_ref,
+    }) : undefined,
   };
 }
 
@@ -427,27 +454,48 @@ export function buildEdgeQuestionContext({
     ...selection.hidden_refs,
   ];
   const evidence = evidenceForFacts(relationEvidence(relationRefs, relationsByRef));
+  const blockInstanceRef = selection.block_instance_ref;
+  const blockInstance = blockInstanceRef
+    ? byId(collections.blockInstances, blockInstanceRef, "block_instances")
+    : null;
+  const combinedEvidence = evidenceForFacts([
+    ...evidence,
+    blockInstance ? evidenceEntry(blockInstanceRef, blockInstance) : null,
+  ]);
   return {
     ...packetBase({ sourceSet, manifest, board, breadcrumbs }),
     selection,
     neighborhood: { adjacent },
-    evidence,
-    source_catalog: sourceCatalog(manifest, evidence),
+    evidence: combinedEvidence,
+    source_catalog: sourceCatalog(manifest, combinedEvidence),
     semantic_links: semanticLinks(manifest, collections, canonicalRefs, relationRefs),
+    reusable_component: blockInstance ? compact({
+      block_instance_ref: blockInstanceRef,
+      standard_block_ref: selection.standard_block_ref,
+      variant: blockInstance.variant,
+      conformance: blockInstance.conformance,
+      use_scope: blockInstance.useScope || blockInstance.use_scope,
+      difference_summary: blockInstance.differenceSummary || blockInstance.difference_summary,
+      port_bindings: blockInstance.portBindings || blockInstance.port_bindings,
+      template_fact_ref: selection.template_fact_ref,
+    }) : undefined,
   };
 }
 
 export function questionContextReference(context) {
   const prefix = [context.source_set, context.board?.id].filter(Boolean).join(" / ");
   if (context.selection?.kind === "node_occurrence") {
-    const ref = context.selection.canonical_ref || context.selection.occurrence_id;
+    const ref = context.selection.canonical_ref
+      || context.selection.template_fact_ref
+      || context.selection.occurrence_id;
     const occurrence = context.selection.occurrence_id;
     return `${prefix} / ${ref}${occurrence ? ` (occurrence: ${occurrence})` : ""}`;
   }
   const relationPath = values(context.selection?.relation_path);
   const ref = relationPath.length
     ? relationPath.join(" -> ")
-    : `${context.selection?.from?.occurrence_id || "?"}->${context.selection?.to?.occurrence_id || "?"}`;
+    : context.selection?.template_fact_ref
+      || `${context.selection?.from?.occurrence_id || "?"}->${context.selection?.to?.occurrence_id || "?"}`;
   return `${prefix} / ${ref}`;
 }
 

@@ -25,14 +25,24 @@ reusable presentation rules.
    source references.
 6. **Standard blocks**: `standard_blocks/*.yaml` defines reusable visual and
    mathematical motifs.
-7. **Manifest builder**: `renderer/architecture/build-manifest.rb` compiles the
+   Standard-block v0.2 is compiled through a separate component path:
+   ordinary boards still receive only projected canonical relations, while a
+   `kind: standard_block_instance` board receives instance-scoped template
+   nodes and step edges. Bound port edges preserve canonical `relation_path`;
+   other internal edges declare `grounding: standard_block_template`.
+7. **Comparison sources**: `comparisons/*.yaml`, registered only through
+   `comparisons/index.yaml`, align stable facts from two existing subject
+   boards. They own the comparative question, groups, mappings, findings, and
+   evidence, but never copy either board scene or architecture fact.
+8. **Manifest builder**: `renderer/architecture/build-manifest.rb` compiles the
    registered YAML source sets into `renderer/architecture/manifest-<id>.js`
-   files plus `manifest-index.js`, including relation-derived interfaces and
-   top-down decomposition coverage. It first runs the same strict source
-   validation used by `scripts/lint_sources.rb`.
-8. **Browser renderer**: `renderer/architecture/renderer.js` renders boards,
+   files plus `manifest-index.js`, including relation-derived interfaces,
+   top-down decomposition coverage, and the independently versioned compiled
+   `comparisonIndex`. It first runs the same strict source validation used by
+   `scripts/lint_sources.rb`.
+9. **Browser renderer**: `renderer/architecture/renderer.js` renders boards,
    semantic navigation, audience explanation panels, MathJax equations,
-   pan/zoom controls, and source links.
+   pan/zoom controls, source links, and an optional second comparison board.
 
 The builder compiles current architecture-v0.4 / visualization-v0.4 sources
 into architecture-manifest-v0.4 projected boards. A narrow legacy path still
@@ -61,6 +71,25 @@ deterministic architecture-manifest-v0.4 projected boards
                   ↓
 browser layout and geometric wire router
 ```
+
+Registered comparisons form a parallel, read-only lens over those compiled
+subjects:
+
+```text
+comparison-registry-v0.1 + architecture-comparison-v0.1
+                          ↓
+strict schema + subject/fact/evidence validation
+                          ↓
+architecture-comparison-compiler-v0.1
+                          ↓
+comparisonIndex metadata + the two existing manifest-owned board scenes
+                          ↓
+paired browser board surfaces
+```
+
+The comparison compiler resolves instance-scoped facts against the exact
+compiled standard-block boards that the browser loads. It emits highlight
+metadata and findings, not a third graph and not a copied scene.
 
 The projector derives normal board edges from canonical architecture
 relations, remaps hidden descendants to visible aggregate modules, contracts
@@ -114,7 +143,13 @@ The browser renderer may:
   link schemes;
 - expose one canonical audience interface rather than separate legacy, edit,
   or tuning modes;
-- render generic standard-block diagrams when enough slot information exists.
+- render generic standard-block diagrams when enough slot information exists;
+- load a registered comparison counterpart lazily, render it below the current
+  board, and decorate both sides from compiler-resolved alignment metadata;
+- keep the two board viewports independent while sharing one inspector and at
+  most one selected side, and namespace SVG resources by surface;
+- expose comparison open, close, swap, fit-both, and compact-screen side
+  switching as generic interaction behavior.
 
 The browser renderer should not:
 
@@ -122,6 +157,8 @@ The browser renderer should not:
 - target architecture or board IDs from generic renderer CSS;
 - require paper-specific module names;
 - hardcode evidence claims that belong in YAML;
+- infer comparative correspondence from labels, positions, or visual
+  similarity, or draw cross-canvas wires that imply unauthored relations;
 - infer architecture facts from visual position.
 
 The DOM-free recurrence classification and rail allocation live in
@@ -142,6 +179,17 @@ The prototype supports:
   than serial exit/arrival delays;
 - shareable static-site locations for the current board and optional selected
   node, with browser Back and Forward following semantic navigation;
+- a source-backed compare action on boards named by a registered comparison,
+  opening the second board below the first without replacing the primary
+  semantic location;
+- independent pan, wheel/two-finger-scroll zoom, reset, and fit controls for
+  the two board surfaces, plus fit-both, swap, close, and a compact-screen A/B
+  switch;
+- numbered alignment badges on both surfaces, colored by relationship kind,
+  while single/pair/coordinate/frame colors retain their existing payload
+  meaning and no cross-canvas relation wires are invented;
+- one shared inspector selection across A and B: selecting on one side clears
+  the other side, and only board-local node selections enter the URL;
 - one canonical selection state shared by nodes and projected arrows; node
   hover or focus traces nearby connectivity without a popup, while edge peeks
   remain local canvas tooltips and never replace selected details;
@@ -203,6 +251,39 @@ These links use only query parameters on the existing renderer HTML path, so
 they work when the explainer is published as a static site. They do not require
 a routing service or duplicate any architecture fact outside the manifest.
 
+### Shareable Comparison Links
+
+A paired view extends the primary location rather than replacing it:
+
+```text
+?arch=genie3
+&board=genie3_reduced_pair_attention_internals
+&compare_arch=genie3
+&compare_board=genie3_ipa_internals
+&compare_node=point_distance_logits
+```
+
+`compare_arch` activates the lower B surface, `compare_board` names its stable
+board, and optional `compare_node` selects a local occurrence there. The
+primary `arch` / `board` / `node` parameters keep their existing meaning. A
+canonical location contains at most one of `node` and `compare_node`, because
+the workspace has one inspector selection. Pan, zoom, hover, and compact-screen
+A/B visibility remain transient on both surfaces.
+
+Comparison URL state is resolved independently. An unknown comparison source
+set removes only the B surface and preserves A. An unknown `compare_board`
+falls back to the counterpart root and discards only `compare_node`; an unknown
+`compare_node` keeps its requested comparison board open. Opening, closing,
+swapping, or navigating a board creates a history entry, while selecting a
+node replaces the current entry. Back and Forward reconstruct both locations.
+All writes preserve unrelated query parameters.
+
+The **Compare** action appears only when the current source set and board match
+one subject of a registered compiled comparison. The counterpart board scene
+still comes from its architecture manifest. The compiled comparison contributes
+only the question, group summaries, evidence-backed fact alignments, findings,
+and stable highlight identities.
+
 ### Question Handoff Context
 
 The audience view can hand a selected node or arrow to an external
@@ -245,9 +326,11 @@ supported authoring fields:
 
 - `node.icon` for stable visual symbols;
 - `edge.geometry` for explicit routing hints;
-- `standard_block.visual_template` variants;
+- further reusable-block composition beyond the implemented v0.2 instance
+  scenes;
 - `board.layers` for optional overlays;
-- `comparison_refs` for multi-architecture tables;
+- comparison projections beyond the implemented paired-board workspace, such
+  as compact multi-model tables derived from the same registered alignments;
 - graph views derived from typed `source_ref` links to the central bibliography.
 
 A future recorded-inference viewer should load trace sidecars outside the

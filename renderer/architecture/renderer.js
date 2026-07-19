@@ -1,4 +1,4 @@
-import { manifestIndex } from "./manifest-index.js";
+import { comparisonIndex, manifestIndex } from "./manifest-index.js";
 import {
   allocateContentGridGutters,
   allocateContentGridRowGutters,
@@ -26,7 +26,6 @@ import {
 import {
   edgeIsRepresentedByRepeatRegion,
   executionLoopForRef,
-  repeatRegionAccessibleLabel,
   repeatRegionBounds,
   repeatRegions,
   representedIterationRelationRefs,
@@ -51,6 +50,7 @@ import {
   untypedRef,
 } from "./renderer-model.mjs";
 import { allocateFeedbackLanes } from "./semantic-routing.mjs";
+import { renderVisualSegmentRegions } from "./visual-segments.mjs";
 import {
   createWorkspaceSelection,
   edgeSelectionKey,
@@ -61,8 +61,20 @@ import {
 import {
   deepLinkHistoryMode,
   resolveDeepLink,
-  writeDeepLink,
 } from "./deep-link-state.mjs";
+import {
+  comparisonHistoryMode,
+  resolveComparisonState,
+  setComparisonSelection,
+  writeComparisonLink,
+} from "./comparison-state.mjs";
+import {
+  alignmentForNode,
+  buildAlignmentIndex,
+  clearAlignmentDecorations,
+  createComparisonBoardRenderer,
+  decorateAlignmentElement,
+} from "./comparison-board-renderer.mjs";
 
 const pageParams = new URLSearchParams(window.location.search);
 const archParam = pageParams.get("arch");
@@ -83,6 +95,18 @@ const activeManifestEntry = manifestIndex.find((entry) => entry.id === archParam
 const { manifest: sourceManifest } = await import(`./${activeManifestEntry.file}`);
 const rendererModel = createRendererModel(sourceManifest);
 const { manifest } = rendererModel;
+const loadedRendererModels = new Map([[activeManifestEntry.id, rendererModel]]);
+const requestedComparisonArchitecture = pageParams.get("compare_arch");
+const requestedComparisonEntry = manifestIndex.find(
+  (entry) => entry.id === requestedComparisonArchitecture,
+);
+if (requestedComparisonEntry && requestedComparisonEntry.id !== activeManifestEntry.id) {
+  const { manifest: comparisonSourceManifest } = await import(`./${requestedComparisonEntry.file}`);
+  loadedRendererModels.set(
+    requestedComparisonEntry.id,
+    createRendererModel(comparisonSourceManifest),
+  );
+}
 const {
   modulesById,
   repsById,
@@ -90,12 +114,23 @@ const {
   valueSiteInterfacesById,
   relationsById,
   boardsById,
+  standardBlocksById,
+  blockInstancesById,
+  blockInstancesBySubject,
   conditioningByPair,
   conditioningByRelation,
 } = rendererModel.indexes;
 const initialDeepLink = resolveDeepLink({
   boards: manifest.boards.items,
   rootBoardId: manifest.boards.rootBoard,
+  search: window.location.search,
+});
+const initialComparisonState = resolveComparisonState({
+  architectures: [...loadedRendererModels.entries()].map(([id, model]) => ({
+    id,
+    manifest: model.manifest,
+  })),
+  defaultArchitectureId: manifestIndex[0]?.id,
   search: window.location.search,
 });
 if (unknownArchParam) {
@@ -105,11 +140,13 @@ if (unknownArchParam) {
 const elements = {
   canvas: document.querySelector(".architecture-canvas"),
   moduleLayer: document.getElementById("moduleLayer"),
+  regionLayer: document.getElementById("boardRegionLayer"),
   edgeLayer: document.getElementById("edgeLayer"),
   focusPanel: document.querySelector(".focus-panel"),
   focusHeader: document.getElementById("focusHeader"),
   focusEyebrow: document.getElementById("focusEyebrow"),
   focusTitle: document.getElementById("focusTitle"),
+  focusCompare: document.getElementById("focusCompare"),
   focusQuestion: document.getElementById("focusQuestion"),
   focusReset: document.getElementById("focusReset"),
   focusBody: document.getElementById("focusBody"),
@@ -125,6 +162,18 @@ const elements = {
   canvasTooltip: document.getElementById("canvasTooltip"),
   scaleLaneLayer: document.getElementById("scaleLaneLayer"),
   representationLaneLayer: document.getElementById("representationLaneLayer"),
+  canvasWorkspace: document.getElementById("canvasWorkspace"),
+  comparisonWorkspace: document.getElementById("comparisonWorkspace"),
+  comparisonCanvas: document.getElementById("comparisonCanvas"),
+  comparisonQuestion: document.getElementById("comparisonQuestion"),
+  comparisonSummary: document.getElementById("comparisonSummary"),
+  comparisonPrimaryLabel: document.getElementById("comparisonPrimaryLabel"),
+  comparisonCounterpartLabel: document.getElementById("comparisonCounterpartLabel"),
+  comparisonCanvasTitle: document.getElementById("comparisonCanvasTitle"),
+  comparisonGroupSummary: document.getElementById("comparisonGroupSummary"),
+  comparisonSwap: document.getElementById("comparisonSwap"),
+  comparisonFitBoth: document.getElementById("comparisonFitBoth"),
+  comparisonClose: document.getElementById("comparisonClose"),
 };
 
 let modelMap = null;
@@ -153,6 +202,9 @@ let renderedZoomPercent = null;
 let geometryFrame = null;
 let deepLinkWritesSuppressed = 0;
 let boardTransitionGeneration = 0;
+let comparisonBoardRenderer = null;
+let activeComparisonRecipe = null;
+let activeComparisonOrientation = null;
 const pendingGeometry = {
   measureGrid: false,
   renderEdges: false,
@@ -165,6 +217,8 @@ const state = {
   boardStack: [...initialDeepLink.boardStack],
   boardOrigins: [...initialDeepLink.boardOrigins],
   deepLink: null,
+  comparisonState: initialComparisonState,
+  comparisonHistory: null,
   edgeRoutes: new Map(),
   edgeAnnotationBoxes: [],
   modelMapView: "root",
@@ -192,10 +246,19 @@ function render() {
   ensureBoardChrome();
   ensureQuestionMenu();
   elements.focusReset.addEventListener("click", resetFocusedDetail);
+  elements.focusCompare?.addEventListener("click", onFocusCompareClick);
   elements.focusQuestion?.addEventListener("click", onFocusQuestionClick);
   elements.copyDeepLink?.addEventListener("click", onCopyDeepLinkClick);
+  elements.comparisonSwap?.addEventListener("click", onComparisonSwapClick);
+  elements.comparisonFitBoth?.addEventListener("click", onComparisonFitBothClick);
+  elements.comparisonClose?.addEventListener("click", onComparisonCloseClick);
+  elements.comparisonWorkspace?.addEventListener("click", onComparisonWorkspaceClick);
   window.addEventListener("popstate", onDeepLinkPopState);
-  applyResolvedDeepLink(initialDeepLink, { canonicalize: true, announceIssues: true });
+  applyResolvedDeepLink(initialDeepLink, { canonicalize: false, announceIssues: true });
+  applyComparisonResolvedState(initialComparisonState, {
+    canonicalize: true,
+    announceIssues: true,
+  });
 }
 
 function renderPageChrome() {
@@ -227,9 +290,394 @@ function renderPageChrome() {
       params.set("arch", switcher.value);
       params.delete("board");
       params.delete("node");
+      params.delete("compare_arch");
+      params.delete("compare_board");
+      params.delete("compare_node");
       window.location.search = params.toString();
     });
   }
+}
+
+async function ensureRendererModel(architectureId) {
+  if (!architectureId) return null;
+  if (loadedRendererModels.has(architectureId)) {
+    return loadedRendererModels.get(architectureId);
+  }
+  const entry = manifestIndex.find((candidate) => candidate.id === architectureId);
+  if (!entry) return null;
+  const { manifest: loadedManifest } = await import(`./${entry.file}`);
+  const model = createRendererModel(loadedManifest);
+  loadedRendererModels.set(architectureId, model);
+  return model;
+}
+
+function loadedArchitectureDescriptors() {
+  return [...loadedRendererModels.entries()].map(([id, model]) => ({
+    id,
+    manifest: model.manifest,
+  }));
+}
+
+function resolveCurrentComparisonState(search = window.location.search) {
+  return resolveComparisonState({
+    architectures: loadedArchitectureDescriptors(),
+    defaultArchitectureId: manifestIndex[0]?.id,
+    search,
+  });
+}
+
+function subjectMatchesLocation(subject, architectureId, boardId) {
+  return subject?.sourceSet === architectureId && subject?.boardRef === boardId;
+}
+
+function comparisonOrientationFor(primaryArchitectureId, primaryBoardId, comparisonArchitectureId, comparisonBoardId) {
+  for (const recipe of comparisonIndex?.items || []) {
+    const primary = recipe.subjects?.primary;
+    const counterpart = recipe.subjects?.counterpart;
+    if (
+      subjectMatchesLocation(primary, primaryArchitectureId, primaryBoardId)
+      && subjectMatchesLocation(counterpart, comparisonArchitectureId, comparisonBoardId)
+    ) {
+      return { recipe, primarySide: "primary", comparisonSide: "counterpart" };
+    }
+    if (
+      subjectMatchesLocation(counterpart, primaryArchitectureId, primaryBoardId)
+      && subjectMatchesLocation(primary, comparisonArchitectureId, comparisonBoardId)
+    ) {
+      return { recipe, primarySide: "counterpart", comparisonSide: "primary" };
+    }
+  }
+  return null;
+}
+
+function suggestedComparisonForCurrentBoard() {
+  const architectureId = activeManifestEntry.id;
+  const boardId = currentBoard()?.id;
+  for (const recipe of comparisonIndex?.items || []) {
+    const primary = recipe.subjects?.primary;
+    const counterpart = recipe.subjects?.counterpart;
+    if (subjectMatchesLocation(primary, architectureId, boardId)) {
+      return { recipe, currentSide: "primary", target: counterpart };
+    }
+    if (subjectMatchesLocation(counterpart, architectureId, boardId)) {
+      return { recipe, currentSide: "counterpart", target: primary };
+    }
+  }
+  return null;
+}
+
+function updateCompareAction() {
+  if (!elements.focusCompare) return;
+  const suggestion = state.comparisonState?.comparison
+    ? null
+    : suggestedComparisonForCurrentBoard();
+  elements.focusCompare.hidden = !suggestion;
+  if (!suggestion) return;
+  const label = suggestion.target.label || suggestion.target.boardTitle || "comparison";
+  elements.focusCompare.title = `Compare with ${label}`;
+  elements.focusCompare.setAttribute("aria-label", `Compare this view with ${label}`);
+  elements.focusCompare.querySelector("span").textContent = "Compare";
+}
+
+function activeAlignment(side) {
+  if (!activeComparisonRecipe || !activeComparisonOrientation) return new Map();
+  const sourceSide = side === "primary"
+    ? activeComparisonOrientation.primarySide
+    : activeComparisonOrientation.comparisonSide;
+  return buildAlignmentIndex(activeComparisonRecipe, sourceSide);
+}
+
+function applyPrimaryComparisonDecorations() {
+  clearAlignmentDecorations(elements.moduleLayer);
+  if (!state.comparisonState?.comparison || !activeComparisonRecipe) return;
+  const alignmentIndex = activeAlignment("primary");
+  visibleNodes(currentBoard()).forEach((node) => {
+    const alignment = alignmentForNode(node, alignmentIndex);
+    if (!alignment) return;
+    const element = elements.moduleLayer.querySelector(
+      `[data-node-id="${CSS.escape(node.id)}"]`,
+    );
+    decorateAlignmentElement(element, alignment);
+  });
+}
+
+function comparisonGroupSummaryHtml(recipe) {
+  return (recipe?.groups || []).map((group) => `
+    <span class="comparison-group-chip" title="${escapeHtml(group.description || "")}">
+      <b>${escapeHtml((group.alignmentRefs || []).length)}</b>
+      ${escapeHtml(group.label)}
+    </span>
+  `).join("");
+}
+
+function renderComparisonChrome(resolved, orientation, comparisonModel, board) {
+  const recipe = orientation?.recipe;
+  const primarySubject = recipe?.subjects?.[orientation.primarySide];
+  const comparisonSubject = recipe?.subjects?.[orientation.comparisonSide];
+  elements.comparisonQuestion.textContent = recipe?.question || "Architecture comparison";
+  elements.comparisonSummary.textContent = recipe?.summary
+    || "Compare the two selected architecture boards without changing their source facts.";
+  elements.comparisonPrimaryLabel.textContent = primarySubject?.label
+    || currentBoard()?.title
+    || manifest.architecture.name;
+  elements.comparisonCounterpartLabel.textContent = comparisonSubject?.label
+    || board.title
+    || comparisonModel.manifest.architecture.name;
+  elements.comparisonCanvasTitle.textContent = board.title;
+  elements.comparisonGroupSummary.innerHTML = comparisonGroupSummaryHtml(recipe);
+}
+
+function teardownComparisonWorkspace() {
+  const restorePrimaryFocus = elements.comparisonWorkspace.contains(document.activeElement);
+  comparisonBoardRenderer?.destroy();
+  comparisonBoardRenderer = null;
+  activeComparisonRecipe = null;
+  activeComparisonOrientation = null;
+  clearAlignmentDecorations(elements.moduleLayer);
+  elements.comparisonWorkspace.hidden = true;
+  elements.canvasWorkspace.classList.remove("is-comparing");
+  document.body.classList.remove("is-comparing");
+  delete document.body.dataset.comparisonMobileSide;
+  updateCompareAction();
+  if (restorePrimaryFocus) {
+    const target = !elements.focusCompare?.hidden ? elements.focusCompare : elements.canvas;
+    target?.focus?.({ preventScroll: true });
+  }
+}
+
+async function applyComparisonResolvedState(
+  resolved,
+  { canonicalize = false, announceIssues = false, historyMode = null } = {},
+) {
+  state.comparisonState = resolved;
+  const comparison = resolved?.comparison;
+  if (!comparison) {
+    teardownComparisonWorkspace();
+    if (canonicalize || resolved?.sanitized || historyMode) {
+      syncDeepLinkHistory({ mode: historyMode || "replace" });
+    } else {
+      state.comparisonHistory = currentComparisonHistoryState();
+    }
+    if (announceIssues) {
+      const message = deepLinkIssueMessage(resolved?.issues || []);
+      if (message) announceQuestionCopy(message);
+    }
+    return;
+  }
+
+  const comparisonModel = await ensureRendererModel(comparison.architectureId);
+  const board = comparisonModel?.indexes?.boardsById?.get(comparison.boardId);
+  if (!comparisonModel || !board) {
+    state.comparisonState = { ...resolved, comparison: null, selectionSide: null };
+    teardownComparisonWorkspace();
+    syncDeepLinkHistory({ mode: historyMode || "replace" });
+    return;
+  }
+
+  activeComparisonOrientation = comparisonOrientationFor(
+    activeManifestEntry.id,
+    currentBoard()?.id,
+    comparison.architectureId,
+    comparison.boardId,
+  );
+  activeComparisonRecipe = activeComparisonOrientation?.recipe || null;
+  comparisonBoardRenderer?.destroy();
+  elements.comparisonWorkspace.hidden = false;
+  elements.canvasWorkspace.classList.add("is-comparing");
+  document.body.classList.add("is-comparing");
+  document.body.dataset.comparisonMobileSide ||= "primary";
+  renderComparisonChrome(resolved, activeComparisonOrientation, comparisonModel, board);
+  comparisonBoardRenderer = createComparisonBoardRenderer({
+    root: elements.comparisonCanvas,
+    surfaceKey: `comparison-${comparison.architectureId}-${comparison.boardId}`,
+    rendererModel: comparisonModel,
+    board,
+    alignmentIndex: activeAlignment("comparison"),
+    onSelectNode: (node) => focusComparisonNode(node),
+    onSelectEdge: (edge) => focusComparisonEdge(edge),
+  });
+  await comparisonBoardRenderer.render();
+  applyPrimaryComparisonDecorations();
+  updateCompareAction();
+  updateDeepLinkControl();
+
+  if (resolved.selectionSide === "comparison" && comparison.nodeId) {
+    const selectedNode = visibleNodes(board).find((node) => node.id === comparison.nodeId);
+    if (selectedNode) focusComparisonNode(selectedNode, { sync: false });
+  }
+
+  if (canonicalize || resolved.sanitized || historyMode) {
+    syncDeepLinkHistory({ mode: historyMode || "replace" });
+  } else {
+    state.comparisonHistory = currentComparisonHistoryState();
+  }
+  if (announceIssues) {
+    const message = deepLinkIssueMessage(resolved.issues || []);
+    if (message) announceQuestionCopy(message);
+  }
+}
+
+function comparisonAlignmentForNode(node) {
+  return alignmentForNode(node, activeAlignment("comparison"));
+}
+
+function comparisonNodeInspectorHtml(node) {
+  const alignment = comparisonAlignmentForNode(node);
+  const relationship = alignment?.relationship
+    ? humanizeRef(alignment.relationship)
+    : null;
+  const evidenceStatus = alignment?.evidence?.status
+    ? humanizeRef(alignment.evidence.status)
+    : null;
+  const evidenceLocators = (alignment?.evidence?.refs || [])
+    .map((ref) => ref.locator)
+    .filter(Boolean);
+  return `
+    <div class="focus-section">
+      <p>${escapeHtml(node.role || node.detail || "Reusable comparison-board fact.")}</p>
+      <dl class="focus-dl">
+        <dt>surface</dt><dd>B · Compare</dd>
+        ${node.shape ? `<dt>shape</dt><dd><code>${escapeHtml(node.shape)}</code></dd>` : ""}
+        ${node.operation ? `<dt>operation</dt><dd>${escapeHtml(humanizeRef(node.operation))}</dd>` : ""}
+        ${alignment?.label ? `<dt>match</dt><dd>${escapeHtml(alignment.label)}</dd>` : ""}
+        ${relationship ? `<dt>comparison</dt><dd>${escapeHtml(relationship)}</dd>` : ""}
+        ${evidenceStatus ? `<dt>evidence</dt><dd>${escapeHtml(evidenceStatus)}</dd>` : ""}
+      </dl>
+      ${node.code ? `<h3>Reusable trace</h3><pre class="reuse-code"><code>${escapeHtml(node.code)}</code></pre>` : ""}
+      ${node.tex ? `<div class="reuse-equation">\\[${escapeHtml(node.tex)}\\]</div>` : ""}
+      ${alignment?.statement ? `<h3>Why these correspond</h3><p>${escapeHtml(alignment.statement)}</p>` : ""}
+      ${evidenceLocators.length
+        ? `<p><strong>Checked at:</strong> ${evidenceLocators.map((locator) => `<code>${escapeHtml(locator)}</code>`).join(", ")}</p>`
+        : ""}
+      ${node.instance_fact_ref || node.template_fact_ref
+        ? `<p><strong>Fact:</strong> <code>${escapeHtml(node.instance_fact_ref || node.template_fact_ref)}</code></p>`
+        : ""}
+    </div>
+  `;
+}
+
+function focusComparisonNode(node, { sync = true } = {}) {
+  state.selection = null;
+  clearActiveNodes();
+  comparisonBoardRenderer?.selectNode(node.id);
+  state.comparisonState = setComparisonSelection(state.comparisonState, {
+    side: "comparison",
+    nodeId: node.id,
+    selectedNode: node,
+  });
+  if (elements.focusQuestion) elements.focusQuestion.hidden = true;
+  elements.focusTitle.textContent = node.label || node.id;
+  setFocusBody(comparisonNodeInspectorHtml(node), { selected: true });
+  updateDeepLinkControl();
+  if (sync) syncDeepLinkHistory({ mode: "replace" });
+}
+
+function focusComparisonEdge(edge) {
+  state.selection = null;
+  clearActiveNodes();
+  comparisonBoardRenderer?.selectEdge(edge.comparison_edge_index);
+  state.comparisonState = setComparisonSelection(state.comparisonState, {
+    side: "comparison",
+    nodeId: null,
+  });
+  if (elements.focusQuestion) elements.focusQuestion.hidden = true;
+  elements.focusTitle.textContent = edge.connection?.title || "Comparison connection";
+  setFocusBody(`
+    <div class="focus-section">
+      <p>${escapeHtml(edge.connection?.inside || "Reusable template information flow.")}</p>
+      <dl class="focus-dl"><dt>surface</dt><dd>B · Compare</dd></dl>
+    </div>
+  `, { selected: true });
+  updateDeepLinkControl();
+  syncDeepLinkHistory({ mode: "replace" });
+}
+
+async function onFocusCompareClick() {
+  const suggestion = suggestedComparisonForCurrentBoard();
+  if (!suggestion) return;
+  const targetModel = await ensureRendererModel(suggestion.target.sourceSet);
+  if (!targetModel) return;
+  const primaryLink = currentRendererDeepLink();
+  const search = writeComparisonLink(window.location.search, {
+    defaultArchitectureId: manifestIndex[0]?.id,
+    primary: {
+      architectureId: activeManifestEntry.id,
+      rootBoardId: manifest.boards.rootBoard,
+      boardId: primaryLink.boardId,
+      nodeId: primaryLink.nodeId,
+    },
+    comparison: {
+      architectureId: suggestion.target.sourceSet,
+      rootBoardId: targetModel.manifest.boards.rootBoard,
+      boardId: suggestion.target.boardRef,
+      nodeId: null,
+    },
+    selectionSide: primaryLink.nodeId ? "primary" : null,
+  });
+  const resolved = resolveCurrentComparisonState(search);
+  await applyComparisonResolvedState(resolved, { historyMode: "push" });
+}
+
+function onComparisonCloseClick() {
+  state.comparisonState = {
+    ...state.comparisonState,
+    comparison: null,
+    selectionSide: state.selection?.kind === "node" ? "primary" : null,
+  };
+  teardownComparisonWorkspace();
+  focusOverview();
+  syncDeepLinkHistory({ mode: "push" });
+}
+
+async function onComparisonSwapClick() {
+  const comparison = state.comparisonState?.comparison;
+  if (!comparison) return;
+  const primary = currentComparisonHistoryState().primary;
+  const comparisonModel = await ensureRendererModel(comparison.architectureId);
+  if (!comparisonModel) return;
+  const swappedSearch = writeComparisonLink(window.location.search, {
+    defaultArchitectureId: manifestIndex[0]?.id,
+    primary: {
+      architectureId: comparison.architectureId,
+      rootBoardId: comparison.rootBoardId,
+      boardId: comparison.boardId,
+      nodeId: null,
+    },
+    comparison: {
+      architectureId: activeManifestEntry.id,
+      rootBoardId: manifest.boards.rootBoard,
+      boardId: primary.boardId,
+      nodeId: null,
+    },
+    selectionSide: null,
+  });
+  if (comparison.architectureId !== activeManifestEntry.id) {
+    window.location.search = swappedSearch;
+    return;
+  }
+  const primaryResolved = resolveDeepLink({
+    boards: manifest.boards.items,
+    rootBoardId: manifest.boards.rootBoard,
+    search: swappedSearch,
+  });
+  const combined = resolveCurrentComparisonState(swappedSearch);
+  applyResolvedDeepLink(primaryResolved, { canonicalize: false });
+  await applyComparisonResolvedState(combined, { historyMode: "push" });
+}
+
+function onComparisonFitBothClick() {
+  state.userMovedViewport = false;
+  fitToContent({ readable: false });
+  comparisonBoardRenderer?.surface.fit();
+}
+
+function onComparisonWorkspaceClick(event) {
+  const side = event.target.closest("[data-comparison-mobile-side]")?.dataset.comparisonMobileSide;
+  if (!side) return;
+  document.body.dataset.comparisonMobileSide = side;
+  elements.comparisonWorkspace.querySelectorAll("[data-comparison-mobile-side]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.comparisonMobileSide === side));
+  });
 }
 
 window.addEventListener("mathjax-ready", () => {
@@ -471,15 +919,40 @@ function currentRendererDeepLink() {
   return { boardId, nodeId };
 }
 
+function currentComparisonHistoryState(link = currentRendererDeepLink()) {
+  const comparison = state.comparisonState?.comparison;
+  const selectionSide = comparison?.nodeId
+    ? "comparison"
+    : link.nodeId
+      ? "primary"
+      : null;
+  return {
+    primary: {
+      architectureId: activeManifestEntry.id,
+      rootBoardId: manifest.boards.rootBoard,
+      boardId: link.boardId,
+      nodeId: selectionSide === "primary" ? link.nodeId : null,
+    },
+    comparison: comparison
+      ? {
+        architectureId: comparison.architectureId,
+        rootBoardId: comparison.rootBoardId,
+        boardId: comparison.boardId,
+        nodeId: selectionSide === "comparison" ? comparison.nodeId : null,
+      }
+      : null,
+    selectionSide,
+  };
+}
+
 function canonicalDeepLinkSearch(link = currentRendererDeepLink()) {
-  const search = writeDeepLink(window.location.search, {
-    rootBoardId: manifest.boards.rootBoard,
-    boardId: link.boardId,
-    nodeId: link.nodeId,
+  const location = currentComparisonHistoryState(link);
+  return writeComparisonLink(window.location.search, {
+    defaultArchitectureId: manifestIndex[0]?.id,
+    primary: location.primary,
+    comparison: location.comparison,
+    selectionSide: location.selectionSide,
   });
-  const params = new URLSearchParams(search);
-  params.set("arch", activeManifestEntry.id);
-  return `?${params.toString()}`;
 }
 
 function deepLinkLocation(search) {
@@ -490,14 +963,21 @@ function syncDeepLinkHistory({ mode = null } = {}) {
   if (deepLinkWritesSuppressed) return;
   const next = currentRendererDeepLink();
   const previous = state.deepLink;
-  const requestedMode = mode || deepLinkHistoryMode(previous, next);
+  const nextComparison = currentComparisonHistoryState(next);
+  const requestedMode = mode || (
+    nextComparison.comparison || state.comparisonHistory?.comparison
+      ? comparisonHistoryMode(state.comparisonHistory, nextComparison)
+      : deepLinkHistoryMode(previous, next)
+  );
+  if (requestedMode === "none") return;
   const search = canonicalDeepLinkSearch(next);
   const location = deepLinkLocation(search);
   const currentLocation = deepLinkLocation(window.location.search);
   state.deepLink = next;
+  state.comparisonHistory = nextComparison;
   if (location === currentLocation) return;
   const historyMode = requestedMode === "push" ? "pushState" : "replaceState";
-  window.history[historyMode]({ architectureDeepLink: next }, "", location);
+  window.history[historyMode]({ architectureDeepLink: nextComparison }, "", location);
 }
 
 function deepLinkIssueMessage(issues = []) {
@@ -510,6 +990,15 @@ function deepLinkIssueMessage(issues = []) {
   }
   if (codes.has("unknown_node")) {
     return "That shared component is no longer on this board, so the board overview was opened instead.";
+  }
+  if (codes.has("unknown_compare_arch")) {
+    return "That comparison target is no longer available, so the primary architecture view was kept.";
+  }
+  if (codes.has("unknown_compare_board")) {
+    return "That comparison view is no longer available, so its architecture overview was opened instead.";
+  }
+  if (codes.has("unknown_compare_node")) {
+    return "That compared component is no longer on its board, so the comparison overview was opened instead.";
   }
   return null;
 }
@@ -537,27 +1026,45 @@ function applyResolvedDeepLink(resolved, { canonicalize = false, announceIssues 
   }
 }
 
-function onDeepLinkPopState() {
+async function onDeepLinkPopState() {
   const params = new URLSearchParams(window.location.search);
   const requestedArch = params.get("arch");
   if (requestedArch && requestedArch !== activeManifestEntry.id) {
     window.location.reload();
     return;
   }
+  const requestedCompareArch = params.get("compare_arch");
+  if (requestedCompareArch) await ensureRendererModel(requestedCompareArch);
+  const comparisonResolved = resolveCurrentComparisonState();
   const resolved = resolveDeepLink({
     boards: manifest.boards.items,
     rootBoardId: manifest.boards.rootBoard,
     search: window.location.search,
   });
   applyResolvedDeepLink(resolved, {
-    canonicalize: resolved.sanitized || !requestedArch,
+    canonicalize: false,
+    announceIssues: true,
+  });
+  await applyComparisonResolvedState(comparisonResolved, {
+    canonicalize: resolved.sanitized || comparisonResolved.sanitized || !requestedArch,
     announceIssues: true,
   });
 }
 
 function deepLinkTargetLabel() {
+  const comparison = state.comparisonState?.comparison;
+  if (comparison && state.comparisonState.selectionSide === "comparison" && comparison.nodeId) {
+    const selectedNode = comparison.selectedNode
+      || visibleNodes(comparisonBoardRenderer?.board || {}).find((node) => node.id === comparison.nodeId);
+    return `${selectedNode?.label || comparison.nodeId} (B · Compare)`;
+  }
   if (state.selection?.kind === "node" && state.selection.boardId === currentBoard().id) {
-    return nodeLabelById(state.selection.occurrenceId);
+    const suffix = comparison ? " (A · Current)" : "";
+    return `${nodeLabelById(state.selection.occurrenceId)}${suffix}`;
+  }
+  if (comparison) {
+    const counterpart = comparisonBoardRenderer?.board?.title || comparison.boardId;
+    return `${currentBoard()?.title || manifest.architecture.name} compared with ${counterpart}`;
   }
   return currentBoard()?.title || manifest.architecture.name;
 }
@@ -682,13 +1189,15 @@ function questionContextForTarget(target) {
 
 function questionIdentifierForTarget(target) {
   if (target?.kind === "node") {
-    return canonicalNodeRef(target.node) || `${currentBoard().id}#${target.node.id}`;
+    return canonicalNodeRef(target.node)
+      || target.node.template_fact_ref
+      || `${currentBoard().id}#${target.node.id}`;
   }
   if (target?.kind === "edge") {
     const relationPath = edgeRelationPath(target.edge);
     return relationPath.length
       ? relationPath.join(" → ")
-      : `${target.edge.from} → ${target.edge.to}`;
+      : target.edge.template_fact_ref || `${target.edge.from} → ${target.edge.to}`;
   }
   return "architecture element";
 }
@@ -734,6 +1243,14 @@ function selectionTarget() {
 function setSelection(target) {
   closeQuestionMenu();
   state.selection = createWorkspaceSelection(target, currentBoard().id);
+  if (!deepLinkWritesSuppressed && state.comparisonState?.comparison) {
+    state.comparisonState = setComparisonSelection(state.comparisonState, {
+      side: "primary",
+      nodeId: state.selection?.kind === "node" ? state.selection.occurrenceId : null,
+      selectedNode: target?.node || null,
+    });
+    comparisonBoardRenderer?.clearSelection();
+  }
   if (elements.focusQuestion) {
     elements.focusQuestion.hidden = !state.selection;
     elements.focusQuestion.setAttribute("aria-expanded", "false");
@@ -1221,6 +1738,7 @@ function renderBoard() {
   state.edgeAnnotationBoxes = [];
   resetGridColumnSizing();
   elements.moduleLayer.innerHTML = "";
+  elements.regionLayer.innerHTML = "";
   elements.representationLaneLayer.innerHTML = "";
   elements.edgeLayer.innerHTML = "";
   [elements.moduleLayer, elements.representationLaneLayer].forEach((layer) => {
@@ -1260,6 +1778,8 @@ function renderBoard() {
     });
     elements.moduleLayer.appendChild(el);
   }
+  applyPrimaryComparisonDecorations();
+  updateCompareAction();
   applyViewport();
   layoutBoard(graph);
 }
@@ -1378,6 +1898,8 @@ function useGridLayout(graph) {
   elements.canvas.classList.remove("is-elk-layout");
   elements.moduleLayer.style.width = "";
   elements.moduleLayer.style.height = "";
+  elements.regionLayer.style.width = "";
+  elements.regionLayer.style.height = "";
   elements.representationLaneLayer.style.width = "";
   elements.representationLaneLayer.style.height = "";
   elements.edgeLayer.style.width = "";
@@ -1413,6 +1935,8 @@ function applyElkLayout(layout) {
   elements.canvas.classList.add("is-elk-layout");
   elements.moduleLayer.style.width = `${width}px`;
   elements.moduleLayer.style.height = `${height}px`;
+  elements.regionLayer.style.width = `${width}px`;
+  elements.regionLayer.style.height = `${height}px`;
   elements.representationLaneLayer.style.width = `${width}px`;
   elements.representationLaneLayer.style.height = `${height}px`;
   elements.edgeLayer.style.width = `${width}px`;
@@ -1466,7 +1990,10 @@ function boardViewportCenter(canvasRect, baseX, baseY) {
 }
 
 function boardContentBounds() {
-  const nodes = elements.moduleLayer.querySelectorAll("[data-node-id], .board-region");
+  const nodes = [
+    ...elements.moduleLayer.querySelectorAll("[data-node-id]"),
+    ...elements.regionLayer.querySelectorAll(".board-region"),
+  ];
   if (!nodes.length) return null;
   let minX = Infinity;
   let minY = Infinity;
@@ -2301,6 +2828,7 @@ function repFocusHtml(node, rep) {
       </dl>
       ${semantics?.notes?.length ? semantics.notes.map((note) => `<p>${escapeHtml(note)}</p>`).join("") : ""}
       ${carries.length ? `<h3>Carries</h3><ul class="claim-list">${carries.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}
+      ${node.template_fact_ref ? `<p><strong>Reusable template:</strong> <code>${escapeHtml(node.template_fact_ref)}</code></p>` : ""}
       ${rep?.evidence ? renderReferences(rep) : ""}
     </div>
   `;
@@ -2893,7 +3421,13 @@ function renderEdges() {
 }
 
 function renderBoardRegions(board) {
-  elements.moduleLayer.querySelectorAll(".board-region").forEach((element) => element.remove());
+  elements.regionLayer.replaceChildren();
+  renderVisualSegmentRegions({
+    regionLayer: elements.regionLayer,
+    moduleLayer: elements.moduleLayer,
+    board,
+    surfaceKey: "primary",
+  });
   for (const region of repeatRegions(board)) {
     const boxes = (region.node_ids || region.nodeIds || []).map((nodeId) => {
       const element = elements.moduleLayer.querySelector(`[data-node-id="${CSS.escape(nodeId)}"]`);
@@ -2915,8 +3449,7 @@ function renderBoardRegions(board) {
     const enclosure = document.createElement("div");
     enclosure.className = "board-region repeat-region";
     enclosure.dataset.regionId = region.id;
-    enclosure.setAttribute("role", "group");
-    enclosure.setAttribute("aria-label", repeatRegionAccessibleLabel(region, loop));
+    enclosure.setAttribute("aria-hidden", "true");
     enclosure.style.left = `${Math.round(bounds.x)}px`;
     enclosure.style.top = `${Math.round(bounds.y)}px`;
     enclosure.style.width = `${Math.round(bounds.width)}px`;
@@ -2935,7 +3468,7 @@ function renderBoardRegions(board) {
       header.appendChild(count);
     }
     enclosure.appendChild(header);
-    elements.moduleLayer.appendChild(enclosure);
+    elements.regionLayer.appendChild(enclosure);
   }
 }
 
@@ -3742,7 +4275,11 @@ function focusOperation(node) {
       <dl class="focus-dl">
         <dt>scale</dt><dd>${escapeHtml(node.scale || "operation")}</dd>
         <dt>node</dt><dd>${escapeHtml(node.id)}</dd>
+        ${node.template_fact_ref ? `<dt>template fact</dt><dd><code>${escapeHtml(node.template_fact_ref)}</code></dd>` : ""}
+        ${node.block_instance_ref ? `<dt>instance</dt><dd><code>${escapeHtml(node.block_instance_ref)}</code></dd>` : ""}
       </dl>
+      ${node.code ? `<h3>Reusable trace</h3><pre class="standard-block-code"><code>${escapeHtml(node.code)}</code></pre>` : ""}
+      ${node.tex ? `<div class="math-line">\\(${escapeHtml(node.tex)}\\)</div>` : ""}
     </div>
   `, { selected: true });
 }
@@ -3802,17 +4339,21 @@ function renderUnusedInputs(inputs) {
 }
 
 function renderStandardBlocks(module) {
+  const instances = blockInstancesBySubject.get(`modules.${module.id}`) || [];
   const refs = standardBlockRefsForModule(module);
   const blocks = refs
     .map((ref) => standardBlockFromRef(ref))
     .filter(Boolean)
     .filter((block, index, all) => all.findIndex((candidate) => candidate.id === block.id) === index);
-  if (!blocks.length) return "";
-  return blocks.map(renderStandardBlock).join("");
+  if (!blocks.length && !instances.length) return "";
+  return [
+    ...instances.map(renderBlockInstance),
+    ...blocks.map((block) => renderStandardBlock(block)),
+  ].join("");
 }
 
 function standardBlockFromRef(ref) {
-  return Object.values(manifest.standardBlocks).find(
+  return standardBlocksById.get(ref) || Object.values(manifest.standardBlocks).find(
     (block) => block.sourceYaml === ref || block.id === ref,
   );
 }
@@ -3820,22 +4361,38 @@ function standardBlockFromRef(ref) {
 function renderStandardBlock(block) {
   return `
     <h3>${escapeHtml(block.name)}</h3>
-    ${block.id === "pair_biased_attention" ? renderAttentionTermDiagram() : ""}
     <ol class="math-list">
-      ${block.math.map(renderMathStep).join("")}
+      ${(block.math || []).map(renderMathStep).join("")}
     </ol>
   `;
 }
 
-function renderAttentionTermDiagram() {
+function readableReuse(value) {
+  return String(value || "").replaceAll("_", " ");
+}
+
+function renderBlockInstance(instance) {
+  const block = standardBlocksById.get(instance.standardBlockId);
+  const steps = instance.pseudocode || [];
   return `
-    <div class="pair-block">
-      <div class="pair-matrix qk">QK logits</div>
-      <div class="pair-plus">+</div>
-      <div class="pair-matrix bias">Linear(context)</div>
-      <div class="pair-arrow">softmax</div>
-      <div class="pair-matrix weights">weights @ V</div>
-    </div>
+    <section class="standard-block-instance">
+      <h3>${escapeHtml(block?.name || instance.standardBlockName || instance.standardBlockId)}</h3>
+      <div class="standard-block-instance-meta">
+        <span>${escapeHtml(instance.variantLabel || readableReuse(instance.variant))}</span>
+        <span>${escapeHtml(readableReuse(instance.conformance))}</span>
+        <span>${escapeHtml(readableReuse(instance.useScope))}</span>
+      </div>
+      <p>${escapeHtml(instance.variantDescription || block?.description || "")}</p>
+      ${instance.differenceSummary
+        ? `<div class="warning-note"><strong>Architecture-specific difference</strong><span>${escapeHtml(instance.differenceSummary)}</span></div>`
+        : ""}
+      ${steps.length
+        ? `<h3>Reusable pseudocode</h3><ol class="pseudo-lines">${steps.map((step) => `
+          <li><code>${escapeHtml(step.code)}</code><span>${escapeHtml(step.label)}</span></li>
+        `).join("")}</ol>`
+        : ""}
+      ${renderReferences(instance)}
+    </section>
   `;
 }
 
@@ -3845,7 +4402,8 @@ function renderPseudocode(module) {
   const relevant = program.lines.filter((line) =>
     (line.architectureRefs || []).includes(`modules.${module.id}`),
   );
-  const lines = relevant.length ? relevant : program.lines.slice(0, 6);
+  const lines = relevant;
+  if (!lines.length) return "";
   return `
     <h3>Pseudocode trace</h3>
     <ol class="pseudo-lines">
@@ -4074,6 +4632,7 @@ function flushViewport() {
   viewportFrame = null;
   const transform = `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})`;
   if (transform !== renderedViewportTransform) {
+    elements.regionLayer.style.transform = transform;
     elements.representationLaneLayer.style.transform = transform;
     elements.moduleLayer.style.transform = transform;
     elements.edgeLayer.style.transform = transform;

@@ -22,6 +22,14 @@ function sourceFixture() {
       modules: {
         encoder: { id: "encoder", label: "Encoder" },
       },
+      block_instances: {
+        encoder_attention: {
+          id: "encoder_attention",
+          subjectRef: "modules.encoder",
+          standardBlockId: "pair_biased_attention",
+          variant: "logit_bias_only",
+        },
+      },
       representations: {
         coordinates: {
           id: "coordinates",
@@ -121,6 +129,9 @@ function sourceFixture() {
       },
     },
     boards: { root_board: "root" },
+    standard_blocks: {
+      pair_biased_attention: { id: "pair_biased_attention", name: "Pair-Biased Attention" },
+    },
   };
 }
 
@@ -145,6 +156,7 @@ test("normalization turns aliases and keyed collections into one renderer shape"
 
   assert.equal(manifest.architecture.sourceYaml, "../../architectures/example.yaml");
   assert.deepEqual(manifest.architecture.modules.map(({ id }) => id), ["encoder"]);
+  assert.deepEqual(manifest.architecture.blockInstances.map(({ id }) => id), ["encoder_attention"]);
   assert.deepEqual(manifest.architecture.representations.map(({ id }) => id), ["coordinates"]);
   assert.deepEqual(
     manifest.architecture.valueSites.map(({ id }) => id),
@@ -255,6 +267,12 @@ test("the model owns reusable indexes and typed-ref resolution", () => {
     indexes.relationsById.get("input_enters_encoder"),
   );
   assert.equal(indexes.boardsById.get("root").title, "Root");
+  assert.equal(indexes.standardBlocksById.get("pair_biased_attention").name, "Pair-Biased Attention");
+  assert.equal(indexes.blockInstancesById.get("encoder_attention").variant, "logit_bias_only");
+  assert.equal(
+    indexes.blockInstancesBySubject.get("modules.encoder")[0].id,
+    "encoder_attention",
+  );
   assert.equal(
     indexes.conditioningByRelation.get("input_enters_encoder").id,
     "coordinate_conditioning",

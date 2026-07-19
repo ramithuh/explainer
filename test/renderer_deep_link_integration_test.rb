@@ -20,8 +20,10 @@ class RendererDeepLinkIntegrationTest < Minitest::Test
     assert_includes @renderer, "boards: manifest.boards.items"
     assert_includes @renderer, "rootBoardId: manifest.boards.rootBoard"
     assert_includes @renderer, "search: window.location.search"
-    assert_includes render,
-      "applyResolvedDeepLink(initialDeepLink, { canonicalize: true, announceIssues: true });"
+    assert_in_order render,
+      "applyResolvedDeepLink(initialDeepLink, { canonicalize: false, announceIssues: true });",
+      "applyComparisonResolvedState(initialComparisonState, {",
+      "canonicalize: true"
   end
 
   def test_initial_state_uses_the_reconstructed_stack_and_return_origins
@@ -75,7 +77,8 @@ class RendererDeepLinkIntegrationTest < Minitest::Test
 
     assert_includes popstate, "resolveDeepLink({"
     assert_includes popstate, "applyResolvedDeepLink(resolved, {"
-    assert_includes popstate, "canonicalize: resolved.sanitized || !requestedArch"
+    assert_includes popstate,
+      "canonicalize: resolved.sanitized || comparisonResolved.sanitized || !requestedArch"
     refute_includes popstate, "if (state.isTransitioning)"
     assert_in_order apply,
       "cancelBoardArrival();",
@@ -102,8 +105,10 @@ class RendererDeepLinkIntegrationTest < Minitest::Test
     shareable = function_source("shareableDeepLinkUrl", "onCopyDeepLinkClick")
     copy = function_source("onCopyDeepLinkClick", "ensureQuestionMenu")
 
-    assert_includes canonical, "writeDeepLink(window.location.search"
-    assert_includes canonical, 'params.set("arch", activeManifestEntry.id)'
+    assert_includes canonical, "writeComparisonLink(window.location.search"
+    assert_includes canonical, "primary: location.primary"
+    assert_includes canonical, "comparison: location.comparison"
+    assert_includes canonical, "selectionSide: location.selectionSide"
     assert_includes shareable, "url.search = canonicalDeepLinkSearch();"
     assert_includes shareable, '["ui", "edit", "tune", "review_refresh"]'
     assert_includes shareable, 'url.hash = ""'

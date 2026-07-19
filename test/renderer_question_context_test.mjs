@@ -36,6 +36,21 @@ const manifest = {
         },
       },
     ],
+    blockInstances: [
+      {
+        id: "encoder_pair_attention",
+        subjectRef: "modules.encoder",
+        standardBlockRef: "standard_blocks/pair-biased-attention.yaml",
+        variant: "logit_bias_only",
+        conformance: "exact",
+        useScope: "whole_module",
+        portBindings: [{ portRef: "ports.single_state", relationRefs: ["relations.input_enters_encoder"] }],
+        evidence: {
+          status: "confirmed_from_code",
+          refs: [{ source_ref: "example_code", role: "implementation_evidence", locator: "Attention.forward" }],
+        },
+      },
+    ],
     representations: [
       {
         id: "single_features",
@@ -266,6 +281,73 @@ test("missing optional metadata degrades to an explicitly ungrounded packet", ()
   assert.deepEqual(context.selection.relation_path, []);
   assert.deepEqual(context.evidence, []);
   assert.match(questionContextReference(context), /mystery->missing$/);
+});
+
+test("reusable internal nodes and edges identify template versus architecture grounding", () => {
+  const componentBoard = {
+    id: "encoder_pair_attention_internals",
+    title: "Pair attention internals",
+    summary: "Reusable detail.",
+    subject_ref: "modules.encoder",
+    nodes: [
+      {
+        id: "pair_bias",
+        kind: "operation",
+        label: "Add pair bias",
+        standard_block_ref: "standard_blocks/pair-biased-attention.yaml",
+        block_instance_ref: "block_instances.encoder_pair_attention",
+        template_fact_ref: "standard_blocks.pair_biased_attention.steps.add_pair_bias",
+      },
+      {
+        id: "biased_logits",
+        kind: "representation",
+        label: "biased logits",
+        block_instance_ref: "block_instances.encoder_pair_attention",
+        template_fact_ref: "standard_blocks.pair_biased_attention.values.biased_logits",
+      },
+    ],
+  };
+  const templateEdge = {
+    id: "pair-bias-output",
+    from: "pair_bias",
+    to: "biased_logits",
+    kind: "data_flow",
+    grounding: "standard_block_template",
+    standard_block_ref: "standard_blocks/pair-biased-attention.yaml",
+    block_instance_ref: "block_instances.encoder_pair_attention",
+    template_fact_ref: "standard_blocks.pair_biased_attention.steps.add_pair_bias",
+    connection: { title: "Add pair bias", role: "step output", inside: "logits = logits + pair_bias" },
+  };
+
+  const nodeContext = buildNodeQuestionContext({
+    sourceSet: "example",
+    manifest,
+    board: componentBoard,
+    node: componentBoard.nodes[0],
+    edges: [templateEdge],
+  });
+  assert.equal(nodeContext.selection.grounding, "standard_block_template");
+  assert.equal(
+    nodeContext.selection.template_fact_ref,
+    "standard_blocks.pair_biased_attention.steps.add_pair_bias",
+  );
+  assert.equal(nodeContext.reusable_component.variant, "logit_bias_only");
+  assert.equal(nodeContext.reusable_component.conformance, "exact");
+  assert.equal(
+    nodeContext.evidence.find((entry) => entry.fact_ref === "block_instances.encoder_pair_attention").status,
+    "confirmed_from_code",
+  );
+
+  const edgeContext = buildEdgeQuestionContext({
+    sourceSet: "example",
+    manifest,
+    board: componentBoard,
+    edge: templateEdge,
+    edges: [templateEdge],
+  });
+  assert.equal(edgeContext.selection.grounding, "standard_block_template");
+  assert.deepEqual(edgeContext.selection.relation_path, []);
+  assert.equal(edgeContext.reusable_component.block_instance_ref, "block_instances.encoder_pair_attention");
 });
 
 test("formatted clipboard prompt is deterministic and leaves a question slot", () => {

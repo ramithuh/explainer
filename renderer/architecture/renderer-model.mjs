@@ -237,6 +237,9 @@ export function normalizeRendererManifest(source = {}) {
     ...sourceArchitecture,
     sourceYaml: sourceArchitecture.sourceYaml || sourceArchitecture.source_yaml,
     modules: collectionValues(sourceArchitecture.modules),
+    blockInstances: collectionValues(
+      sourceArchitecture.blockInstances || sourceArchitecture.block_instances,
+    ),
     representations: collectionValues(sourceArchitecture.representations),
     valueSites: collectionValues(sourceArchitecture.valueSites || sourceArchitecture.value_sites),
     relations: collectionValues(sourceArchitecture.relations),
@@ -294,6 +297,20 @@ export function buildRendererIndexes(manifest) {
     }),
   );
   const boardsById = new Map(manifest.boards.items.map((board) => [board.id, board]));
+  const standardBlocksById = new Map(
+    collectionValues(manifest.standardBlocks || manifest.standard_blocks)
+      .map((block) => [block.id, block]),
+  );
+  const blockInstancesById = new Map(
+    (architecture.blockInstances || []).map((instance) => [instance.id, instance]),
+  );
+  const blockInstancesBySubject = new Map();
+  for (const instance of architecture.blockInstances || []) {
+    const key = instance.subjectRef || instance.subject_ref;
+    const matches = blockInstancesBySubject.get(key) || [];
+    matches.push(instance);
+    blockInstancesBySubject.set(key, matches);
+  }
   const conditioningByPair = new Map(
     (architecture.conditioning || []).map((conditioning) => [
       `${conditioning.source}->${String(conditioning.target || "").split(".")[0]}`,
@@ -316,6 +333,9 @@ export function buildRendererIndexes(manifest) {
     valueSiteInterfacesById,
     relationsById,
     boardsById,
+    standardBlocksById,
+    blockInstancesById,
+    blockInstancesBySubject,
     conditioningByPair,
     conditioningByRelation,
   };

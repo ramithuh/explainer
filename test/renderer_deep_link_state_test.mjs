@@ -14,6 +14,7 @@ const boards = [
     id: "root",
     nodes: [
       { id: "sampler", board_ref: "sampling" },
+      { id: "ipa", board_ref: "ipa_internals" },
       { id: "hidden_branch", board_ref: "hidden_detail", treatment: "hidden" },
     ],
   },
@@ -32,6 +33,11 @@ const boards = [
     ],
   },
   { id: "hidden_detail", nodes: [{ id: "hidden_leaf" }] },
+  {
+    id: "ipa_internals",
+    kind: "standard_block_instance",
+    nodes: [{ id: "point_distance_logits", template_fact_ref: "standard_blocks.invariant_point_attention.steps.point_distance_logits" }],
+  },
   { id: "orphan", nodes: [{ id: "orphan_node" }] },
 ];
 
@@ -68,6 +74,22 @@ test("a board and local node resolve to a complete initial renderer state", () =
   assert.equal(
     result.canonicalSearch,
     "?arch=genie3&board=reverse_step_detail&node=denoiser&layout=elk",
+  );
+});
+
+test("a reusable component board and internal step have a stable deep link", () => {
+  const result = resolveDeepLink({
+    boards,
+    rootBoardId: "root",
+    search: "?arch=genie3&board=ipa_internals&node=point_distance_logits",
+  });
+
+  assert.deepEqual(result.boardStack, ["root", "ipa_internals"]);
+  assert.deepEqual(result.boardOrigins, [null, "ipa"]);
+  assert.equal(result.selectedNode.template_fact_ref, "standard_blocks.invariant_point_attention.steps.point_distance_logits");
+  assert.equal(
+    result.canonicalSearch,
+    "?arch=genie3&board=ipa_internals&node=point_distance_logits",
   );
 });
 

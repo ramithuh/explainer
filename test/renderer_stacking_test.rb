@@ -13,14 +13,17 @@ class RendererStackingTest < Minitest::Test
 
   def test_board_uses_explicit_background_wire_and_node_layers
     canvas_rule = css_rule("architecture-canvas")
+    region_rule = css_rule("board-region-layer")
     lane_rule = css_rule("representation-lane-layer")
     edge_rule = css_rule("edge-layer")
     module_rule = css_rule("module-layer")
 
     assert_includes canvas_rule, "isolation: isolate"
-    assert_includes canvas_rule, "--board-layer-representation-lanes: 1"
-    assert_includes canvas_rule, "--board-layer-wires: 2"
-    assert_includes canvas_rule, "--board-layer-nodes: 3"
+    assert_includes canvas_rule, "--board-layer-regions: 1"
+    assert_includes canvas_rule, "--board-layer-representation-lanes: 2"
+    assert_includes canvas_rule, "--board-layer-wires: 3"
+    assert_includes canvas_rule, "--board-layer-nodes: 4"
+    assert_includes region_rule, "z-index: var(--board-layer-regions)"
     assert_includes lane_rule, "z-index: var(--board-layer-representation-lanes)"
     assert_includes edge_rule, "z-index: var(--board-layer-wires)"
     assert_includes module_rule, "z-index: var(--board-layer-nodes)"
@@ -28,11 +31,14 @@ class RendererStackingTest < Minitest::Test
     assert_includes @styles[/\.arch-node,\s*\.arch-rep\s*\{[^}]*}/m], "pointer-events: auto"
 
     lane_position = @html.index('id="representationLaneLayer"')
+    region_position = @html.index('id="boardRegionLayer"')
     module_position = @html.index('id="moduleLayer"')
     edge_position = @html.index('id="edgeLayer"')
     refute_nil lane_position
+    refute_nil region_position
     refute_nil module_position
     refute_nil edge_position
+    assert_operator region_position, :<, lane_position
     assert_operator lane_position, :<, module_position
     assert_operator module_position, :<, edge_position
   end
@@ -45,6 +51,7 @@ class RendererStackingTest < Minitest::Test
     assert_includes render_lanes, "elements.representationLaneLayer.appendChild(guide)"
     refute_includes render_lanes, "elements.moduleLayer.appendChild(guide)"
     assert_includes viewport, "elements.representationLaneLayer.style.transform = transform"
+    assert_includes viewport, "elements.regionLayer.style.transform = transform"
     assert_includes grid_sizing, "elements.representationLaneLayer"
   end
 
@@ -106,7 +113,7 @@ class RendererStackingTest < Minitest::Test
   private
 
   def css_rule(class_name)
-    rule = @styles[/\.#{Regexp.escape(class_name)}\s*\{[^}]*}/m]
+    rule = @styles[/^\.#{Regexp.escape(class_name)}\s*\{[^}]*}/m]
     refute_nil rule, "missing .#{class_name} rule"
     rule
   end
