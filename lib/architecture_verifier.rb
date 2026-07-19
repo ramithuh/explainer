@@ -311,6 +311,32 @@ module ArchitectureVerifier
           )
         end
       end
+      Array(architecture["representations"]).each_with_index do |representation, representation_index|
+        groups = Array(representation["field_groups"])
+        duplicate_ids(groups).each do |id|
+          diagnostics << diagnostic(
+            "source_semantics", "duplicate_semantic_id",
+            "representation #{representation['id']} field_groups contains duplicate id #{id}",
+            file: architecture_file,
+            path: "$.representations[#{representation_index}].field_groups"
+          )
+        end
+        field_owners = {}
+        groups.each_with_index do |group, group_index|
+          Array(group["fields"]).each do |field|
+            if field_owners.key?(field)
+              diagnostics << diagnostic(
+                "source_semantics", "duplicate_representation_field",
+                "representation #{representation['id']} field #{field} appears in groups #{field_owners[field]} and #{group['id']}",
+                file: architecture_file,
+                path: "$.representations[#{representation_index}].field_groups[#{group_index}].fields"
+              )
+            else
+              field_owners[field] = group["id"]
+            end
+          end
+        end
+      end
 
       bibliography_sources = Array(bibliography["sources"]).to_h { |source| [source["id"], source] }
       evidence_facts(architecture).each do |label, item, path|
@@ -712,6 +738,15 @@ module ArchitectureVerifier
       %w[representations value_sites modules relations claims conditioning scale_transitions open_questions block_instances].each do |collection|
         Array(architecture[collection]).each_with_index do |item, index|
           facts << ["#{collection.delete_suffix('s')} #{item['id'] || index}", item, "$.#{collection}[#{index}]"]
+          if collection == "representations"
+            Array(item["field_groups"]).each_with_index do |group, group_index|
+              facts << [
+                "representation #{item['id'] || index} field group #{group['id'] || group_index}",
+                group,
+                "$.representations[#{index}].field_groups[#{group_index}]",
+              ]
+            end
+          end
         end
       end
       facts << ["training_inference", architecture["training_inference"], "$.training_inference"]

@@ -433,9 +433,11 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
       browser.execute(<<~JS)
         const builder = document.querySelector('[data-node-id="feature_builder"]');
         const features = document.querySelector('[data-node-id="feature_bundle"]');
-        if (!builder || !features) return null;
+        const sampler = document.querySelector('[data-node-id="diffusion_sampler"]');
+        if (!builder || !features || !sampler) return null;
         return {
           gap: features.offsetLeft - (builder.offsetLeft + builder.offsetWidth),
+          rightGap: sampler.offsetLeft - (features.offsetLeft + features.offsetWidth),
           labels: [...document.querySelectorAll('.arch-edge-label')]
             .map((item) => item.dataset.label || item.textContent),
         };
@@ -443,6 +445,8 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
     end
     assert_operator overview_spacing["gap"], :<=, 70,
       "inspector-only prose should not stretch the feature-builder boundary"
+    assert_operator overview_spacing["rightGap"], :<=, 70,
+      "a sampler schedule label should not stretch the feature-bundle handoff"
     refute_includes overview_spacing["labels"], "partial atomization"
     formatting = browser.execute(<<~JS)
       const line = [...document.querySelectorAll('.semantic-trace-line')]
@@ -463,6 +467,46 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
     assert_operator formatting["commentWords"], :>, 1,
       "comment words should wrap only between complete words"
     assert_equal "Task dependent partial atomization", formatting["label"]
+
+    feature_table = wait_for(browser, "the feature bundle field table") do
+      browser.execute(<<~JS)
+        const featureNode = document.querySelector('[data-node-id="feature_bundle"]');
+        if (!featureNode) return null;
+        if (!featureNode.classList.contains('is-focused')) {
+          featureNode.click();
+          return null;
+        }
+        const table = document.querySelector('.representation-field-table');
+        if (!table) return null;
+        return {
+          badge: featureNode.dataset.fieldCount || '',
+          dictionaryGlyph: featureNode.classList.contains('tensor-dictionary'),
+          hasTensorDimensions: Boolean(featureNode.querySelector('.tensor-dims')),
+          preview: featureNode.querySelector('.dictionary-glyph')?.textContent || '',
+          meaning: featureNode.querySelector('.tensor-meaning')?.textContent || '',
+          rows: table.querySelectorAll('tbody tr').length,
+          keys: [...table.querySelectorAll('.representation-field-names code')]
+            .map((item) => item.textContent),
+          axes: [...table.querySelectorAll('.representation-field-shape i')]
+            .map((item) => item.textContent),
+          text: table.textContent.replace(/\s+/g, ' ').trim(),
+        };
+      JS
+    end
+    assert_equal "25", feature_table["badge"]
+    assert feature_table["dictionaryGlyph"]
+    refute feature_table["hasTensorDimensions"],
+      "a heterogeneous dictionary must not display one tensor shape"
+    assert_includes feature_table["preview"], "token_mask: tensor"
+    assert_equal "feature dictionary", feature_table["meaning"]
+    assert_equal 6, feature_table["rows"]
+    assert_includes feature_table["keys"], "token_mask"
+    assert_includes feature_table["keys"], "gt_atom_positions"
+    assert_includes feature_table["keys"], "cond_interface_mask"
+    assert_includes feature_table["keys"], "plddt"
+    assert_includes feature_table["axes"], "token"
+    assert_includes feature_table["axes"], "atom"
+    assert_includes feature_table["text"], "Disabled for unconditional generation"
 
     opened = browser.execute(<<~JS)
       const line = [...document.querySelectorAll('.semantic-trace-line')]
@@ -487,6 +531,20 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
     assert drilldown["hasReverseStep"]
     assert_equal "Directional DDIM sampling", drilldown["heading"]
     assert_includes drilldown["subtitle"], "repeat ×100"
+
+    cached_dictionary = browser.execute(<<~JS)
+      const node = document.querySelector('[data-node-id="feature_bundle"]');
+      return {
+        dictionaryGlyph: node?.classList.contains('tensor-dictionary') || false,
+        pairGlyph: node?.classList.contains('tensor-pair') || false,
+        meaning: node?.querySelector('.tensor-meaning')?.textContent || '',
+        symbol: node?.querySelector('.tensor-symbol')?.textContent || '',
+      };
+    JS
+    assert cached_dictionary["dictionaryGlyph"]
+    refute cached_dictionary["pairGlyph"]
+    assert_equal "cached feature dictionary", cached_dictionary["meaning"]
+    assert_equal "features", cached_dictionary["symbol"]
   end
 
   def verify_published_reference_panel(browser, base)
@@ -531,6 +589,55 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
     assert panel["canvasHasRail"]
     assert panel["separatedFromGraph"], "the cited figure should not cover the architecture grid"
     assert panel["graphInsideCanvas"], "fitting the cited board should keep every node inside the canvas"
+
+    viewer = wait_for(browser, "the opened reference-figure viewer") do
+      browser.execute(<<~JS)
+        const dialog = document.querySelector('#referenceFigureDialog');
+        if (!dialog.open) {
+          document.querySelector('.reference-panel-image-button')?.click();
+          return null;
+        }
+        const image = document.querySelector('#referenceFigureImage');
+        if (!image.complete || image.naturalWidth <= 0) return null;
+        return {
+          title: document.querySelector('#referenceFigureTitle')?.textContent || '',
+          alt: image.alt,
+          width: image.getBoundingClientRect().width,
+          zoom: document.querySelector('#referenceFigureZoomValue')?.textContent || '',
+          citation: Boolean(document.querySelector('#referenceFigureCitation[href]')),
+        };
+      JS
+    end
+    assert_equal "Authors' partial-atomization diagram", viewer["title"]
+    assert_includes viewer["alt"], "Partial Atomization"
+    assert_equal "100%", viewer["zoom"]
+    assert viewer["citation"]
+
+    zoomed = wait_for(browser, "the enlarged reference figure") do
+      browser.execute(<<~JS)
+        const zoomIn = document.querySelector('[data-reference-zoom="in"]');
+        if (document.querySelector('#referenceFigureZoomValue')?.textContent === '100%') {
+          zoomIn.click();
+          zoomIn.click();
+          return null;
+        }
+        const image = document.querySelector('#referenceFigureImage');
+        return {
+          width: image.getBoundingClientRect().width,
+          zoom: document.querySelector('#referenceFigureZoomValue')?.textContent || '',
+          zoomedClass: document.querySelector('#referenceFigureViewport')?.classList.contains('is-zoomed'),
+        };
+      JS
+    end
+    assert_operator zoomed["width"], :>, viewer["width"]
+    refute_equal "100%", zoomed["zoom"]
+    assert zoomed["zoomedClass"]
+
+    closed = browser.execute(<<~JS)
+      document.querySelector('#referenceFigureClose').click();
+      return !document.querySelector('#referenceFigureDialog').open;
+    JS
+    assert closed
   end
 
   def verify_mobile_board_trace(browser, base)

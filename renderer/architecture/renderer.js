@@ -158,6 +158,16 @@ const elements = {
   regionLayer: document.getElementById("boardRegionLayer"),
   edgeLayer: document.getElementById("edgeLayer"),
   referencePanelLayer: document.getElementById("referencePanelLayer"),
+  referenceFigureDialog: document.getElementById("referenceFigureDialog"),
+  referenceFigureTitle: document.getElementById("referenceFigureTitle"),
+  referenceFigureImage: document.getElementById("referenceFigureImage"),
+  referenceFigureViewport: document.getElementById("referenceFigureViewport"),
+  referenceFigureCaption: document.getElementById("referenceFigureCaption"),
+  referenceFigureCitation: document.getElementById("referenceFigureCitation"),
+  referenceFigureLicense: document.getElementById("referenceFigureLicense"),
+  referenceFigureClose: document.getElementById("referenceFigureClose"),
+  referenceFigureControls: document.getElementById("referenceFigureControls"),
+  referenceFigureZoomValue: document.getElementById("referenceFigureZoomValue"),
   focusPanel: document.querySelector(".focus-panel"),
   focusHeader: document.getElementById("focusHeader"),
   focusEyebrow: document.getElementById("focusEyebrow"),
@@ -208,6 +218,8 @@ let questionMenuTarget = null;
 let questionMenuInvoker = null;
 let questionCopyStatus = null;
 let questionCopyStatusTimer = null;
+let referenceFigureScale = 1;
+let referenceFigurePan = null;
 let questionCopyFallback = null;
 let questionCopyFallbackText = null;
 let questionCopyFallbackInvoker = null;
@@ -2379,19 +2391,23 @@ function renderReferencePanels(board) {
 
     const asset = audienceHref(panel.asset);
     if (asset) {
-      const imageLink = document.createElement("a");
-      imageLink.className = "reference-panel-image-link";
-      imageLink.href = asset;
-      imageLink.target = "_blank";
-      imageLink.rel = "noreferrer";
-      imageLink.setAttribute("aria-label", `Open reference image: ${panel.title}`);
+      const imageButton = document.createElement("button");
+      imageButton.type = "button";
+      imageButton.className = "reference-panel-image-button";
+      imageButton.setAttribute("aria-label", `Zoom into reference figure: ${panel.title}`);
+      imageButton.title = `Zoom into ${panel.title}`;
       const image = document.createElement("img");
       image.src = asset;
       image.alt = panel.alt;
       image.loading = "eager";
       image.decoding = "async";
-      imageLink.appendChild(image);
-      figure.appendChild(imageLink);
+      const zoomCue = document.createElement("span");
+      zoomCue.className = "reference-panel-zoom-cue";
+      zoomCue.setAttribute("aria-hidden", "true");
+      zoomCue.innerHTML = `${magnifyIconMarkup()}<span>Zoom</span>`;
+      imageButton.append(image, zoomCue);
+      imageButton.addEventListener("click", () => openReferenceFigure(panel));
+      figure.appendChild(imageButton);
     }
 
     const caption = document.createElement("figcaption");
@@ -2419,6 +2435,126 @@ function renderReferencePanels(board) {
     figure.appendChild(license);
     elements.referencePanelLayer.appendChild(figure);
   }
+}
+
+const REFERENCE_FIGURE_MIN_SCALE = 1;
+const REFERENCE_FIGURE_MAX_SCALE = 4;
+const REFERENCE_FIGURE_ZOOM_STEP = 1.25;
+
+function referenceFigureBaseWidth() {
+  const available = Math.max(240, elements.referenceFigureViewport.clientWidth - 48);
+  return Math.min(elements.referenceFigureImage.naturalWidth || available, available);
+}
+
+function setReferenceFigureScale(nextScale, anchor = null) {
+  const viewport = elements.referenceFigureViewport;
+  const image = elements.referenceFigureImage;
+  const previousWidth = Math.max(viewport.scrollWidth, viewport.clientWidth);
+  const previousHeight = Math.max(viewport.scrollHeight, viewport.clientHeight);
+  const rect = viewport.getBoundingClientRect();
+  const anchorX = anchor ? anchor.clientX - rect.left : viewport.clientWidth / 2;
+  const anchorY = anchor ? anchor.clientY - rect.top : viewport.clientHeight / 2;
+  const contentX = (viewport.scrollLeft + anchorX) / previousWidth;
+  const contentY = (viewport.scrollTop + anchorY) / previousHeight;
+
+  referenceFigureScale = clamp(
+    nextScale,
+    REFERENCE_FIGURE_MIN_SCALE,
+    REFERENCE_FIGURE_MAX_SCALE,
+  );
+  image.style.width = `${Math.round(referenceFigureBaseWidth() * referenceFigureScale)}px`;
+  elements.referenceFigureZoomValue.textContent = `${Math.round(referenceFigureScale * 100)}%`;
+  viewport.classList.toggle("is-zoomed", referenceFigureScale > 1);
+
+  window.requestAnimationFrame(() => {
+    viewport.scrollLeft = contentX * Math.max(viewport.scrollWidth, viewport.clientWidth) - anchorX;
+    viewport.scrollTop = contentY * Math.max(viewport.scrollHeight, viewport.clientHeight) - anchorY;
+  });
+}
+
+function resetReferenceFigureZoom() {
+  referenceFigureScale = 1;
+  elements.referenceFigureViewport.scrollLeft = 0;
+  elements.referenceFigureViewport.scrollTop = 0;
+  setReferenceFigureScale(1);
+}
+
+function openReferenceFigure(panel) {
+  const asset = audienceHref(panel.asset);
+  if (!asset) return;
+  const source = bibliographySource(panel.source_ref);
+  const sourceHref = audienceHref(source?.href || source?.url);
+
+  elements.referenceFigureTitle.textContent = panel.title;
+  elements.referenceFigureCaption.textContent = panel.caption;
+  elements.referenceFigureLicense.textContent = panel.license_note;
+  elements.referenceFigureCitation.textContent = [source?.title || panel.source_ref, panel.locator]
+    .filter(Boolean)
+    .join(" · ");
+  if (sourceHref) {
+    elements.referenceFigureCitation.href = sourceHref;
+    elements.referenceFigureCitation.hidden = false;
+  } else {
+    elements.referenceFigureCitation.removeAttribute("href");
+    elements.referenceFigureCitation.hidden = true;
+  }
+  elements.referenceFigureImage.alt = panel.alt;
+  elements.referenceFigureImage.src = asset;
+  elements.referenceFigureImage.onload = resetReferenceFigureZoom;
+  if (!elements.referenceFigureDialog.open) elements.referenceFigureDialog.showModal();
+  if (elements.referenceFigureImage.complete && elements.referenceFigureImage.naturalWidth > 0) {
+    resetReferenceFigureZoom();
+  }
+  elements.referenceFigureViewport.focus({ preventScroll: true });
+}
+
+function closeReferenceFigure() {
+  if (elements.referenceFigureDialog.open) elements.referenceFigureDialog.close();
+}
+
+function onReferenceFigureControl(event) {
+  const action = event.target.closest("[data-reference-zoom]")?.dataset.referenceZoom;
+  if (!action) return;
+  if (action === "in") setReferenceFigureScale(referenceFigureScale * REFERENCE_FIGURE_ZOOM_STEP);
+  if (action === "out") setReferenceFigureScale(referenceFigureScale / REFERENCE_FIGURE_ZOOM_STEP);
+  if (action === "reset") resetReferenceFigureZoom();
+}
+
+function onReferenceFigureWheel(event) {
+  event.preventDefault();
+  const factor = Math.exp(-clamp(event.deltaY, -120, 120) * 0.003);
+  setReferenceFigureScale(referenceFigureScale * factor, event);
+}
+
+function beginReferenceFigurePan(event) {
+  if (event.button !== 0 || referenceFigureScale <= 1) return;
+  referenceFigurePan = {
+    pointerId: event.pointerId,
+    clientX: event.clientX,
+    clientY: event.clientY,
+    scrollLeft: elements.referenceFigureViewport.scrollLeft,
+    scrollTop: elements.referenceFigureViewport.scrollTop,
+  };
+  elements.referenceFigureViewport.setPointerCapture(event.pointerId);
+  elements.referenceFigureViewport.classList.add("is-panning");
+}
+
+function moveReferenceFigurePan(event) {
+  if (!referenceFigurePan || event.pointerId !== referenceFigurePan.pointerId) return;
+  event.preventDefault();
+  elements.referenceFigureViewport.scrollLeft = referenceFigurePan.scrollLeft
+    - (event.clientX - referenceFigurePan.clientX);
+  elements.referenceFigureViewport.scrollTop = referenceFigurePan.scrollTop
+    - (event.clientY - referenceFigurePan.clientY);
+}
+
+function endReferenceFigurePan(event) {
+  if (!referenceFigurePan || event.pointerId !== referenceFigurePan.pointerId) return;
+  if (elements.referenceFigureViewport.hasPointerCapture(event.pointerId)) {
+    elements.referenceFigureViewport.releasePointerCapture(event.pointerId);
+  }
+  referenceFigurePan = null;
+  elements.referenceFigureViewport.classList.remove("is-panning");
 }
 
 let elkInstance = null;
@@ -2913,6 +3049,7 @@ function modelMapNodeGeometry(board, nodes) {
         matrix: [76, 70],
         pair: [70, 70],
         volume: [84, 66],
+        dictionary: [90, 66],
         coordinates: [82, 70],
         frames: [88, 72],
       };
@@ -3162,6 +3299,20 @@ function renderModelMapTensorShape(entry) {
     return group;
   }
 
+  if (entry.glyph === "dictionary") {
+    [0.28, 0.5, 0.72].forEach((fraction) => {
+      group.appendChild(modelMapSvgElement("line", {
+        class: "model-map-dictionary-row",
+        x1: frontLeft + width * 0.18,
+        y1: frontTop + height * fraction,
+        x2: frontLeft + width * 0.82,
+        y2: frontTop + height * fraction,
+        "vector-effect": "non-scaling-stroke",
+      }));
+    });
+    return group;
+  }
+
   if (entry.glyph !== "scalar") {
     [0.33, 0.66].forEach((fraction) => {
       group.appendChild(modelMapSvgElement("line", {
@@ -3339,27 +3490,46 @@ function renderRepresentationNode(node) {
   const symbol = node.notation
     ? symbolMarkup(null, node.notation)
     : symbolMarkup(symbolDefinition, fullLabel);
-  const dims = kind === "scalar" ? "" : shapeDimsLabel(shape);
+  const dims = kind === "scalar" || kind === "dictionary" ? "" : shapeDimsLabel(shape);
   const displayMeaning = representationDisplayMeaning(node, rep, fullLabel);
   const semanticGlyphLabel = kind === "coordinates"
     ? "coordinate point cloud"
     : kind === "frames"
       ? "local coordinate frames"
-      : null;
+      : kind === "dictionary"
+        ? "dictionary of named tensors"
+        : null;
   const card = document.createElement("button");
   card.type = "button";
   card.className = `arch-rep tensor-${kind} scale-${scale} prominence-${prominence}`;
+  const fieldGroups = Array.isArray(rep?.field_groups) ? rep.field_groups : [];
+  if (fieldGroups.length) {
+    card.classList.add("has-field-table");
+    card.dataset.fieldCount = String(
+      fieldGroups.reduce((count, group) => count + (group.fields?.length || 0), 0),
+    );
+  }
   applyFlowFamily(card, node.flow_family, node.flow_families);
   card.dataset.nodeId = node.id;
   const canonicalRef = canonicalNodeRef(node);
   if (canonicalRef) card.dataset.canonicalRef = canonicalRef;
   card.setAttribute(
     "aria-label",
-    [fullLabel, semanticGlyphLabel, displayMeaning, shape].filter(Boolean).join(" — "),
+    [
+      fullLabel,
+      semanticGlyphLabel,
+      displayMeaning,
+      shape,
+      fieldGroups.length ? "select to inspect the field table" : null,
+    ].filter(Boolean).join(" — "),
   );
   placeNode(card, node);
   const symbolHtml = `<strong class="tensor-symbol">${symbol}</strong>`;
-  const box = (inner) => `<span class="tensor-box">${tensorGlyphSvg(kind)}${inner}</span>`;
+  const dictionaryPreviewFields = fieldGroups
+    .map((group) => group.fields?.[0])
+    .filter(Boolean)
+    .slice(0, 3);
+  const box = (inner) => `<span class="tensor-box">${tensorGlyphSvg(kind, dictionaryPreviewFields)}${inner}</span>`;
   card.innerHTML = `
     ${symbolHtml}
     ${box(dims ? `<small class="tensor-dims">${dims}</small>` : "")}
@@ -3412,6 +3582,44 @@ function readableRefs(refs) {
   return (refs || []).map((ref) => humanizeRef(ref)).join(", ");
 }
 
+function renderRepresentationFieldTable(rep) {
+  const groups = Array.isArray(rep?.field_groups) ? rep.field_groups : [];
+  if (!groups.length) return "";
+  const rows = groups.map((group) => `
+    <tr>
+      <th scope="row">
+        <strong>${escapeHtml(group.label)}</strong>
+        <span class="representation-field-names">
+          ${(group.fields || []).map((field) => `<code>${escapeHtml(field)}</code>`).join("")}
+        </span>
+      </th>
+      <td>
+        <span class="representation-field-shape">
+          <i>${escapeHtml(group.axis)}</i>
+          <code>${escapeHtml(group.shape)}</code>
+        </span>
+        <span>${escapeHtml(group.semantic_role)}</span>
+        ${group.task_behavior
+          ? `<small><strong>Across tasks:</strong> ${escapeHtml(group.task_behavior)}</small>`
+          : ""}
+      </td>
+    </tr>
+  `).join("");
+  return `
+    <section class="representation-field-section">
+      <h3>Feature bundle contents</h3>
+      <p class="representation-field-legend"><code>B</code> batch · <code>N</code> padded token axis · <code>A</code> padded atom axis</p>
+      <div class="representation-field-table-wrap">
+        <table class="representation-field-table">
+          <caption class="sr-only">Fields grouped by axis, shape, and purpose</caption>
+          <thead><tr><th>Feature family and keys</th><th>Shape and use</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+
 function repFocusHtml(node, rep) {
   const shape = node.shape || rep?.shape || "";
   const semantics = stateSemanticsFor(node, rep);
@@ -3427,6 +3635,7 @@ function repFocusHtml(node, rep) {
         ${valueSiteInterface?.producerRefs?.length ? `<dt>produced by</dt><dd>${escapeHtml(readableRefs(valueSiteInterface.producerRefs))}</dd>` : ""}
         ${valueSiteInterface?.consumerRefs?.length ? `<dt>consumed by</dt><dd>${escapeHtml(readableRefs(valueSiteInterface.consumerRefs))}</dd>` : ""}
       </dl>
+      ${renderRepresentationFieldTable(rep)}
       ${semantics?.notes?.length ? semantics.notes.map((note) => `<p>${escapeHtml(note)}</p>`).join("") : ""}
       ${carries.length ? `<h3>Carries</h3><ul class="claim-list">${carries.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}
       ${node.template_fact_ref ? `<p><strong>Reusable template:</strong> <code>${escapeHtml(node.template_fact_ref)}</code></p>` : ""}
@@ -5382,5 +5591,20 @@ if (typeof ResizeObserver === "function") {
     refreshResponsiveGeometry();
   }).observe(elements.canvas);
 }
+elements.referenceFigureClose.addEventListener("click", closeReferenceFigure);
+elements.referenceFigureControls.addEventListener("click", onReferenceFigureControl);
+elements.referenceFigureViewport.addEventListener("wheel", onReferenceFigureWheel, { passive: false });
+elements.referenceFigureViewport.addEventListener("pointerdown", beginReferenceFigurePan);
+elements.referenceFigureViewport.addEventListener("pointermove", moveReferenceFigurePan);
+elements.referenceFigureViewport.addEventListener("pointerup", endReferenceFigurePan);
+elements.referenceFigureViewport.addEventListener("pointercancel", endReferenceFigurePan);
+elements.referenceFigureDialog.addEventListener("click", (event) => {
+  if (event.target === elements.referenceFigureDialog) closeReferenceFigure();
+});
+elements.referenceFigureDialog.addEventListener("close", () => {
+  referenceFigurePan = null;
+  elements.referenceFigureViewport.classList.remove("is-panning");
+  resetReferenceFigureZoom();
+});
 render();
 window.__architectureRendererBoot?.ready?.();

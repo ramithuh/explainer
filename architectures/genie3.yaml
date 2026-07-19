@@ -325,8 +325,60 @@ representations:
       refs:
         - source_ref: genie3_feature_code
           role: implementation_evidence
-          locator: create_np_features_from_chain
-    glyph: single
+          locator: create_np_features_from_chain, batchify_np_features, and prepare_tensor_features
+        - source_ref: genie3_feature_schema_code
+          role: schema_evidence
+          locator: FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE
+    glyph: dictionary
+    field_groups:
+      - id: layout_and_identity
+        label: Layout and identity
+        axis: token
+        shape: B x N
+        fields: [token_mask, token_index, residue_index, asym_id, sym_id, entity_id, is_atomized]
+        semantic_role: Defines which padded token slots are active, maps them to residues and chains, and marks tokens created by partial atomization.
+        task_behavior: Present for every task; the selected featurizer determines the token count, chain layout, and atomization flags.
+        evidence: *feature_evidence
+      - id: residue_identity
+        label: Known residue identity
+        axis: token
+        shape: B x N x residue type
+        fields: [gt_restype]
+        semantic_role: Carries the one-hot amino-acid identity available at each token position.
+        task_behavior: Unknown design positions are zeroed; conditioned motif or target residues retain known identities.
+        evidence: *feature_evidence
+      - id: atom_identity_and_coordinates
+        label: Atom identity and coordinates
+        axis: atom
+        shape: B x A, with categorical or xyz trailing dimensions
+        fields: [atom_type, atom_symbol, gt_atom_mask, gt_atom_positions]
+        semantic_role: Describes each atom row, whether it is valid, and its available three-dimensional coordinate.
+        task_behavior: Every residue contributes a C-alpha row; selected known residues may contribute additional Atom14 side-chain heavy-atom rows.
+        evidence: *feature_evidence
+      - id: frame_construction
+        label: Frame construction
+        axis: token
+        shape: B x N
+        fields: [token_struct_mask, token_struct_frame_mask, token_frame_lindex, token_frame_rindex, token_frame_cindex_adj, token_frame_lindex_adj, token_frame_rindex_adj]
+        semantic_role: Identifies structurally valid tokens and their neighboring token indices for local-frame construction.
+        task_behavior: Indices exist in every task; validity masks determine where current or conditioned frames may actually be used.
+        evidence: *feature_evidence
+      - id: task_conditioning
+        label: Task conditioning
+        axis: token
+        shape: B x N
+        fields: [cond_seq_mask, cond_group, cond_struct_mask, cond_struct_frame_mask, cond_interface_mask]
+        semantic_role: States which token identities, coordinates, frames, motif groups, and target-interface positions are exposed to the model.
+        task_behavior: Disabled for unconditional generation, set on known motif positions for scaffolding, and set on target or interface positions for binder design.
+        evidence: *feature_evidence
+      - id: source_confidence
+        label: Source confidence
+        axis: token
+        shape: B x N
+        fields: [plddt]
+        semantic_role: Preserves per-token confidence supplied by an input structure when that field is available.
+        task_behavior: Relevant to structure-sourced motif and target examples; it is not created by the length-only unconditional path.
+        evidence: *feature_evidence
   - id: token_coordinates
     scale: token
     semantic_role: point-cloud diffusion state over C-alpha and optionally atomized heavy-atom tokens

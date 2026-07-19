@@ -137,8 +137,9 @@ Reference images must be raster assets under `assets/reference-panels/` and
 must include meaningful alternative text, board-specific caption prose, an
 existing bibliography `source_ref`, a precise figure locator, and an explicit
 license or attribution note. `position: right` reserves a side rail without
-changing the authored grid; the renderer keeps the panel outside canvas pan
-and zoom and links both the image and its publication source.
+changing the authored grid; the renderer keeps the card outside canvas pan
+and zoom. Its magnifying action opens an in-app figure viewer with independent
+zoom and pan, while the citation links to the publication source.
 
 The static publisher copies only assets named by selected boards. A crop may
 help readers relate a paper figure to the explainer, but it is never evidence
@@ -463,8 +464,13 @@ Both retain their exact dimensions inside the illustration and use distinct
 colors. Do not classify RGB channels, logits, noise, or displacement vectors
 as coordinates merely because their shape ends in three.
 
+Use `dictionary` when the value is a named mapping of heterogeneous tensors,
+not one tensor with a shared rank. Its glyph shows key-to-tensor entries and
+deliberately omits a single dimensions label; field-level shapes belong in
+the representation's evidence-bearing `field_groups` table.
+
 The full vocabulary is
-`glyph: scalar|vector|single|matrix|pair|volume|coordinates|frames`. Put a
+`glyph: scalar|vector|single|matrix|pair|volume|dictionary|coordinates|frames`. Put a
 reusable semantic classification on the canonical architecture
 representation. A view-node override is reserved for a genuinely
 occurrence-specific presentation or a shape that parses incorrectly.

@@ -235,7 +235,21 @@ def lint_architecture(arch, standard_blocks)
     end
   end
 
-  Array(arch["representations"]).each { |rep| require_evidence("representation #{rep['id']}", rep) }
+  Array(arch["representations"]).each do |rep|
+    require_evidence("representation #{rep['id']}", rep)
+    require_unique_ids("field group on representation #{rep['id']}", rep["field_groups"])
+    field_owners = {}
+    Array(rep["field_groups"]).each do |group|
+      require_evidence("representation #{rep['id']} field group #{group['id']}", group)
+      Array(group["fields"]).each do |field|
+        if field_owners.key?(field)
+          @errors << "representation #{rep['id']} field #{field} appears in groups #{field_owners[field]} and #{group['id']}"
+        else
+          field_owners[field] = group["id"]
+        end
+      end
+    end
+  end
   value_sites_by_ref = Array(arch["value_sites"]).to_h do |site|
     ["value_sites.#{site['id']}", site]
   end

@@ -406,6 +406,15 @@ sources:
     path: src/genie3/generation/utils/feat_utils.py
     url: https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py
 
+  - id: genie3_feature_schema_code
+    kind: code
+    title: Genie 3 feature dictionary registry
+    organization: AQLaboratory
+    repository: aqlaboratory/genie3
+    revision: d77ae5ac04212ff1e8b29b585859a3244c614804
+    path: src/genie3/generation/np/features.py
+    url: https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py
+
   - id: genie3_sample_dataset_registry_code
     kind: code
     title: Genie 3 generation task-source router

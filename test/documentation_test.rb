@@ -194,6 +194,23 @@ class DocumentationTest < Minitest::Test
     assert_includes visualization, "Mixed-family flow stays"
   end
 
+  def test_architecture_docs_define_evidence_bearing_dictionary_field_groups
+    architecture = File.read(File.join(ROOT, "protocol/architecture-language.md"))
+
+    assert_includes architecture, "may declare evidence-bearing `field_groups`"
+    assert_includes architecture, "fields: [cond_seq_mask, cond_struct_mask, cond_interface_mask]"
+    assert_includes architecture, "The browser renders these groups as a field table"
+    assert_includes architecture, "`glyph: dictionary`"
+  end
+
+
+  def test_visualization_docs_define_a_dictionary_glyph_for_named_tensor_mappings
+    visualization = File.read(File.join(ROOT, "protocol/visualization-language.md"))
+
+    assert_includes visualization, "Use `dictionary` when the value is a named mapping"
+    assert_includes visualization, "glyph: scalar|vector|single|matrix|pair|volume|dictionary|coordinates|frames"
+  end
+
   def test_visualization_docs_define_opt_in_content_sized_rows
     visualization = File.read(File.join(ROOT, "protocol/visualization-language.md"))
     edit = File.read(File.join(ROOT, "protocol/architecture-edit-language.md"))

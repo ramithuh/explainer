@@ -3,44 +3,39 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.4.6",
     "inputDigests": {
-      "references/bibliography.yaml": "d7246b55d54f7c3816e2a9b0a3c53b2a30f9ae755edc4f934bb82c496f0d081b",
-      "architectures/alphafold2.yaml": "bfa529c29a222eb432df9c057be4457336667d72b4e7629dc154d02f3ebc9078",
-      "views/alphafold2-semantic-zoom.view.yaml": "da53ee524756bca4007843a9dc30c115a24bc374c185c408099939da27da17b5",
-      "pseudocode/alphafold2.yaml": "8501fe6fb3f23cb3e090083dace7e9ffc04aade810a93b41d30491f1b71707c0"
+      "references/bibliography.yaml": "abe9226586bfb64261c81b7756b7275c48a3a172a9a18b5f91f7acfd3145e374",
+      "architectures/alphafold2.yaml": "23c41cc0dacde426b7981272401e113f6d713b1868844135d9a2dab5bb6f00bc",
+      "views/alphafold2-semantic-zoom.view.yaml": "6b317c6d224a7e3b8416839247c0c12d6b9e0cd34d859475f4529a939d51fe8e",
+      "pseudocode/alphafold2.yaml": "dc6534469437eba99e292899d31f28860a89f091d9457288e7d927af66598fac"
     }
   },
   "architecture": {
     "schemaVersion": "architecture-v0.4",
     "id": "alphafold2",
-    "name": "AlphaFold 2 Monomer Prediction",
+    "name": "AlphaFold 2 Monomer Network",
     "family": "protein_structure_prediction",
     "status": "draft",
     "taskModes": [
       "monomer_structure_prediction"
     ],
     "referenceConfiguration": {
-      "model_preset": "monomer",
-      "configured_models": 5,
-      "configured_recycles_before_final_pass": 3,
-      "method_repository_revision": "09ed0c5d5a32d794ed9f78b70906cbeaff0ef439",
+      "visual_basis": "nature_figure_1e",
+      "evoformer_blocks": 48,
+      "structure_module_blocks": 8,
+      "network_executions": 4,
+      "recycling_feedback_passes": 3,
       "evidence": {
-        "status": "confirmed_from_code",
+        "status": "confirmed_from_paper",
         "refs": [
           {
-            "source_ref": "af2_config_code",
+            "source_ref": "af2_2021",
+            "role": "architecture_evidence",
+            "locator": "Figure 1e and the AlphaFold network section"
+          },
+          {
+            "source_ref": "af2_2021_supplement",
             "role": "configuration_evidence",
-            "locator": "MODEL_PRESETS, CONFIG_DIFFS, and CONFIG.model.num_recycle"
-          },
-          {
-            "source_ref": "af2_runner_code",
-            "role": "implementation_evidence",
-            "locator": "main; model_names and model_runners construction"
-          },
-          {
-            "source_ref": "af2_model_code",
-            "role": "implementation_evidence",
-            "locator": "AlphaFold.__call__",
-            "note": "Three configured recycling calls are followed by the final prediction call."
+            "locator": "Supplementary Methods 1.4, 1.6, 1.8, and 1.10; Algorithms 2, 6, 20, and 30-32"
           }
         ]
       }
@@ -56,16 +51,8 @@ export const manifest = {
         "role": "detailed_architecture_description"
       },
       {
-        "source_ref": "af2_runner_code",
-        "role": "inference_orchestration"
-      },
-      {
         "source_ref": "af2_data_pipeline_code",
         "role": "feature_pipeline_implementation"
-      },
-      {
-        "source_ref": "af2_model_wrapper_code",
-        "role": "model_runner_implementation"
       },
       {
         "source_ref": "af2_model_code",
@@ -78,22 +65,23 @@ export const manifest = {
       {
         "source_ref": "af2_config_code",
         "role": "reference_configuration"
-      },
-      {
-        "source_ref": "af2_relax_code",
-        "role": "relaxation_implementation"
       }
     ],
     "decomposition": {
       "status": "complete",
       "evidence": {
-        "status": "confirmed_from_code",
+        "status": "confirmed_from_paper",
         "refs": [
           {
-            "source_ref": "af2_runner_code",
-            "role": "implementation_evidence",
-            "locator": "predict_structure",
-            "note": "The root accounts for feature generation, configured model predictions, confidence ranking, optional relaxation, and result serialization."
+            "source_ref": "af2_2021",
+            "role": "architecture_evidence",
+            "locator": "Figure 1e and the AlphaFold network section",
+            "note": "The root follows the paper's model-level information flow rather than the released command-line workflow."
+          },
+          {
+            "source_ref": "af2_2021_supplement",
+            "role": "detailed_architecture_evidence",
+            "locator": "Supplementary Methods 1.4; Algorithm 2"
           }
         ]
       }
@@ -104,53 +92,89 @@ export const manifest = {
         "architecture": {
           "status": "complete",
           "depth": 0,
-          "immediateModuleCount": 5,
+          "immediateModuleCount": 2,
           "immediateModuleRefs": [
-            "modules.feature_pipeline",
-            "modules.prediction_ensemble",
-            "modules.confidence_ranker",
-            "modules.relaxation_stage",
-            "modules.artifact_exporter"
+            "modules.feature_preparation",
+            "modules.alphafold_iteration"
           ]
         },
-        "modules.feature_pipeline": {
-          "status": "partial",
-          "reason": "Database search, template processing, MSA clustering, and model-specific feature transforms are deferred to the feature-pipeline drilldown.",
+        "modules.feature_preparation": {
+          "status": "complete",
           "depth": 1,
+          "immediateModuleCount": 3,
+          "immediateModuleRefs": [
+            "modules.genetic_database_search",
+            "modules.sequence_pairing",
+            "modules.structure_database_search"
+          ]
+        },
+        "modules.genetic_database_search": {
+          "status": "partial",
+          "reason": "Search tools, database-specific limits, deduplication, clustering, and extra-MSA processing are reserved for a later data-pipeline board.",
+          "depth": 2,
           "immediateModuleCount": 0,
           "immediateModuleRefs": [
 
           ]
         },
-        "modules.prediction_ensemble": {
-          "status": "partial",
-          "reason": "Per-model feature processing, Algorithm 2, recycling state, Evoformer, Structure Module, and prediction heads are reserved for paper-aligned child boards.",
-          "depth": 1,
-          "immediateModuleCount": 0,
-          "immediateModuleRefs": [
-
-          ]
-        },
-        "modules.confidence_ranker": {
+        "modules.sequence_pairing": {
           "status": "leaf",
-          "depth": 1,
+          "depth": 2,
           "immediateModuleCount": 0,
           "immediateModuleRefs": [
 
           ]
         },
-        "modules.relaxation_stage": {
+        "modules.structure_database_search": {
           "status": "partial",
-          "reason": "The root accounts for policy selection and its output semantics; OpenMM/Amber minimization internals are intentionally deferred.",
-          "depth": 1,
+          "reason": "Hit filtering, realignment, atom extraction, and template featurization are reserved for a later template-pipeline board.",
+          "depth": 2,
           "immediateModuleCount": 0,
           "immediateModuleRefs": [
 
           ]
         },
-        "modules.artifact_exporter": {
-          "status": "leaf",
+        "modules.alphafold_iteration": {
+          "status": "complete",
           "depth": 1,
+          "immediateModuleCount": 4,
+          "immediateModuleRefs": [
+            "modules.input_embedder",
+            "modules.evoformer_stack",
+            "modules.structure_module",
+            "modules.recycling_embedder"
+          ]
+        },
+        "modules.input_embedder": {
+          "status": "partial",
+          "reason": "Template pair attention, template-angle concatenation, extra-MSA processing, and the exact recycling additions will be expanded on child boards.",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.evoformer_stack": {
+          "status": "partial",
+          "reason": "The two-tower Evoformer block internals and their bidirectional MSA-pair communication are reserved for the next architecture level.",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.structure_module": {
+          "status": "partial",
+          "reason": "Invariant point attention, rigid-frame updates, torsion prediction, and atom reconstruction are reserved for the structure-module board.",
+          "depth": 2,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.recycling_embedder": {
+          "status": "leaf",
+          "depth": 2,
           "immediateModuleCount": 0,
           "immediateModuleRefs": [
 
@@ -158,185 +182,315 @@ export const manifest = {
         }
       },
       "summary": {
-        "scopeCount": 6,
-        "expandedScopeCount": 1,
-        "completeExpandedScopeCount": 1,
-        "partialScopeCount": 3,
+        "scopeCount": 10,
+        "expandedScopeCount": 3,
+        "completeExpandedScopeCount": 3,
+        "partialScopeCount": 5,
         "leafFrontierCount": 2,
         "opaqueFrontierCount": 0,
-        "partialFrontierCount": 3,
-        "maximumAuthoredDepth": 1
+        "partialFrontierCount": 5,
+        "maximumAuthoredDepth": 2
       },
       "opaqueFrontierRefs": [
 
       ],
       "partialScopeRefs": [
-        "modules.feature_pipeline",
-        "modules.prediction_ensemble",
-        "modules.relaxation_stage"
+        "modules.genetic_database_search",
+        "modules.structure_database_search",
+        "modules.input_embedder",
+        "modules.evoformer_stack",
+        "modules.structure_module"
       ]
     },
     "modules": [
       {
-        "id": "feature_pipeline",
+        "id": "feature_preparation",
         "parent_ref": "architecture",
         "decomposition": {
-          "status": "partial",
-          "reason": "Database search, template processing, MSA clustering, and model-specific feature transforms are deferred to the feature-pipeline drilldown."
+          "status": "complete"
         },
-        "label": "MSA and Template Feature Pipeline",
+        "label": "Sequence, MSA, and Template Preparation",
         "kind": "adapter",
         "mechanisms": [
-          "fasta_parsing",
           "genetic_database_search",
-          "template_search",
-          "raw_feature_assembly"
+          "target_pairing",
+          "structure_database_search"
         ],
-        "role": "parse one protein sequence, search sequence and structure databases, and assemble the shared raw model features",
-        "scale": "protein",
+        "role": "derive the three paper-level input branches from the target amino-acid sequence",
+        "scale": "mixed",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_data_pipeline_code",
-              "role": "implementation_evidence",
-              "locator": "DataPipeline.process"
-            },
-            {
-              "source_ref": "af2_runner_code",
-              "role": "orchestration_evidence",
-              "locator": "predict_structure; data_pipeline.process call"
-            }
-          ]
-        }
-      },
-      {
-        "id": "prediction_ensemble",
-        "parent_ref": "architecture",
-        "decomposition": {
-          "status": "partial",
-          "reason": "Per-model feature processing, Algorithm 2, recycling state, Evoformer, Structure Module, and prediction heads are reserved for paper-aligned child boards."
-        },
-        "label": "Monomer Model Ensemble and Recycling",
-        "kind": "controller",
-        "mechanisms": [
-          "per_model_feature_processing",
-          "parameterized_model_execution",
-          "representation_ensembling",
-          "prediction_recycling"
-        ],
-        "role": "run every configured monomer parameter set on independently processed features and collect its structure and confidence prediction",
-        "scale": "candidate_set",
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_runner_code",
-              "role": "orchestration_evidence",
-              "locator": "main; model_runners construction and predict_structure model loop"
-            },
-            {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "RunModel.process_features and RunModel.predict"
-            },
-            {
-              "source_ref": "af2_model_code",
-              "role": "implementation_evidence",
-              "locator": "AlphaFold and AlphaFoldIteration"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
             },
             {
               "source_ref": "af2_2021_supplement",
-              "role": "architecture_evidence",
-              "locator": "Algorithm 2"
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "confidence_ranker",
-        "parent_ref": "architecture",
-        "decomposition": {
-          "status": "leaf"
-        },
-        "label": "Monomer Confidence Ranker",
-        "kind": "controller",
-        "mechanisms": [
-          "mean_plddt_scoring",
-          "descending_candidate_sort"
-        ],
-        "role": "order candidate structures by the monomer ranking confidence derived from mean predicted LDDT",
-        "scale": "candidate_set",
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "get_confidence_metrics; non-multimer branch"
-            },
-            {
-              "source_ref": "af2_runner_code",
-              "role": "orchestration_evidence",
-              "locator": "predict_structure; ranking_confidences and ranked_order"
-            }
-          ]
-        }
-      },
-      {
-        "id": "relaxation_stage",
-        "parent_ref": "architecture",
+        "id": "genetic_database_search",
+        "parent_ref": "modules.feature_preparation",
         "decomposition": {
           "status": "partial",
-          "reason": "The root accounts for policy selection and its output semantics; OpenMM/Amber minimization internals are intentionally deferred."
+          "reason": "Search tools, database-specific limits, deduplication, clustering, and extra-MSA processing are reserved for a later data-pipeline board."
         },
-        "label": "Optional Amber Relaxation",
-        "kind": "refiner",
+        "label": "Genetic Database Search",
+        "kind": "adapter",
         "mechanisms": [
-          "best_all_none_policy",
-          "amber_energy_minimization",
-          "unrelaxed_pass_through"
+          "jackhmmer_search",
+          "hhblits_search",
+          "msa_deduplication"
         ],
-        "role": "relax the configured subset of ranked candidates and preserve unrelaxed coordinates for every unselected candidate",
-        "scale": "candidate_set",
+        "role": "search sequence databases and assemble homologous sequences aligned to the target",
+        "scale": "msa",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "orchestration_evidence",
-              "locator": "predict_structure; ModelsToRelax selection and ranked output fallback"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
             },
             {
-              "source_ref": "af2_relax_code",
-              "role": "implementation_evidence",
-              "locator": "AmberRelaxation.process"
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "artifact_exporter",
-        "parent_ref": "architecture",
+        "id": "sequence_pairing",
+        "parent_ref": "modules.feature_preparation",
         "decomposition": {
           "status": "leaf"
         },
-        "label": "Prediction Artifact Exporter",
-        "kind": "serializer",
+        "label": "Target Pairing",
+        "kind": "adapter",
         "mechanisms": [
-          "structure_serialization",
-          "confidence_serialization",
-          "run_metadata_serialization"
+          "outer_sum",
+          "relative_position_encoding"
         ],
-        "role": "write ranked structures and the feature, model-result, confidence, ranking, timing, and relaxation records for the prediction run",
-        "scale": "run",
+        "role": "turn target residue features and relative residue indices into the initial pairwise seed",
+        "scale": "pair",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; output file writes"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_database_search",
+        "parent_ref": "modules.feature_preparation",
+        "decomposition": {
+          "status": "partial",
+          "reason": "Hit filtering, realignment, atom extraction, and template featurization are reserved for a later template-pipeline board."
+        },
+        "label": "Structure Database Search",
+        "kind": "adapter",
+        "mechanisms": [
+          "hhsearch",
+          "template_hit_featurization"
+        ],
+        "role": "retrieve structural homologues and encode their sequence, torsion, mask, and pair-geometry features",
+        "scale": "template",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
+            }
+          ]
+        }
+      },
+      {
+        "id": "alphafold_iteration",
+        "parent_ref": "architecture",
+        "decomposition": {
+          "status": "complete"
+        },
+        "label": "Shared-Weight AlphaFold Iteration",
+        "kind": "controller",
+        "mechanisms": [
+          "recycling",
+          "shared_weights"
+        ],
+        "role": "embed prepared inputs, jointly refine MSA and pair state, predict structure and confidence, and prepare feedback for the next execution",
+        "scale": "mixed",
+        "repeats": 4,
+        "pseudocode_ref": "../../pseudocode/alphafold2.yaml",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the AlphaFold network section",
+              "note": "The root follows the paper's model-level information flow rather than the released command-line workflow."
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "detailed_architecture_evidence",
+              "locator": "Supplementary Methods 1.4; Algorithm 2"
+            }
+          ]
+        }
+      },
+      {
+        "id": "input_embedder",
+        "parent_ref": "modules.alphafold_iteration",
+        "decomposition": {
+          "status": "partial",
+          "reason": "Template pair attention, template-angle concatenation, extra-MSA processing, and the exact recycling additions will be expanded on child boards."
+        },
+        "label": "Input Embedding and Integration",
+        "kind": "adapter",
+        "mechanisms": [
+          "msa_embedding",
+          "pair_embedding",
+          "template_integration",
+          "extra_msa_stack",
+          "recycled_state_injection"
+        ],
+        "role": "initialize MSA and pair representations from target, alignment, template, relative-position, extra-MSA, and recycled features",
+        "scale": "mixed",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "evoformer_stack",
+        "parent_ref": "modules.alphafold_iteration",
+        "decomposition": {
+          "status": "partial",
+          "reason": "The two-tower Evoformer block internals and their bidirectional MSA-pair communication are reserved for the next architecture level."
+        },
+        "label": "Evoformer Stack",
+        "kind": "refiner",
+        "mechanisms": [
+          "msa_attention",
+          "pair_biased_attention",
+          "outer_product_mean",
+          "triangle_multiplication",
+          "triangle_attention"
+        ],
+        "role": "jointly refine MSA and residue-pair representations through 48 repeated blocks and project the final target row to a single representation",
+        "scale": "mixed",
+        "repeats": 48,
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_module",
+        "parent_ref": "modules.alphafold_iteration",
+        "decomposition": {
+          "status": "partial",
+          "reason": "Invariant point attention, rigid-frame updates, torsion prediction, and atom reconstruction are reserved for the structure-module board."
+        },
+        "label": "Structure Module",
+        "kind": "decoder",
+        "mechanisms": [
+          "invariant_point_attention",
+          "rigid_frame_refinement",
+          "torsion_angle_prediction",
+          "all_atom_reconstruction",
+          "confidence_prediction"
+        ],
+        "role": "refine per-residue frames for eight blocks and decode all-heavy-atom coordinates with per-residue confidence",
+        "scale": "atom",
+        "repeats": 8,
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "structure_evidence",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20, 24, and 29"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycling_embedder",
+        "parent_ref": "modules.alphafold_iteration",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Recycling Embedder",
+        "kind": "adapter",
+        "mechanisms": [
+          "layer_normalization",
+          "pseudo_beta_distance_binning",
+          "additive_injection"
+        ],
+        "role": "normalize the previous MSA row and pair state, embed previous pseudo-beta distances, and form additive inputs for the next shared-weight execution",
+        "scale": "mixed",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
             }
           ]
         }
@@ -347,147 +501,263 @@ export const manifest = {
     ],
     "representations": [
       {
-        "id": "fasta_sequence",
-        "scale": "protein",
-        "semantic_role": "single-chain amino-acid sequence submitted for structure prediction",
+        "id": "amino_acid_sequence",
+        "scale": "residue",
+        "semantic_role": "primary sequence whose monomer structure is predicted",
         "shape": "N_res residues",
         "glyph": "vector",
         "carries": [
-          "protein identifier",
-          "primary amino-acid sequence"
+          "ordered amino-acid identities",
+          "residue indices"
         ],
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_data_pipeline_code",
-              "role": "implementation_evidence",
-              "locator": "DataPipeline.process"
-            }
-          ]
-        }
-      },
-      {
-        "id": "raw_feature_bundle",
-        "scale": "protein",
-        "semantic_role": "heterogeneous raw feature dictionary shared by the configured monomer model runs",
-        "shape": "dictionary of sequence, MSA, template, mask, and metadata arrays",
-        "carries": [
-          "target sequence features",
-          "deduplicated multiple-sequence alignment features",
-          "featurized structural template hits",
-          "residue and template masks"
-        ],
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_data_pipeline_code",
-              "role": "implementation_evidence",
-              "locator": "DataPipeline.process"
-            }
-          ]
-        }
-      },
-      {
-        "id": "model_prediction_set",
-        "scale": "candidate_set",
-        "semantic_role": "per-model predicted structures and confidence outputs before ranking",
-        "shape": "N_model candidates with N_res x 37 x 3 atom coordinates and confidence fields",
-        "glyph": "coordinates",
-        "carries": [
-          "predicted all-atom coordinates",
-          "per-residue pLDDT",
-          "ranking confidence",
-          "optional predicted aligned error and predicted TM score"
-        ],
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "RunModel.predict and get_confidence_metrics"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the AlphaFold network section",
+              "note": "The root follows the paper's model-level information flow rather than the released command-line workflow."
             },
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; model_runners loop"
+              "source_ref": "af2_2021_supplement",
+              "role": "detailed_architecture_evidence",
+              "locator": "Supplementary Methods 1.4; Algorithm 2"
             }
           ]
         }
       },
       {
-        "id": "ranked_prediction_set",
-        "scale": "candidate_set",
-        "semantic_role": "candidate structures ordered by monomer confidence",
-        "shape": "ordered N_model candidates with structures and confidence fields",
-        "glyph": "coordinates",
+        "id": "msa_features",
+        "scale": "msa",
+        "semantic_role": "homologous sequences aligned to the target sequence",
+        "shape": "N_seq x N_res aligned residues and deletion features",
+        "glyph": "matrix",
         "carries": [
-          "descending monomer confidence order",
-          "predicted structures and their metrics"
+          "target and homologous residue identities",
+          "deletion indicators and counts",
+          "evolutionary variation across aligned sequences"
         ],
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ranked_order construction"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
             },
             {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "get_confidence_metrics"
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "final_prediction_set",
-        "scale": "candidate_set",
-        "semantic_role": "ranked candidate structures after configured Amber relaxation or unrelaxed pass-through",
-        "shape": "ordered N_model candidates with selected relaxed coordinates",
-        "glyph": "coordinates",
+        "id": "target_pair_features",
+        "scale": "pair",
+        "semantic_role": "target-sequence pair seed used to initialize residue-pair reasoning",
+        "shape": "N_res x N_res x f_pair",
+        "glyph": "pair",
         "carries": [
-          "relaxed coordinates for selected candidates",
-          "unrelaxed coordinates for unselected candidates",
-          "original rank order"
+          "ordered residue-pair target features",
+          "clipped relative residue positions"
         ],
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ModelsToRelax selection and ranked output writes"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
             },
             {
-              "source_ref": "af2_relax_code",
-              "role": "implementation_evidence",
-              "locator": "AmberRelaxation.process"
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
             }
           ]
         }
       },
       {
-        "id": "prediction_artifact_bundle",
-        "scale": "run",
-        "semantic_role": "serialized prediction directory containing structures, confidences, raw results, features, and run metadata",
-        "shape": "directory of PDB, mmCIF, JSON, pickle, and metadata files",
+        "id": "template_features",
+        "scale": "template",
+        "semantic_role": "sequence and pair geometry features derived from structural template hits",
+        "shape": "N_templ x N_res x N_res x f_template",
+        "glyph": "volume",
         "carries": [
-          "ranked structure files",
-          "confidence and predicted-aligned-error files",
-          "raw feature and model-result dictionaries",
-          "ranking, timing, and optional relaxation metadata"
+          "template residue identities and torsion features",
+          "template residue-pair geometry",
+          "template masks"
         ],
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
+            }
+          ]
+        }
+      },
+      {
+        "id": "msa_representation",
+        "scale": "msa",
+        "semantic_role": "learned MSA state refined jointly with residue-pair state",
+        "shape": "N_seq x N_res x 256",
+        "glyph": "matrix",
+        "carries": [
+          "learned evolutionary and sequence context",
+          "target-row information shared with structure prediction"
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_representation",
+        "scale": "pair",
+        "semantic_role": "learned directed residue-pair state used for geometric reasoning",
+        "shape": "N_res x N_res x 128",
+        "glyph": "pair",
+        "carries": [
+          "residue-pair relationships",
+          "template and evolutionary constraints",
+          "implicit geometric hypotheses"
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_representation",
+        "scale": "residue",
+        "semantic_role": "per-residue state projected from the final target row of the MSA representation",
+        "shape": "N_res x 384",
+        "glyph": "single",
+        "carries": [
+          "per-residue context for equivariant structure refinement"
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_prediction",
+        "scale": "atom",
+        "semantic_role": "predicted all-heavy-atom monomer structure with per-residue confidence",
+        "shape": "N_res x 37 x 3 coordinates plus N_res pLDDT",
+        "glyph": "coordinates",
+        "carries": [
+          "all-heavy-atom coordinates",
+          "per-residue pLDDT confidence"
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "structure_evidence",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20, 24, and 29"
+            }
+          ]
+        }
+      },
+      {
+        "id": "msa_first_row",
+        "scale": "residue",
+        "semantic_role": "target-sequence row retained from the final MSA representation for recycling",
+        "shape": "N_res x 256",
+        "glyph": "single",
+        "carries": [
+          "final target-row Evoformer state"
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pseudo_beta_coordinates",
+        "scale": "residue",
+        "semantic_role": "pseudo-beta coordinates retained from the predicted structure for recycling",
+        "shape": "N_res x 3",
+        "glyph": "coordinates",
+        "carries": [
+          "beta-carbon coordinates",
+          "alpha-carbon coordinates for glycine"
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
             }
           ]
         }
@@ -495,225 +765,1125 @@ export const manifest = {
     ],
     "valueSites": [
       {
-        "id": "fasta_input",
-        "representation_ref": "representations.fasta_sequence",
+        "id": "input_sequence",
+        "representation_ref": "representations.amino_acid_sequence",
         "scope_ref": "architecture",
         "boundary": "input",
         "role": "task_input",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; fasta_path"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the AlphaFold network section",
+              "note": "The root follows the paper's model-level information flow rather than the released command-line workflow."
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "detailed_architecture_evidence",
+              "locator": "Supplementary Methods 1.4; Algorithm 2"
             }
           ]
         }
       },
       {
-        "id": "raw_feature_bundle",
-        "representation_ref": "representations.raw_feature_bundle",
-        "scope_ref": "architecture",
-        "role": "shared_model_input",
+        "id": "multiple_sequence_alignment",
+        "representation_ref": "representations.msa_features",
+        "scope_ref": "modules.feature_preparation",
+        "role": "searched_and_deduplicated_alignment",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; feature_dict"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "model_predictions",
-        "representation_ref": "representations.model_prediction_set",
-        "scope_ref": "architecture",
-        "role": "unranked_candidates",
+        "id": "target_pair_features",
+        "representation_ref": "representations.target_pair_features",
+        "scope_ref": "modules.feature_preparation",
+        "role": "target_pair_seed",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; prediction_result and unrelaxed_proteins"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
             }
           ]
         }
       },
       {
-        "id": "ranked_predictions",
-        "representation_ref": "representations.ranked_prediction_set",
-        "scope_ref": "architecture",
-        "role": "confidence_ordered_candidates",
+        "id": "structural_templates",
+        "representation_ref": "representations.template_features",
+        "scope_ref": "modules.feature_preparation",
+        "role": "searched_template_features",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ranked_order"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "final_predictions",
-        "representation_ref": "representations.final_prediction_set",
-        "scope_ref": "architecture",
-        "role": "postprocessed_candidates",
+        "id": "msa_representation_before_evoformer",
+        "representation_ref": "representations.msa_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "initial_msa_state",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; relaxed_pdbs and ranked output fallback"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
             }
           ]
         }
       },
       {
-        "id": "prediction_artifacts_output",
-        "representation_ref": "representations.prediction_artifact_bundle",
+        "id": "pair_representation_before_evoformer",
+        "representation_ref": "representations.pair_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "initial_pair_state",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "msa_representation_after_evoformer",
+        "representation_ref": "representations.msa_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "processed_msa_state",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_representation_after_evoformer",
+        "representation_ref": "representations.single_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "structure_module_single_input",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_representation_after_evoformer",
+        "representation_ref": "representations.pair_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "processed_pair_state",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "predicted_structure_output",
+        "representation_ref": "representations.structure_prediction",
         "scope_ref": "architecture",
         "boundary": "output",
         "role": "task_output",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; output file writes"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "structure_evidence",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20, 24, and 29"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_msa_after_iteration",
+        "representation_ref": "representations.msa_first_row",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "recycle_state_after_iteration",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_msa_before_iteration",
+        "representation_ref": "representations.msa_first_row",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "recycle_state_before_iteration",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_pair_after_iteration",
+        "representation_ref": "representations.pair_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "recycle_state_after_iteration",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_pair_before_iteration",
+        "representation_ref": "representations.pair_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "recycle_state_before_iteration",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_coordinates_after_iteration",
+        "representation_ref": "representations.pseudo_beta_coordinates",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "recycle_state_after_iteration",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_coordinates_before_iteration",
+        "representation_ref": "representations.pseudo_beta_coordinates",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "recycle_state_before_iteration",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "msa_recycle_update",
+        "representation_ref": "representations.msa_first_row",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "additive_update_for_next_msa_input",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_recycle_update",
+        "representation_ref": "representations.pair_representation",
+        "scope_ref": "modules.alphafold_iteration",
+        "role": "additive_update_for_next_pair_input",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
             }
           ]
         }
       }
     ],
     "valueSiteInterfaces": {
-      "fasta_input": {
+      "input_sequence": {
         "incomingRelationRefs": [
 
         ],
         "outgoingRelationRefs": [
-          "relations.fasta_enters_feature_pipeline"
+          "relations.input_sequence_queries_genetic_database",
+          "relations.input_sequence_enters_pairing",
+          "relations.input_sequence_queries_structure_database"
         ],
         "producerRefs": [
 
         ],
         "consumerRefs": [
-          "modules.feature_pipeline"
+          "modules.genetic_database_search",
+          "modules.sequence_pairing",
+          "modules.structure_database_search"
         ]
       },
-      "raw_feature_bundle": {
+      "multiple_sequence_alignment": {
         "incomingRelationRefs": [
-          "relations.feature_pipeline_produces_raw_feature_bundle"
+          "relations.genetic_search_produces_msa"
         ],
         "outgoingRelationRefs": [
-          "relations.raw_feature_bundle_enters_prediction_ensemble"
+          "relations.msa_features_enter_input_embedder"
         ],
         "producerRefs": [
-          "modules.feature_pipeline"
+          "modules.genetic_database_search"
         ],
         "consumerRefs": [
-          "modules.prediction_ensemble"
+          "modules.input_embedder"
         ]
       },
-      "model_predictions": {
+      "target_pair_features": {
         "incomingRelationRefs": [
-          "relations.prediction_ensemble_produces_model_predictions"
+          "relations.sequence_pairing_produces_target_pair_features"
         ],
         "outgoingRelationRefs": [
-          "relations.model_predictions_enter_confidence_ranker"
+          "relations.target_pair_features_enter_input_embedder"
         ],
         "producerRefs": [
-          "modules.prediction_ensemble"
+          "modules.sequence_pairing"
         ],
         "consumerRefs": [
-          "modules.confidence_ranker"
+          "modules.input_embedder"
         ]
       },
-      "ranked_predictions": {
+      "structural_templates": {
         "incomingRelationRefs": [
-          "relations.confidence_ranker_produces_ranked_predictions"
+          "relations.structure_search_produces_templates"
         ],
         "outgoingRelationRefs": [
-          "relations.ranked_predictions_enter_relaxation_stage"
+          "relations.templates_enter_input_embedder"
         ],
         "producerRefs": [
-          "modules.confidence_ranker"
+          "modules.structure_database_search"
         ],
         "consumerRefs": [
-          "modules.relaxation_stage"
+          "modules.input_embedder"
         ]
       },
-      "final_predictions": {
+      "msa_representation_before_evoformer": {
         "incomingRelationRefs": [
-          "relations.relaxation_stage_produces_final_predictions"
+          "relations.input_embedder_initializes_msa_representation"
         ],
         "outgoingRelationRefs": [
-          "relations.final_predictions_enter_artifact_exporter"
+          "relations.initial_msa_enters_evoformer"
         ],
         "producerRefs": [
-          "modules.relaxation_stage"
+          "modules.input_embedder"
         ],
         "consumerRefs": [
-          "modules.artifact_exporter"
+          "modules.evoformer_stack"
         ]
       },
-      "prediction_artifacts_output": {
+      "pair_representation_before_evoformer": {
         "incomingRelationRefs": [
-          "relations.artifact_exporter_writes_prediction_artifacts"
+          "relations.input_embedder_initializes_pair_representation"
         ],
         "outgoingRelationRefs": [
-
+          "relations.initial_pair_enters_evoformer"
         ],
         "producerRefs": [
-          "modules.artifact_exporter"
+          "modules.input_embedder"
         ],
         "consumerRefs": [
-
+          "modules.evoformer_stack"
+        ]
+      },
+      "msa_representation_after_evoformer": {
+        "incomingRelationRefs": [
+          "relations.evoformer_produces_processed_msa"
+        ],
+        "outgoingRelationRefs": [
+          "relations.processed_msa_supplies_recycled_first_row"
+        ],
+        "producerRefs": [
+          "modules.evoformer_stack"
+        ],
+        "consumerRefs": [
+          "value_sites.recycled_msa_after_iteration"
+        ]
+      },
+      "single_representation_after_evoformer": {
+        "incomingRelationRefs": [
+          "relations.evoformer_projects_single_representation"
+        ],
+        "outgoingRelationRefs": [
+          "relations.single_representation_enters_structure_module"
+        ],
+        "producerRefs": [
+          "modules.evoformer_stack"
+        ],
+        "consumerRefs": [
+          "modules.structure_module"
+        ]
+      },
+      "pair_representation_after_evoformer": {
+        "incomingRelationRefs": [
+          "relations.evoformer_produces_processed_pair"
+        ],
+        "outgoingRelationRefs": [
+          "relations.pair_representation_enters_structure_module",
+          "relations.processed_pair_supplies_recycled_pair"
+        ],
+        "producerRefs": [
+          "modules.evoformer_stack"
+        ],
+        "consumerRefs": [
+          "modules.structure_module",
+          "value_sites.recycled_pair_after_iteration"
+        ]
+      },
+      "predicted_structure_output": {
+        "incomingRelationRefs": [
+          "relations.structure_module_predicts_structure_and_confidence"
+        ],
+        "outgoingRelationRefs": [
+          "relations.predicted_structure_supplies_recycled_coordinates"
+        ],
+        "producerRefs": [
+          "modules.structure_module"
+        ],
+        "consumerRefs": [
+          "value_sites.recycled_coordinates_after_iteration"
+        ]
+      },
+      "recycled_msa_after_iteration": {
+        "incomingRelationRefs": [
+          "relations.processed_msa_supplies_recycled_first_row"
+        ],
+        "outgoingRelationRefs": [
+          "relations.recycled_msa_advances_to_next_iteration"
+        ],
+        "producerRefs": [
+          "value_sites.msa_representation_after_evoformer"
+        ],
+        "consumerRefs": [
+          "value_sites.recycled_msa_before_iteration"
+        ]
+      },
+      "recycled_msa_before_iteration": {
+        "incomingRelationRefs": [
+          "relations.recycled_msa_advances_to_next_iteration"
+        ],
+        "outgoingRelationRefs": [
+          "relations.recycled_msa_enters_recycling_embedder"
+        ],
+        "producerRefs": [
+          "value_sites.recycled_msa_after_iteration"
+        ],
+        "consumerRefs": [
+          "modules.recycling_embedder"
+        ]
+      },
+      "recycled_pair_after_iteration": {
+        "incomingRelationRefs": [
+          "relations.processed_pair_supplies_recycled_pair"
+        ],
+        "outgoingRelationRefs": [
+          "relations.recycled_pair_advances_to_next_iteration"
+        ],
+        "producerRefs": [
+          "value_sites.pair_representation_after_evoformer"
+        ],
+        "consumerRefs": [
+          "value_sites.recycled_pair_before_iteration"
+        ]
+      },
+      "recycled_pair_before_iteration": {
+        "incomingRelationRefs": [
+          "relations.recycled_pair_advances_to_next_iteration"
+        ],
+        "outgoingRelationRefs": [
+          "relations.recycled_pair_enters_recycling_embedder"
+        ],
+        "producerRefs": [
+          "value_sites.recycled_pair_after_iteration"
+        ],
+        "consumerRefs": [
+          "modules.recycling_embedder"
+        ]
+      },
+      "recycled_coordinates_after_iteration": {
+        "incomingRelationRefs": [
+          "relations.predicted_structure_supplies_recycled_coordinates"
+        ],
+        "outgoingRelationRefs": [
+          "relations.recycled_coordinates_advance_to_next_iteration"
+        ],
+        "producerRefs": [
+          "value_sites.predicted_structure_output"
+        ],
+        "consumerRefs": [
+          "value_sites.recycled_coordinates_before_iteration"
+        ]
+      },
+      "recycled_coordinates_before_iteration": {
+        "incomingRelationRefs": [
+          "relations.recycled_coordinates_advance_to_next_iteration"
+        ],
+        "outgoingRelationRefs": [
+          "relations.recycled_coordinates_enter_recycling_embedder"
+        ],
+        "producerRefs": [
+          "value_sites.recycled_coordinates_after_iteration"
+        ],
+        "consumerRefs": [
+          "modules.recycling_embedder"
+        ]
+      },
+      "msa_recycle_update": {
+        "incomingRelationRefs": [
+          "relations.recycling_embedder_produces_msa_update"
+        ],
+        "outgoingRelationRefs": [
+          "relations.msa_recycle_update_conditions_input_embedder"
+        ],
+        "producerRefs": [
+          "modules.recycling_embedder"
+        ],
+        "consumerRefs": [
+          "modules.input_embedder"
+        ]
+      },
+      "pair_recycle_update": {
+        "incomingRelationRefs": [
+          "relations.recycling_embedder_produces_pair_update"
+        ],
+        "outgoingRelationRefs": [
+          "relations.pair_recycle_update_conditions_input_embedder"
+        ],
+        "producerRefs": [
+          "modules.recycling_embedder"
+        ],
+        "consumerRefs": [
+          "modules.input_embedder"
         ]
       }
     },
     "execution": {
       "loops": [
-
+        {
+          "id": "recycling_loop",
+          "repeats": 4,
+          "reruns": [
+            "modules.input_embedder",
+            "modules.evoformer_stack",
+            "modules.structure_module",
+            "modules.recycling_embedder"
+          ],
+          "cached": [
+            "value_sites.input_sequence",
+            "value_sites.multiple_sequence_alignment",
+            "value_sites.target_pair_features",
+            "value_sites.structural_templates"
+          ],
+          "notes": [
+            "Figure 1e's \"recycling (three times)\" means one initial execution followed by three shared-weight feedback executions.",
+            "The first execution receives zero-valued recycled state.",
+            "The final MSA first row, final pair representation, and predicted pseudo-beta coordinates form the feedback state."
+          ],
+          "evidence": {
+            "status": "confirmed_from_paper",
+            "refs": [
+              {
+                "source_ref": "af2_2021",
+                "role": "architecture_evidence",
+                "locator": "Figure 1e; Recycling (three times)"
+              },
+              {
+                "source_ref": "af2_2021_supplement",
+                "role": "execution_evidence",
+                "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+              }
+            ]
+          }
+        }
       ]
     },
     "stateSemantics": {
+      "recycled_msa_first_row": {
+        "representation_ref": "representations.msa_first_row",
+        "value_site_refs": [
+          "value_sites.recycled_msa_after_iteration",
+          "value_sites.recycled_msa_before_iteration",
+          "value_sites.msa_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final first row of the Evoformer MSA representation is normalized and added to the next iteration's first MSA row."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      "recycled_pair_representation": {
+        "representation_ref": "representations.pair_representation",
+        "value_site_refs": [
+          "value_sites.recycled_pair_after_iteration",
+          "value_sites.recycled_pair_before_iteration",
+          "value_sites.pair_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final Evoformer pair representation is normalized and combined with a binned-distance embedding of the previous structure."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      "recycled_pseudo_beta_coordinates": {
+        "representation_ref": "representations.pseudo_beta_coordinates",
+        "value_site_refs": [
+          "value_sites.recycled_coordinates_after_iteration",
+          "value_sites.recycled_coordinates_before_iteration"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Pseudo-beta coordinates, using alpha carbon for glycine, are converted to pairwise distance bins for the next pair update."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      }
     },
     "stateSemanticsBySite": {
+      "recycled_msa_after_iteration": {
+        "representation_ref": "representations.msa_first_row",
+        "value_site_refs": [
+          "value_sites.recycled_msa_after_iteration",
+          "value_sites.recycled_msa_before_iteration",
+          "value_sites.msa_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final first row of the Evoformer MSA representation is normalized and added to the next iteration's first MSA row."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_msa_first_row"
+      },
+      "recycled_msa_before_iteration": {
+        "representation_ref": "representations.msa_first_row",
+        "value_site_refs": [
+          "value_sites.recycled_msa_after_iteration",
+          "value_sites.recycled_msa_before_iteration",
+          "value_sites.msa_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final first row of the Evoformer MSA representation is normalized and added to the next iteration's first MSA row."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_msa_first_row"
+      },
+      "msa_recycle_update": {
+        "representation_ref": "representations.msa_first_row",
+        "value_site_refs": [
+          "value_sites.recycled_msa_after_iteration",
+          "value_sites.recycled_msa_before_iteration",
+          "value_sites.msa_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final first row of the Evoformer MSA representation is normalized and added to the next iteration's first MSA row."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_msa_first_row"
+      },
+      "recycled_pair_after_iteration": {
+        "representation_ref": "representations.pair_representation",
+        "value_site_refs": [
+          "value_sites.recycled_pair_after_iteration",
+          "value_sites.recycled_pair_before_iteration",
+          "value_sites.pair_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final Evoformer pair representation is normalized and combined with a binned-distance embedding of the previous structure."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_pair_representation"
+      },
+      "recycled_pair_before_iteration": {
+        "representation_ref": "representations.pair_representation",
+        "value_site_refs": [
+          "value_sites.recycled_pair_after_iteration",
+          "value_sites.recycled_pair_before_iteration",
+          "value_sites.pair_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final Evoformer pair representation is normalized and combined with a binned-distance embedding of the previous structure."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_pair_representation"
+      },
+      "pair_recycle_update": {
+        "representation_ref": "representations.pair_representation",
+        "value_site_refs": [
+          "value_sites.recycled_pair_after_iteration",
+          "value_sites.recycled_pair_before_iteration",
+          "value_sites.pair_recycle_update"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "The final Evoformer pair representation is normalized and combined with a binned-distance embedding of the previous structure."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_pair_representation"
+      },
+      "recycled_coordinates_after_iteration": {
+        "representation_ref": "representations.pseudo_beta_coordinates",
+        "value_site_refs": [
+          "value_sites.recycled_coordinates_after_iteration",
+          "value_sites.recycled_coordinates_before_iteration"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Pseudo-beta coordinates, using alpha carbon for glycine, are converted to pairwise distance bins for the next pair update."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_pseudo_beta_coordinates"
+      },
+      "recycled_coordinates_before_iteration": {
+        "representation_ref": "representations.pseudo_beta_coordinates",
+        "value_site_refs": [
+          "value_sites.recycled_coordinates_after_iteration",
+          "value_sites.recycled_coordinates_before_iteration"
+        ],
+        "lifecycle": "iterative_loop_state",
+        "notes": [
+          "Pseudo-beta coordinates, using alpha carbon for glycine, are converted to pairwise distance bins for the next pair update."
+        ],
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "groupId": "recycled_pseudo_beta_coordinates"
+      }
     },
     "conditioning": [
-
+      {
+        "id": "recycled_msa_additive_injection",
+        "relation_ref": "relations.msa_recycle_update_conditions_input_embedder",
+        "mode": "additive_injection",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "source": "value_sites.msa_recycle_update",
+        "target": "modules.input_embedder"
+      },
+      {
+        "id": "recycled_pair_additive_injection",
+        "relation_ref": "relations.pair_recycle_update_conditions_input_embedder",
+        "mode": "additive_injection",
+        "updates_source": false,
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "source": "value_sites.pair_recycle_update",
+        "target": "modules.input_embedder"
+      }
     ],
     "scaleTransitions": [
+      {
+        "id": "target_msa_row_selection",
+        "relation_path": [
+          "relations.processed_msa_supplies_recycled_first_row"
+        ],
+        "aggregation": "first_row_selection",
+        "copy_vs_pool": "copy",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "source": "value_sites.msa_representation_after_evoformer",
+        "target": "value_sites.recycled_msa_after_iteration",
+        "from_scale": "msa",
+        "to_scale": "residue",
+        "projection_refs": [
 
+        ]
+      },
+      {
+        "id": "pseudo_beta_coordinates_to_pair_update",
+        "relation_path": [
+          "relations.recycled_coordinates_enter_recycling_embedder",
+          "relations.recycling_embedder_produces_pair_update"
+        ],
+        "aggregation": "pairwise_distance_binning",
+        "copy_vs_pool": "expand",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        },
+        "source": "value_sites.recycled_coordinates_before_iteration",
+        "target": "value_sites.pair_recycle_update",
+        "from_scale": "residue",
+        "to_scale": "pair",
+        "projection_refs": [
+          "modules.recycling_embedder"
+        ]
+      }
     ],
     "trainingInference": {
       "objective": {
         "kind": "composite_structure_and_auxiliary_losses",
         "notes": [
-          "Training combines structure losses with auxiliary heads and incorporates self-distillation examples.",
-          "This first source-set wave models the released monomer inference boundary; training internals remain outside the root board."
+          "Structure prediction is trained with FAPE and auxiliary objectives, including confidence and masked-MSA prediction.",
+          "Only the final randomly selected recycling iteration receives the training loss in the approximate recycling procedure."
         ]
       },
       "schedule": {
-        "kind": "staged_supervised_and_self_distillation"
+        "kind": "initial_training_then_fine_tuning"
       },
       "sampler": {
-        "kind": "monomer_ensemble_with_recycling",
+        "kind": "shared_weight_recycling_inference",
+        "steps": 4,
         "configurable": true
       },
       "teacher_forcing": "none",
-      "self_conditioning": "recycled_previous_predictions",
+      "self_conditioning": "recycled_previous_outputs",
       "checkpoint_notes": [
-        "The released runner loads separately parameterized monomer model configurations and ranks their predictions.",
-        "Exact training-loop implementation is not included in the released inference repository and will remain paper-backed when expanded."
+        "This source set uses the paper's monomer network abstraction and its four total shared-weight executions.",
+        "Released monomer presets may configure the same behavior as three recycles before the final prediction."
       ],
       "evidence": {
         "status": "confirmed_from_paper",
@@ -721,228 +1891,808 @@ export const manifest = {
           {
             "source_ref": "af2_2021_supplement",
             "role": "training_and_inference_evidence",
-            "locator": "Supplementary Methods 1.3 and 1.9-1.11; Algorithms 2 and 30-32"
+            "locator": "Supplementary Methods 1.9-1.11; Algorithms 2 and 30-32"
           }
         ]
       }
     },
     "relations": [
       {
-        "id": "fasta_enters_feature_pipeline",
-        "from": "value_sites.fasta_input",
-        "to": "modules.feature_pipeline",
+        "id": "input_sequence_queries_genetic_database",
+        "from": "value_sites.input_sequence",
+        "to": "modules.genetic_database_search",
         "kind": "data_flow",
         "carries": [
-          "representations.fasta_sequence"
+          "representations.amino_acid_sequence"
         ],
-        "operation": "parse_monomer_fasta",
+        "operation": "search_sequence_databases",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; data_pipeline.process call"
-            }
-          ]
-        }
-      },
-      {
-        "id": "feature_pipeline_produces_raw_feature_bundle",
-        "from": "modules.feature_pipeline",
-        "to": "value_sites.raw_feature_bundle",
-        "kind": "data_flow",
-        "carries": [
-          "representations.raw_feature_bundle"
-        ],
-        "operation": "assemble_sequence_msa_and_template_features",
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_data_pipeline_code",
-              "role": "implementation_evidence",
-              "locator": "DataPipeline.process"
-            }
-          ]
-        }
-      },
-      {
-        "id": "raw_feature_bundle_enters_prediction_ensemble",
-        "from": "value_sites.raw_feature_bundle",
-        "to": "modules.prediction_ensemble",
-        "kind": "data_flow",
-        "carries": [
-          "representations.raw_feature_bundle"
-        ],
-        "operation": "process_features_per_model",
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; model_runner.process_features call"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
             },
             {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "RunModel.process_features"
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "prediction_ensemble_produces_model_predictions",
-        "from": "modules.prediction_ensemble",
-        "to": "value_sites.model_predictions",
+        "id": "genetic_search_produces_msa",
+        "from": "modules.genetic_database_search",
+        "to": "value_sites.multiple_sequence_alignment",
         "kind": "data_flow",
         "carries": [
-          "representations.model_prediction_set"
+          "representations.msa_features"
         ],
-        "operation": "collect_structure_and_confidence_predictions",
+        "operation": "deduplicate_and_stack_alignments",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; model_runners loop"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
             },
             {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "RunModel.predict"
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "model_predictions_enter_confidence_ranker",
-        "from": "value_sites.model_predictions",
-        "to": "modules.confidence_ranker",
+        "id": "input_sequence_enters_pairing",
+        "from": "value_sites.input_sequence",
+        "to": "modules.sequence_pairing",
         "kind": "data_flow",
         "carries": [
-          "representations.model_prediction_set"
+          "representations.amino_acid_sequence"
         ],
-        "operation": "read_candidate_ranking_confidences",
+        "operation": "build_target_pair_seed",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ranking_confidences"
-            }
-          ]
-        }
-      },
-      {
-        "id": "confidence_ranker_produces_ranked_predictions",
-        "from": "modules.confidence_ranker",
-        "to": "value_sites.ranked_predictions",
-        "kind": "data_flow",
-        "carries": [
-          "representations.ranked_prediction_set"
-        ],
-        "operation": "sort_candidates_by_mean_plddt",
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ranked_order construction"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
             },
             {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "get_confidence_metrics; non-multimer branch"
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
             }
           ]
         }
       },
       {
-        "id": "ranked_predictions_enter_relaxation_stage",
-        "from": "value_sites.ranked_predictions",
-        "to": "modules.relaxation_stage",
+        "id": "sequence_pairing_produces_target_pair_features",
+        "from": "modules.sequence_pairing",
+        "to": "value_sites.target_pair_features",
         "kind": "data_flow",
         "carries": [
-          "representations.ranked_prediction_set"
+          "representations.target_pair_features"
         ],
-        "operation": "select_best_all_or_none_for_relaxation",
+        "operation": "outer_sum_target_features_and_add_relative_positions",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ModelsToRelax selection"
-            }
-          ]
-        }
-      },
-      {
-        "id": "relaxation_stage_produces_final_predictions",
-        "from": "modules.relaxation_stage",
-        "to": "value_sites.final_predictions",
-        "kind": "data_flow",
-        "carries": [
-          "representations.final_prediction_set"
-        ],
-        "operation": "combine_relaxed_and_unrelaxed_candidates",
-        "evidence": {
-          "status": "confirmed_from_code",
-          "refs": [
-            {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; relaxed_pdbs and ranked output fallback"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
             },
             {
-              "source_ref": "af2_relax_code",
-              "role": "implementation_evidence",
-              "locator": "AmberRelaxation.process"
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
             }
           ]
         }
       },
       {
-        "id": "final_predictions_enter_artifact_exporter",
-        "from": "value_sites.final_predictions",
-        "to": "modules.artifact_exporter",
+        "id": "input_sequence_queries_structure_database",
+        "from": "value_sites.input_sequence",
+        "to": "modules.structure_database_search",
         "kind": "data_flow",
         "carries": [
-          "representations.final_prediction_set"
+          "representations.amino_acid_sequence"
         ],
-        "operation": "assemble_ordered_prediction_artifacts",
+        "operation": "initiate_sequence_derived_template_search",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ranked structure and metadata writes"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
             }
           ]
         }
       },
       {
-        "id": "artifact_exporter_writes_prediction_artifacts",
-        "from": "modules.artifact_exporter",
-        "to": "value_sites.prediction_artifacts_output",
+        "id": "structure_search_produces_templates",
+        "from": "modules.structure_database_search",
+        "to": "value_sites.structural_templates",
         "kind": "data_flow",
         "carries": [
-          "representations.prediction_artifact_bundle"
+          "representations.template_features"
         ],
-        "operation": "serialize_prediction_directory",
+        "operation": "featurize_template_hits",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; output file writes"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; MSA input branch"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "data_pipeline_evidence",
+              "locator": "Supplementary Methods 1.2.2, 1.2.7, and 1.2.9"
+            }
+          ]
+        }
+      },
+      {
+        "id": "msa_features_enter_input_embedder",
+        "from": "value_sites.multiple_sequence_alignment",
+        "to": "modules.input_embedder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.msa_features"
+        ],
+        "operation": "embed_clustered_and_extra_msa_features",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "target_pair_features_enter_input_embedder",
+        "from": "value_sites.target_pair_features",
+        "to": "modules.input_embedder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.target_pair_features"
+        ],
+        "operation": "initialize_pair_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "templates_enter_input_embedder",
+        "from": "value_sites.structural_templates",
+        "to": "modules.input_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.template_features"
+        ],
+        "operation": "integrate_template_angle_and_pair_features",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "input_embedder_initializes_msa_representation",
+        "from": "modules.input_embedder",
+        "to": "value_sites.msa_representation_before_evoformer",
+        "kind": "data_flow",
+        "carries": [
+          "representations.msa_representation"
+        ],
+        "operation": "assemble_initial_msa_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "input_embedder_initializes_pair_representation",
+        "from": "modules.input_embedder",
+        "to": "value_sites.pair_representation_before_evoformer",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "assemble_initial_pair_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Pairing branch and pair representation"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "embedding_evidence",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_msa_enters_evoformer",
+        "from": "value_sites.msa_representation_before_evoformer",
+        "to": "modules.evoformer_stack",
+        "kind": "data_flow",
+        "carries": [
+          "representations.msa_representation"
+        ],
+        "operation": "refine_msa_state",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "initial_pair_enters_evoformer",
+        "from": "value_sites.pair_representation_before_evoformer",
+        "to": "modules.evoformer_stack",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "refine_pair_state",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "evoformer_produces_processed_msa",
+        "from": "modules.evoformer_stack",
+        "to": "value_sites.msa_representation_after_evoformer",
+        "kind": "data_flow",
+        "carries": [
+          "representations.msa_representation"
+        ],
+        "operation": "emit_final_msa_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "evoformer_projects_single_representation",
+        "from": "modules.evoformer_stack",
+        "to": "value_sites.single_representation_after_evoformer",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_representation"
+        ],
+        "operation": "project_final_target_row",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "evoformer_produces_processed_pair",
+        "from": "modules.evoformer_stack",
+        "to": "value_sites.pair_representation_after_evoformer",
+        "kind": "data_flow",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "emit_final_pair_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "evoformer_evidence",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_representation_enters_structure_module",
+        "from": "value_sites.single_representation_after_evoformer",
+        "to": "modules.structure_module",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_representation"
+        ],
+        "operation": "initialize_per_residue_structure_state",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "structure_evidence",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20, 24, and 29"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_representation_enters_structure_module",
+        "from": "value_sites.pair_representation_after_evoformer",
+        "to": "modules.structure_module",
+        "kind": "conditioning",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "condition_invariant_point_attention",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "structure_evidence",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20, 24, and 29"
+            }
+          ]
+        }
+      },
+      {
+        "id": "structure_module_predicts_structure_and_confidence",
+        "from": "modules.structure_module",
+        "to": "value_sites.predicted_structure_output",
+        "kind": "data_flow",
+        "carries": [
+          "representations.structure_prediction"
+        ],
+        "operation": "decode_atom_coordinates_and_plddt",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "structure_evidence",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20, 24, and 29"
+            }
+          ]
+        }
+      },
+      {
+        "id": "processed_msa_supplies_recycled_first_row",
+        "from": "value_sites.msa_representation_after_evoformer",
+        "to": "value_sites.recycled_msa_after_iteration",
+        "kind": "state_update",
+        "carries": [
+          "representations.msa_first_row"
+        ],
+        "operation": "select_final_target_msa_row",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "processed_pair_supplies_recycled_pair",
+        "from": "value_sites.pair_representation_after_evoformer",
+        "to": "value_sites.recycled_pair_after_iteration",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "retain_final_pair_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "predicted_structure_supplies_recycled_coordinates",
+        "from": "value_sites.predicted_structure_output",
+        "to": "value_sites.recycled_coordinates_after_iteration",
+        "kind": "state_update",
+        "carries": [
+          "representations.pseudo_beta_coordinates"
+        ],
+        "operation": "extract_pseudo_beta_coordinates",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_msa_advances_to_next_iteration",
+        "from": "value_sites.recycled_msa_after_iteration",
+        "to": "value_sites.recycled_msa_before_iteration",
+        "kind": "state_update",
+        "carries": [
+          "representations.msa_first_row"
+        ],
+        "operation": "carry_msa_row_to_next_shared_weight_execution",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_pair_advances_to_next_iteration",
+        "from": "value_sites.recycled_pair_after_iteration",
+        "to": "value_sites.recycled_pair_before_iteration",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "carry_pair_state_to_next_shared_weight_execution",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_coordinates_advance_to_next_iteration",
+        "from": "value_sites.recycled_coordinates_after_iteration",
+        "to": "value_sites.recycled_coordinates_before_iteration",
+        "kind": "state_update",
+        "carries": [
+          "representations.pseudo_beta_coordinates"
+        ],
+        "operation": "carry_coordinates_to_next_shared_weight_execution",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_msa_enters_recycling_embedder",
+        "from": "value_sites.recycled_msa_before_iteration",
+        "to": "modules.recycling_embedder",
+        "kind": "state_update",
+        "carries": [
+          "representations.msa_first_row"
+        ],
+        "operation": "normalize_recycled_msa_row",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_pair_enters_recycling_embedder",
+        "from": "value_sites.recycled_pair_before_iteration",
+        "to": "modules.recycling_embedder",
+        "kind": "state_update",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "normalize_recycled_pair_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycled_coordinates_enter_recycling_embedder",
+        "from": "value_sites.recycled_coordinates_before_iteration",
+        "to": "modules.recycling_embedder",
+        "kind": "state_update",
+        "carries": [
+          "representations.pseudo_beta_coordinates"
+        ],
+        "operation": "bin_recycled_pseudo_beta_distances",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycling_embedder_produces_msa_update",
+        "from": "modules.recycling_embedder",
+        "to": "value_sites.msa_recycle_update",
+        "kind": "conditioning",
+        "carries": [
+          "representations.msa_first_row"
+        ],
+        "operation": "produce_normalized_msa_update",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "recycling_embedder_produces_pair_update",
+        "from": "modules.recycling_embedder",
+        "to": "value_sites.pair_recycle_update",
+        "kind": "conditioning",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "combine_normalized_pair_and_distance_embedding",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "msa_recycle_update_conditions_input_embedder",
+        "from": "value_sites.msa_recycle_update",
+        "to": "modules.input_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.msa_first_row"
+        ],
+        "operation": "add_to_next_target_msa_row",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "pair_recycle_update_conditions_input_embedder",
+        "from": "value_sites.pair_recycle_update",
+        "to": "modules.input_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.pair_representation"
+        ],
+        "operation": "add_to_next_pair_representation",
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
             }
           ]
         }
@@ -950,40 +2700,65 @@ export const manifest = {
     ],
     "claims": [
       {
-        "id": "monomer_candidates_are_ranked_by_mean_plddt",
-        "statement": "The released monomer path ranks candidate predictions by mean per-residue pLDDT rather than the multimer ipTM-weighted score.",
-        "scope": {
-          "module_ref": "modules.confidence_ranker"
-        },
+        "id": "paper_root_has_two_learned_stages",
+        "statement": "The paper-level AlphaFold network consists of a 48-block Evoformer trunk followed by an eight-block Structure Module.",
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_model_wrapper_code",
-              "role": "implementation_evidence",
-              "locator": "get_confidence_metrics"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e and the AlphaFold network section",
+              "note": "The root follows the paper's model-level information flow rather than the released command-line workflow."
             },
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; ranked_order construction"
+              "source_ref": "af2_2021_supplement",
+              "role": "detailed_architecture_evidence",
+              "locator": "Supplementary Methods 1.4; Algorithm 2"
             }
           ]
         }
       },
       {
-        "id": "relaxation_is_optional_postprocessing",
-        "statement": "Amber relaxation operates after confidence ranking and does not feed coordinates back into AlphaFold model inference.",
+        "id": "recycling_uses_msa_pair_and_geometry",
+        "statement": "Recycling feeds back the final MSA first row, final pair representation, and predicted pseudo-beta geometry; the derived single representation is not itself recycled.",
         "scope": {
-          "module_ref": "modules.relaxation_stage"
+          "module_ref": "modules.recycling_embedder"
         },
         "evidence": {
-          "status": "confirmed_from_code",
+          "status": "confirmed_from_paper",
           "refs": [
             {
-              "source_ref": "af2_runner_code",
-              "role": "implementation_evidence",
-              "locator": "predict_structure; model loop, ranked_order, and relaxation loop"
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
+            }
+          ]
+        }
+      },
+      {
+        "id": "three_recycles_mean_four_executions",
+        "statement": "Figure 1e's three recycling feedback passes correspond to four total shared-weight network executions including the initial pass.",
+        "scope": {
+          "module_ref": "modules.alphafold_iteration"
+        },
+        "evidence": {
+          "status": "confirmed_from_paper",
+          "refs": [
+            {
+              "source_ref": "af2_2021",
+              "role": "architecture_evidence",
+              "locator": "Figure 1e; Recycling (three times)"
+            },
+            {
+              "source_ref": "af2_2021_supplement",
+              "role": "execution_evidence",
+              "locator": "Supplementary Methods 1.10; Algorithms 2 and 30-32"
             }
           ]
         }
@@ -991,26 +2766,27 @@ export const manifest = {
     ],
     "openQuestions": [
       {
-        "id": "partition_first_model_drilldown",
-        "question": "How should the first prediction-ensemble drilldown divide paper Algorithm 2 between recycling control and one AlphaFoldIteration execution?",
+        "id": "choose_first_internal_drilldown",
+        "question": "Should the next authored child board expand the two-tower Evoformer block or the complete recycling iteration first?",
         "status": "deferred",
         "affected_refs": [
-          "modules.prediction_ensemble"
+          "modules.evoformer_stack",
+          "modules.alphafold_iteration"
         ],
         "blocking": false,
-        "resolution_criteria": "Align the Algorithm 2 and Algorithms 30-32 scopes with the released AlphaFold and AlphaFoldIteration call boundary while keeping recycled before/after value sites distinct.",
+        "resolution_criteria": "Select the next board according to whether the immediate explanatory priority is learned representation exchange or whole-network iterative refinement.",
         "evidence": {
           "status": "open_question",
           "refs": [
             {
-              "source_ref": "af2_2021_supplement",
+              "source_ref": "af2_2021",
               "role": "architecture_context",
-              "locator": "Algorithms 2 and 30-32"
+              "locator": "Figures 1e and 3a"
             },
             {
-              "source_ref": "af2_model_code",
-              "role": "implementation_context",
-              "locator": "AlphaFold and AlphaFoldIteration"
+              "source_ref": "af2_2021_supplement",
+              "role": "architecture_context",
+              "locator": "Supplementary Methods 1.6 and 1.10"
             }
           ]
         }
@@ -1510,6 +3286,17 @@ export const manifest = {
         "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py"
       },
       {
+        "id": "genie3_feature_schema_code",
+        "kind": "code",
+        "title": "Genie 3 feature dictionary registry",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/np/features.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py"
+      },
+      {
         "id": "genie3_sample_dataset_registry_code",
         "kind": "code",
         "title": "Genie 3 generation task-source router",
@@ -1598,28 +3385,28 @@ export const manifest = {
       "schemaVersion": "pseudocode-v0.2",
       "compilerVersion": "semantic-pseudocode-compiler-v0.3",
       "id": "alphafold2",
-      "title": "AlphaFold 2 Monomer Prediction Trace",
+      "title": "AlphaFold 2 Monomer Network Trace",
       "rootScope": "scopes.monomer_prediction",
       "sources": [
         {
-          "id": "runner_code",
-          "source_ref": "af2_runner_code"
+          "id": "paper",
+          "source_ref": "af2_2021"
+        },
+        {
+          "id": "supplement",
+          "source_ref": "af2_2021_supplement"
         },
         {
           "id": "data_pipeline_code",
           "source_ref": "af2_data_pipeline_code"
         },
         {
-          "id": "model_wrapper_code",
-          "source_ref": "af2_model_wrapper_code"
-        },
-        {
           "id": "model_code",
           "source_ref": "af2_model_code"
         },
         {
-          "id": "relax_code",
-          "source_ref": "af2_relax_code"
+          "id": "structure_code",
+          "source_ref": "af2_structure_code"
         }
       ],
       "scopes": [
@@ -1630,84 +3417,227 @@ export const manifest = {
           "kind": "program",
           "parentRef": "pseudocode",
           "subjectRef": "architecture"
+        },
+        {
+          "id": "recycling_loop",
+          "ref": "scopes.recycling_loop",
+          "label": "Four shared-weight AlphaFold executions",
+          "kind": "loop",
+          "parentRef": "scopes.monomer_prediction",
+          "subjectRef": "modules.alphafold_iteration",
+          "executionRef": "execution.loops.recycling_loop"
         }
       ],
       "symbols": [
         {
-          "id": "fasta_input",
-          "name": "fasta_path",
+          "id": "input_sequence",
+          "name": "sequence",
           "type": "input",
           "shape": "N_res residues",
-          "representationRef": "representations.fasta_sequence",
-          "scale": "protein",
+          "representationRef": "representations.amino_acid_sequence",
+          "scale": "residue",
           "glyph": "vector",
           "scopeRef": "scopes.monomer_prediction",
-          "architectureRef": "value_sites.fasta_input"
+          "architectureRef": "value_sites.input_sequence"
         },
         {
-          "id": "raw_feature_bundle",
-          "name": "raw_features",
+          "id": "multiple_sequence_alignment",
+          "name": "msa_features",
           "type": "representation",
-          "shape": "dictionary of sequence, MSA, template, mask, and metadata arrays",
-          "representationRef": "representations.raw_feature_bundle",
-          "scale": "protein",
+          "shape": "N_seq x N_res aligned residues and deletion features",
+          "representationRef": "representations.msa_features",
+          "scale": "msa",
+          "glyph": "matrix",
           "scopeRef": "scopes.monomer_prediction",
-          "architectureRef": "value_sites.raw_feature_bundle"
+          "architectureRef": "value_sites.multiple_sequence_alignment"
         },
         {
-          "id": "model_predictions",
-          "name": "predictions",
+          "id": "target_pair_features",
+          "name": "target_pair",
           "type": "representation",
-          "shape": "N_model candidates with N_res x 37 x 3 atom coordinates and confidence fields",
-          "representationRef": "representations.model_prediction_set",
-          "scale": "candidate_set",
-          "glyph": "coordinates",
+          "shape": "N_res x N_res x f_pair",
+          "representationRef": "representations.target_pair_features",
+          "scale": "pair",
+          "glyph": "pair",
           "scopeRef": "scopes.monomer_prediction",
-          "architectureRef": "value_sites.model_predictions"
+          "architectureRef": "value_sites.target_pair_features"
         },
         {
-          "id": "ranked_predictions",
-          "name": "ranked_predictions",
+          "id": "structural_templates",
+          "name": "templates",
           "type": "representation",
-          "shape": "ordered N_model candidates with structures and confidence fields",
-          "representationRef": "representations.ranked_prediction_set",
-          "scale": "candidate_set",
-          "glyph": "coordinates",
+          "shape": "N_templ x N_res x N_res x f_template",
+          "representationRef": "representations.template_features",
+          "scale": "template",
+          "glyph": "volume",
           "scopeRef": "scopes.monomer_prediction",
-          "architectureRef": "value_sites.ranked_predictions"
+          "architectureRef": "value_sites.structural_templates"
         },
         {
-          "id": "final_predictions",
-          "name": "final_predictions",
-          "type": "representation",
-          "shape": "ordered N_model candidates with selected relaxed coordinates",
-          "representationRef": "representations.final_prediction_set",
-          "scale": "candidate_set",
-          "glyph": "coordinates",
-          "scopeRef": "scopes.monomer_prediction",
-          "architectureRef": "value_sites.final_predictions"
-        },
-        {
-          "id": "prediction_artifacts_output",
-          "name": "artifacts",
+          "id": "predicted_structure_output",
+          "name": "prediction",
           "type": "output",
-          "shape": "directory of PDB, mmCIF, JSON, pickle, and metadata files",
-          "representationRef": "representations.prediction_artifact_bundle",
-          "scale": "run",
+          "shape": "N_res x 37 x 3 coordinates plus N_res pLDDT",
+          "representationRef": "representations.structure_prediction",
+          "scale": "atom",
+          "glyph": "coordinates",
           "scopeRef": "scopes.monomer_prediction",
-          "architectureRef": "value_sites.prediction_artifacts_output"
+          "architectureRef": "value_sites.predicted_structure_output"
+        },
+        {
+          "id": "recycled_msa_before_iteration",
+          "name": "prev_msa_row",
+          "type": "state",
+          "shape": "N_res x 256",
+          "representationRef": "representations.msa_first_row",
+          "scale": "residue",
+          "glyph": "single",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.recycled_msa_before_iteration"
+        },
+        {
+          "id": "recycled_pair_before_iteration",
+          "name": "prev_pair",
+          "type": "state",
+          "shape": "N_res x N_res x 128",
+          "representationRef": "representations.pair_representation",
+          "scale": "pair",
+          "glyph": "pair",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.recycled_pair_before_iteration"
+        },
+        {
+          "id": "recycled_coordinates_before_iteration",
+          "name": "prev_pseudo_beta",
+          "type": "state",
+          "shape": "N_res x 3",
+          "representationRef": "representations.pseudo_beta_coordinates",
+          "scale": "residue",
+          "glyph": "coordinates",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.recycled_coordinates_before_iteration"
+        },
+        {
+          "id": "msa_recycle_update",
+          "name": "msa_recycle_update",
+          "type": "conditioning",
+          "shape": "N_res x 256",
+          "representationRef": "representations.msa_first_row",
+          "scale": "residue",
+          "glyph": "single",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.msa_recycle_update"
+        },
+        {
+          "id": "pair_recycle_update",
+          "name": "pair_recycle_update",
+          "type": "conditioning",
+          "shape": "N_res x N_res x 128",
+          "representationRef": "representations.pair_representation",
+          "scale": "pair",
+          "glyph": "pair",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.pair_recycle_update"
+        },
+        {
+          "id": "msa_representation_before_evoformer",
+          "name": "msa_state",
+          "type": "state",
+          "shape": "N_seq x N_res x 256",
+          "representationRef": "representations.msa_representation",
+          "scale": "msa",
+          "glyph": "matrix",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.msa_representation_before_evoformer"
+        },
+        {
+          "id": "pair_representation_before_evoformer",
+          "name": "pair_state",
+          "type": "state",
+          "shape": "N_res x N_res x 128",
+          "representationRef": "representations.pair_representation",
+          "scale": "pair",
+          "glyph": "pair",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.pair_representation_before_evoformer"
+        },
+        {
+          "id": "msa_representation_after_evoformer",
+          "name": "processed_msa",
+          "type": "state",
+          "shape": "N_seq x N_res x 256",
+          "representationRef": "representations.msa_representation",
+          "scale": "msa",
+          "glyph": "matrix",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.msa_representation_after_evoformer"
+        },
+        {
+          "id": "single_representation_after_evoformer",
+          "name": "single_state",
+          "type": "representation",
+          "shape": "N_res x 384",
+          "representationRef": "representations.single_representation",
+          "scale": "residue",
+          "glyph": "single",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.single_representation_after_evoformer"
+        },
+        {
+          "id": "pair_representation_after_evoformer",
+          "name": "processed_pair",
+          "type": "state",
+          "shape": "N_res x N_res x 128",
+          "representationRef": "representations.pair_representation",
+          "scale": "pair",
+          "glyph": "pair",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.pair_representation_after_evoformer"
+        },
+        {
+          "id": "recycled_msa_after_iteration",
+          "name": "next_msa_row",
+          "type": "state",
+          "shape": "N_res x 256",
+          "representationRef": "representations.msa_first_row",
+          "scale": "residue",
+          "glyph": "single",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.recycled_msa_after_iteration"
+        },
+        {
+          "id": "recycled_pair_after_iteration",
+          "name": "next_pair",
+          "type": "state",
+          "shape": "N_res x N_res x 128",
+          "representationRef": "representations.pair_representation",
+          "scale": "pair",
+          "glyph": "pair",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.recycled_pair_after_iteration"
+        },
+        {
+          "id": "recycled_coordinates_after_iteration",
+          "name": "next_pseudo_beta",
+          "type": "state",
+          "shape": "N_res x 3",
+          "representationRef": "representations.pseudo_beta_coordinates",
+          "scale": "residue",
+          "glyph": "coordinates",
+          "scopeRef": "scopes.recycling_loop",
+          "architectureRef": "value_sites.recycled_coordinates_after_iteration"
         }
       ],
       "lines": [
         {
-          "id": "build_raw_features",
-          "text": "raw_features = FeaturePipeline(fasta_path)",
-          "comment": "Parse one sequence, search sequence databases, find templates, and assemble their raw features.",
-          "refs": "predict_structure; data_pipeline.process call, DataPipeline.process",
+          "id": "search_genetic_databases",
+          "text": "msa_features = GeneticDatabaseSearch(sequence)",
+          "comment": "Search sequence databases, deduplicate homologues, and align them to the target sequence.",
+          "refs": "Supplementary Methods 1.2.2, DataPipeline.process",
           "sourceRefs": [
             {
-              "source": "runner_code",
-              "locator": "predict_structure; data_pipeline.process call"
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.2.2"
             },
             {
               "source": "data_pipeline_code",
@@ -1715,25 +3645,25 @@ export const manifest = {
             }
           ],
           "scopeRef": "scopes.monomer_prediction",
-          "statementRef": "modules.feature_pipeline",
+          "statementRef": "modules.genetic_database_search",
           "architectureRefs": [
-            "modules.feature_pipeline",
-            "relations.fasta_enters_feature_pipeline",
-            "relations.feature_pipeline_produces_raw_feature_bundle"
+            "modules.genetic_database_search",
+            "relations.input_sequence_queries_genetic_database",
+            "relations.genetic_search_produces_msa"
           ],
-          "operation": "build_sequence_msa_template_features",
+          "operation": "genetic_database_search",
           "inputs": [
-            "fasta_input"
+            "input_sequence"
           ],
           "outputs": [
-            "raw_feature_bundle"
+            "multiple_sequence_alignment"
           ],
           "codeBindings": [
             {
-              "lexeme": "raw_features",
+              "lexeme": "msa_features",
               "access": "write",
-              "symbolId": "raw_feature_bundle",
-              "architectureRef": "value_sites.raw_feature_bundle",
+              "symbolId": "multiple_sequence_alignment",
+              "architectureRef": "value_sites.multiple_sequence_alignment",
               "occurrences": [
                 {
                   "start": 0,
@@ -1742,21 +3672,1014 @@ export const manifest = {
               ]
             },
             {
-              "lexeme": "FeaturePipeline",
+              "lexeme": "GeneticDatabaseSearch",
               "access": "call",
-              "architectureRef": "modules.feature_pipeline",
+              "architectureRef": "modules.genetic_database_search",
               "occurrences": [
                 {
                   "start": 15,
-                  "end": 30
+                  "end": 36
                 }
               ]
             },
             {
-              "lexeme": "fasta_path",
+              "lexeme": "sequence",
               "access": "read",
-              "symbolId": "fasta_input",
-              "architectureRef": "value_sites.fasta_input",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 37,
+                  "end": 45
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pair_target_sequence",
+          "text": "target_pair = PairTargetSequence(sequence)",
+          "comment": "Outer-sum projected target features and add clipped relative residue positions.",
+          "refs": "Supplementary Methods 1.5; Algorithms 3-4",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.5; Algorithms 3-4"
+            }
+          ],
+          "scopeRef": "scopes.monomer_prediction",
+          "statementRef": "modules.sequence_pairing",
+          "architectureRefs": [
+            "modules.sequence_pairing",
+            "relations.input_sequence_enters_pairing",
+            "relations.sequence_pairing_produces_target_pair_features"
+          ],
+          "operation": "build_target_pair_seed",
+          "inputs": [
+            "input_sequence"
+          ],
+          "outputs": [
+            "target_pair_features"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "target_pair",
+              "access": "write",
+              "symbolId": "target_pair_features",
+              "architectureRef": "value_sites.target_pair_features",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 11
+                }
+              ]
+            },
+            {
+              "lexeme": "PairTargetSequence",
+              "access": "call",
+              "architectureRef": "modules.sequence_pairing",
+              "occurrences": [
+                {
+                  "start": 14,
+                  "end": 32
+                }
+              ]
+            },
+            {
+              "lexeme": "sequence",
+              "access": "read",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 33,
+                  "end": 41
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "search_structure_database",
+          "text": "templates = StructureDatabaseSearch(sequence)",
+          "comment": "Retrieve structural homologues and featurize their residue, torsion, mask, and pair geometry.",
+          "refs": "Supplementary Methods 1.2.3 and 1.2.9, DataPipeline.process",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.2.3 and 1.2.9"
+            },
+            {
+              "source": "data_pipeline_code",
+              "locator": "DataPipeline.process"
+            }
+          ],
+          "scopeRef": "scopes.monomer_prediction",
+          "statementRef": "modules.structure_database_search",
+          "architectureRefs": [
+            "modules.structure_database_search",
+            "relations.input_sequence_queries_structure_database",
+            "relations.structure_search_produces_templates"
+          ],
+          "operation": "structure_database_search",
+          "inputs": [
+            "input_sequence"
+          ],
+          "outputs": [
+            "structural_templates"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "templates",
+              "access": "write",
+              "symbolId": "structural_templates",
+              "architectureRef": "value_sites.structural_templates",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 9
+                }
+              ]
+            },
+            {
+              "lexeme": "StructureDatabaseSearch",
+              "access": "call",
+              "architectureRef": "modules.structure_database_search",
+              "occurrences": [
+                {
+                  "start": 12,
+                  "end": 35
+                }
+              ]
+            },
+            {
+              "lexeme": "sequence",
+              "access": "read",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 36,
+                  "end": 44
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "run_recycling_loop",
+          "text": "prediction = RecycleAlphaFold(sequence, msa_features, target_pair, templates, passes=4)",
+          "comment": "Run one initial shared-weight execution and three feedback executions; return only the final structure and confidence.",
+          "refs": "Figure 1e, Supplementary Methods 1.4 and 1.10; Algorithms 2 and 30",
+          "sourceRefs": [
+            {
+              "source": "paper",
+              "locator": "Figure 1e"
+            },
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.4 and 1.10; Algorithms 2 and 30"
+            }
+          ],
+          "scopeRef": "scopes.monomer_prediction",
+          "statementRef": "modules.alphafold_iteration",
+          "calleeScopeRef": "scopes.recycling_loop",
+          "architectureRefs": [
+            "modules.alphafold_iteration",
+            "execution.loops.recycling_loop",
+            "claims.three_recycles_mean_four_executions"
+          ],
+          "operation": "shared_weight_recycling_inference",
+          "inputs": [
+            "input_sequence",
+            "multiple_sequence_alignment",
+            "target_pair_features",
+            "structural_templates"
+          ],
+          "outputs": [
+            "predicted_structure_output"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "prediction",
+              "access": "write",
+              "symbolId": "predicted_structure_output",
+              "architectureRef": "value_sites.predicted_structure_output",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 10
+                }
+              ]
+            },
+            {
+              "lexeme": "RecycleAlphaFold",
+              "access": "call",
+              "architectureRef": "modules.alphafold_iteration",
+              "occurrences": [
+                {
+                  "start": 13,
+                  "end": 29
+                }
+              ]
+            },
+            {
+              "lexeme": "sequence",
+              "access": "read",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 30,
+                  "end": 38
+                }
+              ]
+            },
+            {
+              "lexeme": "msa_features",
+              "access": "read",
+              "symbolId": "multiple_sequence_alignment",
+              "architectureRef": "value_sites.multiple_sequence_alignment",
+              "occurrences": [
+                {
+                  "start": 40,
+                  "end": 52
+                }
+              ]
+            },
+            {
+              "lexeme": "target_pair",
+              "access": "read",
+              "symbolId": "target_pair_features",
+              "architectureRef": "value_sites.target_pair_features",
+              "occurrences": [
+                {
+                  "start": 54,
+                  "end": 65
+                }
+              ]
+            },
+            {
+              "lexeme": "templates",
+              "access": "read",
+              "symbolId": "structural_templates",
+              "architectureRef": "value_sites.structural_templates",
+              "occurrences": [
+                {
+                  "start": 67,
+                  "end": 76
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "initialize_recycled_msa",
+          "text": "prev_msa_row = zeros_like_target_row(msa_features)",
+          "comment": "The first execution receives a zero-valued previous target-row state.",
+          "refs": "Algorithm 2 line 1 and Supplementary Methods 1.10",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Algorithm 2 line 1 and Supplementary Methods 1.10"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "value_sites.recycled_msa_before_iteration",
+          "architectureRefs": [
+            "value_sites.recycled_msa_before_iteration"
+          ],
+          "operation": "initialize_recycled_msa_to_zero",
+          "inputs": [
+            "multiple_sequence_alignment"
+          ],
+          "outputs": [
+            "recycled_msa_before_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "prev_msa_row",
+              "access": "write",
+              "symbolId": "recycled_msa_before_iteration",
+              "architectureRef": "value_sites.recycled_msa_before_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 12
+                }
+              ]
+            },
+            {
+              "lexeme": "msa_features",
+              "access": "read",
+              "symbolId": "multiple_sequence_alignment",
+              "architectureRef": "value_sites.multiple_sequence_alignment",
+              "occurrences": [
+                {
+                  "start": 37,
+                  "end": 49
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "initialize_recycled_pair",
+          "text": "prev_pair = zeros_like_pair(sequence)",
+          "comment": "The first execution receives a zero-valued previous pair state.",
+          "refs": "Algorithm 2 line 1 and Supplementary Methods 1.10",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Algorithm 2 line 1 and Supplementary Methods 1.10"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "value_sites.recycled_pair_before_iteration",
+          "architectureRefs": [
+            "value_sites.recycled_pair_before_iteration"
+          ],
+          "operation": "initialize_recycled_pair_to_zero",
+          "inputs": [
+            "input_sequence"
+          ],
+          "outputs": [
+            "recycled_pair_before_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "prev_pair",
+              "access": "write",
+              "symbolId": "recycled_pair_before_iteration",
+              "architectureRef": "value_sites.recycled_pair_before_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 9
+                }
+              ]
+            },
+            {
+              "lexeme": "sequence",
+              "access": "read",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 28,
+                  "end": 36
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "initialize_recycled_coordinates",
+          "text": "prev_pseudo_beta = zeros_like_coordinates(sequence)",
+          "comment": "The first execution receives zero-valued previous pseudo-beta coordinates.",
+          "refs": "Algorithm 2 line 1 and Supplementary Methods 1.10",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Algorithm 2 line 1 and Supplementary Methods 1.10"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "value_sites.recycled_coordinates_before_iteration",
+          "architectureRefs": [
+            "value_sites.recycled_coordinates_before_iteration"
+          ],
+          "operation": "initialize_recycled_coordinates_to_zero",
+          "inputs": [
+            "input_sequence"
+          ],
+          "outputs": [
+            "recycled_coordinates_before_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "prev_pseudo_beta",
+              "access": "write",
+              "symbolId": "recycled_coordinates_before_iteration",
+              "architectureRef": "value_sites.recycled_coordinates_before_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 16
+                }
+              ]
+            },
+            {
+              "lexeme": "sequence",
+              "access": "read",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 42,
+                  "end": 50
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "embed_recycled_state",
+          "text": "msa_recycle_update, pair_recycle_update = RecyclingEmbedder(prev_msa_row, prev_pair, prev_pseudo_beta)",
+          "comment": "Normalize previous latent states and add a binned pseudo-beta distance embedding to the pair update.",
+          "refs": "Supplementary Methods 1.10; Algorithm 32, AlphaFoldIteration; recycling feature embedding",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.10; Algorithm 32"
+            },
+            {
+              "source": "model_code",
+              "locator": "AlphaFoldIteration; recycling feature embedding"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "modules.recycling_embedder",
+          "architectureRefs": [
+            "modules.recycling_embedder",
+            "relations.recycled_msa_enters_recycling_embedder",
+            "relations.recycled_pair_enters_recycling_embedder",
+            "relations.recycled_coordinates_enter_recycling_embedder",
+            "relations.recycling_embedder_produces_msa_update",
+            "relations.recycling_embedder_produces_pair_update"
+          ],
+          "operation": "embed_recycled_outputs",
+          "inputs": [
+            "recycled_msa_before_iteration",
+            "recycled_pair_before_iteration",
+            "recycled_coordinates_before_iteration"
+          ],
+          "outputs": [
+            "msa_recycle_update",
+            "pair_recycle_update"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "msa_recycle_update",
+              "access": "write",
+              "symbolId": "msa_recycle_update",
+              "architectureRef": "value_sites.msa_recycle_update",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 18
+                }
+              ]
+            },
+            {
+              "lexeme": "pair_recycle_update",
+              "access": "write",
+              "symbolId": "pair_recycle_update",
+              "architectureRef": "value_sites.pair_recycle_update",
+              "occurrences": [
+                {
+                  "start": 20,
+                  "end": 39
+                }
+              ]
+            },
+            {
+              "lexeme": "RecyclingEmbedder",
+              "access": "call",
+              "architectureRef": "modules.recycling_embedder",
+              "occurrences": [
+                {
+                  "start": 42,
+                  "end": 59
+                }
+              ]
+            },
+            {
+              "lexeme": "prev_msa_row",
+              "access": "read",
+              "symbolId": "recycled_msa_before_iteration",
+              "architectureRef": "value_sites.recycled_msa_before_iteration",
+              "occurrences": [
+                {
+                  "start": 60,
+                  "end": 72
+                }
+              ]
+            },
+            {
+              "lexeme": "prev_pair",
+              "access": "read",
+              "symbolId": "recycled_pair_before_iteration",
+              "architectureRef": "value_sites.recycled_pair_before_iteration",
+              "occurrences": [
+                {
+                  "start": 74,
+                  "end": 83
+                }
+              ]
+            },
+            {
+              "lexeme": "prev_pseudo_beta",
+              "access": "read",
+              "symbolId": "recycled_coordinates_before_iteration",
+              "architectureRef": "value_sites.recycled_coordinates_before_iteration",
+              "occurrences": [
+                {
+                  "start": 85,
+                  "end": 101
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "embed_model_inputs",
+          "text": "msa_state, pair_state = InputEmbedder(sequence, msa_features, target_pair, templates, msa_recycle_update, pair_recycle_update)",
+          "comment": "Initialize both representation tracks and add the recycled updates to the new target-row and pair states.",
+          "refs": "Supplementary Methods 1.4-1.5; Algorithms 2-4, EmbeddingsAndEvoformer",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.4-1.5; Algorithms 2-4"
+            },
+            {
+              "source": "model_code",
+              "locator": "EmbeddingsAndEvoformer"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "modules.input_embedder",
+          "architectureRefs": [
+            "modules.input_embedder",
+            "relations.msa_features_enter_input_embedder",
+            "relations.target_pair_features_enter_input_embedder",
+            "relations.templates_enter_input_embedder",
+            "relations.msa_recycle_update_conditions_input_embedder",
+            "relations.pair_recycle_update_conditions_input_embedder",
+            "relations.input_embedder_initializes_msa_representation",
+            "relations.input_embedder_initializes_pair_representation"
+          ],
+          "operation": "embed_and_integrate_model_inputs",
+          "inputs": [
+            "input_sequence",
+            "multiple_sequence_alignment",
+            "target_pair_features",
+            "structural_templates",
+            "msa_recycle_update",
+            "pair_recycle_update"
+          ],
+          "outputs": [
+            "msa_representation_before_evoformer",
+            "pair_representation_before_evoformer"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "msa_state",
+              "access": "write",
+              "symbolId": "msa_representation_before_evoformer",
+              "architectureRef": "value_sites.msa_representation_before_evoformer",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 9
+                }
+              ]
+            },
+            {
+              "lexeme": "pair_state",
+              "access": "write",
+              "symbolId": "pair_representation_before_evoformer",
+              "architectureRef": "value_sites.pair_representation_before_evoformer",
+              "occurrences": [
+                {
+                  "start": 11,
+                  "end": 21
+                }
+              ]
+            },
+            {
+              "lexeme": "InputEmbedder",
+              "access": "call",
+              "architectureRef": "modules.input_embedder",
+              "occurrences": [
+                {
+                  "start": 24,
+                  "end": 37
+                }
+              ]
+            },
+            {
+              "lexeme": "sequence",
+              "access": "read",
+              "symbolId": "input_sequence",
+              "architectureRef": "value_sites.input_sequence",
+              "occurrences": [
+                {
+                  "start": 38,
+                  "end": 46
+                }
+              ]
+            },
+            {
+              "lexeme": "msa_features",
+              "access": "read",
+              "symbolId": "multiple_sequence_alignment",
+              "architectureRef": "value_sites.multiple_sequence_alignment",
+              "occurrences": [
+                {
+                  "start": 48,
+                  "end": 60
+                }
+              ]
+            },
+            {
+              "lexeme": "target_pair",
+              "access": "read",
+              "symbolId": "target_pair_features",
+              "architectureRef": "value_sites.target_pair_features",
+              "occurrences": [
+                {
+                  "start": 62,
+                  "end": 73
+                }
+              ]
+            },
+            {
+              "lexeme": "templates",
+              "access": "read",
+              "symbolId": "structural_templates",
+              "architectureRef": "value_sites.structural_templates",
+              "occurrences": [
+                {
+                  "start": 75,
+                  "end": 84
+                }
+              ]
+            },
+            {
+              "lexeme": "msa_recycle_update",
+              "access": "read",
+              "symbolId": "msa_recycle_update",
+              "architectureRef": "value_sites.msa_recycle_update",
+              "occurrences": [
+                {
+                  "start": 86,
+                  "end": 104
+                }
+              ]
+            },
+            {
+              "lexeme": "pair_recycle_update",
+              "access": "read",
+              "symbolId": "pair_recycle_update",
+              "architectureRef": "value_sites.pair_recycle_update",
+              "occurrences": [
+                {
+                  "start": 106,
+                  "end": 125
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "run_evoformer",
+          "text": "processed_msa, single_state, processed_pair = Evoformer48(msa_state, pair_state)",
+          "comment": "Forty-eight blocks exchange information between the MSA and pair towers and project the final target row to single features.",
+          "refs": "Figure 1e and the Evoformer section, Supplementary Methods 1.6; Algorithm 6, EmbeddingsAndEvoformer",
+          "sourceRefs": [
+            {
+              "source": "paper",
+              "locator": "Figure 1e and the Evoformer section"
+            },
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.6; Algorithm 6"
+            },
+            {
+              "source": "model_code",
+              "locator": "EmbeddingsAndEvoformer"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "modules.evoformer_stack",
+          "architectureRefs": [
+            "modules.evoformer_stack",
+            "relations.initial_msa_enters_evoformer",
+            "relations.initial_pair_enters_evoformer",
+            "relations.evoformer_produces_processed_msa",
+            "relations.evoformer_projects_single_representation",
+            "relations.evoformer_produces_processed_pair"
+          ],
+          "operation": "joint_msa_pair_refinement",
+          "inputs": [
+            "msa_representation_before_evoformer",
+            "pair_representation_before_evoformer"
+          ],
+          "outputs": [
+            "msa_representation_after_evoformer",
+            "single_representation_after_evoformer",
+            "pair_representation_after_evoformer"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "processed_msa",
+              "access": "write",
+              "symbolId": "msa_representation_after_evoformer",
+              "architectureRef": "value_sites.msa_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 13
+                }
+              ]
+            },
+            {
+              "lexeme": "single_state",
+              "access": "write",
+              "symbolId": "single_representation_after_evoformer",
+              "architectureRef": "value_sites.single_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 15,
+                  "end": 27
+                }
+              ]
+            },
+            {
+              "lexeme": "processed_pair",
+              "access": "write",
+              "symbolId": "pair_representation_after_evoformer",
+              "architectureRef": "value_sites.pair_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 29,
+                  "end": 43
+                }
+              ]
+            },
+            {
+              "lexeme": "Evoformer48",
+              "access": "call",
+              "architectureRef": "modules.evoformer_stack",
+              "occurrences": [
+                {
+                  "start": 46,
+                  "end": 57
+                }
+              ]
+            },
+            {
+              "lexeme": "msa_state",
+              "access": "read",
+              "symbolId": "msa_representation_before_evoformer",
+              "architectureRef": "value_sites.msa_representation_before_evoformer",
+              "occurrences": [
+                {
+                  "start": 58,
+                  "end": 67
+                }
+              ]
+            },
+            {
+              "lexeme": "pair_state",
+              "access": "read",
+              "symbolId": "pair_representation_before_evoformer",
+              "architectureRef": "value_sites.pair_representation_before_evoformer",
+              "occurrences": [
+                {
+                  "start": 69,
+                  "end": 79
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "predict_structure",
+          "text": "prediction = StructureModule8(single_state, processed_pair)",
+          "comment": "Eight equivariant refinement blocks predict residue frames, torsions, all-heavy-atom coordinates, and per-residue confidence.",
+          "refs": "Figure 1e and the end-to-end structure prediction section, Supplementary Methods 1.8 and 1.9.6; Algorithms 20 and 29, StructureModule",
+          "sourceRefs": [
+            {
+              "source": "paper",
+              "locator": "Figure 1e and the end-to-end structure prediction section"
+            },
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.8 and 1.9.6; Algorithms 20 and 29"
+            },
+            {
+              "source": "structure_code",
+              "locator": "StructureModule"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "modules.structure_module",
+          "architectureRefs": [
+            "modules.structure_module",
+            "relations.single_representation_enters_structure_module",
+            "relations.pair_representation_enters_structure_module",
+            "relations.structure_module_predicts_structure_and_confidence"
+          ],
+          "operation": "equivariant_structure_and_confidence_prediction",
+          "inputs": [
+            "single_representation_after_evoformer",
+            "pair_representation_after_evoformer"
+          ],
+          "outputs": [
+            "predicted_structure_output"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "prediction",
+              "access": "write",
+              "symbolId": "predicted_structure_output",
+              "architectureRef": "value_sites.predicted_structure_output",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 10
+                }
+              ]
+            },
+            {
+              "lexeme": "StructureModule8",
+              "access": "call",
+              "architectureRef": "modules.structure_module",
+              "occurrences": [
+                {
+                  "start": 13,
+                  "end": 29
+                }
+              ]
+            },
+            {
+              "lexeme": "single_state",
+              "access": "read",
+              "symbolId": "single_representation_after_evoformer",
+              "architectureRef": "value_sites.single_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 30,
+                  "end": 42
+                }
+              ]
+            },
+            {
+              "lexeme": "processed_pair",
+              "access": "read",
+              "symbolId": "pair_representation_after_evoformer",
+              "architectureRef": "value_sites.pair_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 44,
+                  "end": 58
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "select_next_msa_recycle_state",
+          "text": "next_msa_row = processed_msa[0]",
+          "comment": "Select the final target row for recycling; this is distinct from the projected single representation.",
+          "refs": "Supplementary Methods 1.10; Algorithm 32",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.10; Algorithm 32"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "relations.processed_msa_supplies_recycled_first_row",
+          "architectureRefs": [
+            "relations.processed_msa_supplies_recycled_first_row",
+            "claims.recycling_uses_msa_pair_and_geometry"
+          ],
+          "operation": "select_final_target_msa_row",
+          "inputs": [
+            "msa_representation_after_evoformer"
+          ],
+          "outputs": [
+            "recycled_msa_after_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "next_msa_row",
+              "access": "write",
+              "symbolId": "recycled_msa_after_iteration",
+              "architectureRef": "value_sites.recycled_msa_after_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 12
+                }
+              ]
+            },
+            {
+              "lexeme": "processed_msa",
+              "access": "read",
+              "symbolId": "msa_representation_after_evoformer",
+              "architectureRef": "value_sites.msa_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 15,
+                  "end": 28
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "select_next_pair_recycle_state",
+          "text": "next_pair = processed_pair",
+          "refs": "Supplementary Methods 1.10; Algorithm 32",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.10; Algorithm 32"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "relations.processed_pair_supplies_recycled_pair",
+          "architectureRefs": [
+            "relations.processed_pair_supplies_recycled_pair"
+          ],
+          "operation": "retain_final_pair_representation",
+          "inputs": [
+            "pair_representation_after_evoformer"
+          ],
+          "outputs": [
+            "recycled_pair_after_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "next_pair",
+              "access": "write",
+              "symbolId": "recycled_pair_after_iteration",
+              "architectureRef": "value_sites.recycled_pair_after_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 9
+                }
+              ]
+            },
+            {
+              "lexeme": "processed_pair",
+              "access": "read",
+              "symbolId": "pair_representation_after_evoformer",
+              "architectureRef": "value_sites.pair_representation_after_evoformer",
+              "occurrences": [
+                {
+                  "start": 12,
+                  "end": 26
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "select_next_coordinate_recycle_state",
+          "text": "next_pseudo_beta = pseudo_beta(prediction)",
+          "refs": "Supplementary Methods 1.10; Algorithm 32",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Supplementary Methods 1.10; Algorithm 32"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "relations.predicted_structure_supplies_recycled_coordinates",
+          "architectureRefs": [
+            "relations.predicted_structure_supplies_recycled_coordinates"
+          ],
+          "operation": "extract_pseudo_beta_coordinates",
+          "inputs": [
+            "predicted_structure_output"
+          ],
+          "outputs": [
+            "recycled_coordinates_after_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "next_pseudo_beta",
+              "access": "write",
+              "symbolId": "recycled_coordinates_after_iteration",
+              "architectureRef": "value_sites.recycled_coordinates_after_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 16
+                }
+              ]
+            },
+            {
+              "lexeme": "prediction",
+              "access": "read",
+              "symbolId": "predicted_structure_output",
+              "architectureRef": "value_sites.predicted_structure_output",
               "occurrences": [
                 {
                   "start": 31,
@@ -1767,241 +4690,82 @@ export const manifest = {
           ]
         },
         {
-          "id": "run_prediction_ensemble",
-          "text": "predictions = PredictionEnsemble(raw_features)",
-          "comment": "Process the shared features separately for each configured monomer model, then execute ensemble-aware recycling inference.",
-          "refs": "predict_structure; model_runners loop, RunModel.process_features and RunModel.predict, AlphaFold.__call__; recycling and ensemble_representations execution",
+          "id": "advance_msa_recycle_state",
+          "text": "prev_msa_row = next_msa_row",
+          "refs": "Algorithm 2 line 22",
           "sourceRefs": [
             {
-              "source": "runner_code",
-              "locator": "predict_structure; model_runners loop"
-            },
-            {
-              "source": "model_wrapper_code",
-              "locator": "RunModel.process_features and RunModel.predict"
-            },
-            {
-              "source": "model_code",
-              "locator": "AlphaFold.__call__; recycling and ensemble_representations execution"
+              "source": "supplement",
+              "locator": "Algorithm 2 line 22"
             }
           ],
-          "scopeRef": "scopes.monomer_prediction",
-          "statementRef": "modules.prediction_ensemble",
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "relations.recycled_msa_advances_to_next_iteration",
           "architectureRefs": [
-            "modules.prediction_ensemble",
-            "relations.raw_feature_bundle_enters_prediction_ensemble",
-            "relations.prediction_ensemble_produces_model_predictions"
+            "relations.recycled_msa_advances_to_next_iteration"
           ],
-          "operation": "ensemble_recycling_inference",
+          "operation": "advance_msa_recycling_state",
           "inputs": [
-            "raw_feature_bundle"
+            "recycled_msa_after_iteration"
           ],
           "outputs": [
-            "model_predictions"
+            "recycled_msa_before_iteration"
           ],
           "codeBindings": [
             {
-              "lexeme": "predictions",
+              "lexeme": "prev_msa_row",
               "access": "write",
-              "symbolId": "model_predictions",
-              "architectureRef": "value_sites.model_predictions",
+              "symbolId": "recycled_msa_before_iteration",
+              "architectureRef": "value_sites.recycled_msa_before_iteration",
               "occurrences": [
                 {
                   "start": 0,
-                  "end": 11
+                  "end": 12
                 }
               ]
             },
             {
-              "lexeme": "PredictionEnsemble",
-              "access": "call",
-              "architectureRef": "modules.prediction_ensemble",
-              "occurrences": [
-                {
-                  "start": 14,
-                  "end": 32
-                }
-              ]
-            },
-            {
-              "lexeme": "raw_features",
+              "lexeme": "next_msa_row",
               "access": "read",
-              "symbolId": "raw_feature_bundle",
-              "architectureRef": "value_sites.raw_feature_bundle",
+              "symbolId": "recycled_msa_after_iteration",
+              "architectureRef": "value_sites.recycled_msa_after_iteration",
               "occurrences": [
                 {
-                  "start": 33,
-                  "end": 45
+                  "start": 15,
+                  "end": 27
                 }
               ]
             }
           ]
         },
         {
-          "id": "rank_model_predictions",
-          "text": "ranked_predictions = RankByConfidence(predictions)",
-          "comment": "Monomer runs use mean pLDDT as ranking confidence and sort candidates in descending order.",
-          "refs": "get_confidence_metrics; non-multimer ranking_confidence branch, predict_structure; ranked_order construction",
+          "id": "advance_pair_recycle_state",
+          "text": "prev_pair = next_pair",
+          "refs": "Algorithm 2 line 22",
           "sourceRefs": [
             {
-              "source": "model_wrapper_code",
-              "locator": "get_confidence_metrics; non-multimer ranking_confidence branch"
-            },
-            {
-              "source": "runner_code",
-              "locator": "predict_structure; ranked_order construction"
+              "source": "supplement",
+              "locator": "Algorithm 2 line 22"
             }
           ],
-          "scopeRef": "scopes.monomer_prediction",
-          "statementRef": "modules.confidence_ranker",
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "relations.recycled_pair_advances_to_next_iteration",
           "architectureRefs": [
-            "modules.confidence_ranker",
-            "relations.model_predictions_enter_confidence_ranker",
-            "relations.confidence_ranker_produces_ranked_predictions"
+            "relations.recycled_pair_advances_to_next_iteration"
           ],
-          "operation": "rank_by_mean_plddt",
+          "operation": "advance_pair_recycling_state",
           "inputs": [
-            "model_predictions"
+            "recycled_pair_after_iteration"
           ],
           "outputs": [
-            "ranked_predictions"
+            "recycled_pair_before_iteration"
           ],
           "codeBindings": [
             {
-              "lexeme": "ranked_predictions",
+              "lexeme": "prev_pair",
               "access": "write",
-              "symbolId": "ranked_predictions",
-              "architectureRef": "value_sites.ranked_predictions",
-              "occurrences": [
-                {
-                  "start": 0,
-                  "end": 18
-                }
-              ]
-            },
-            {
-              "lexeme": "RankByConfidence",
-              "access": "call",
-              "architectureRef": "modules.confidence_ranker",
-              "occurrences": [
-                {
-                  "start": 21,
-                  "end": 37
-                }
-              ]
-            },
-            {
-              "lexeme": "predictions",
-              "access": "read",
-              "symbolId": "model_predictions",
-              "architectureRef": "value_sites.model_predictions",
-              "occurrences": [
-                {
-                  "start": 38,
-                  "end": 49
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "relax_or_pass_through",
-          "text": "final_predictions = RelaxSelectedOrPassThrough(ranked_predictions)",
-          "comment": "Relax the best, all, or none according to policy; retain the unrelaxed structure for every candidate not selected.",
-          "refs": "predict_structure; ModelsToRelax selection and ranked output fallback, AmberRelaxation.process",
-          "sourceRefs": [
-            {
-              "source": "runner_code",
-              "locator": "predict_structure; ModelsToRelax selection and ranked output fallback"
-            },
-            {
-              "source": "relax_code",
-              "locator": "AmberRelaxation.process"
-            }
-          ],
-          "scopeRef": "scopes.monomer_prediction",
-          "statementRef": "modules.relaxation_stage",
-          "architectureRefs": [
-            "modules.relaxation_stage",
-            "relations.ranked_predictions_enter_relaxation_stage",
-            "relations.relaxation_stage_produces_final_predictions"
-          ],
-          "operation": "optional_amber_relaxation",
-          "inputs": [
-            "ranked_predictions"
-          ],
-          "outputs": [
-            "final_predictions"
-          ],
-          "codeBindings": [
-            {
-              "lexeme": "final_predictions",
-              "access": "write",
-              "symbolId": "final_predictions",
-              "architectureRef": "value_sites.final_predictions",
-              "occurrences": [
-                {
-                  "start": 0,
-                  "end": 17
-                }
-              ]
-            },
-            {
-              "lexeme": "RelaxSelectedOrPassThrough",
-              "access": "call",
-              "architectureRef": "modules.relaxation_stage",
-              "occurrences": [
-                {
-                  "start": 20,
-                  "end": 46
-                }
-              ]
-            },
-            {
-              "lexeme": "ranked_predictions",
-              "access": "read",
-              "symbolId": "ranked_predictions",
-              "architectureRef": "value_sites.ranked_predictions",
-              "occurrences": [
-                {
-                  "start": 47,
-                  "end": 65
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "export_prediction_artifacts",
-          "text": "artifacts = ExportPredictionArtifacts(final_predictions)",
-          "comment": "Serialize ranked structures and the feature, confidence, ranking, timing, and optional relaxation records produced by the run.",
-          "refs": "predict_structure; feature, result, confidence, structure, ranking, timing, and relaxation writes",
-          "sourceRefs": [
-            {
-              "source": "runner_code",
-              "locator": "predict_structure; feature, result, confidence, structure, ranking, timing, and relaxation writes"
-            }
-          ],
-          "scopeRef": "scopes.monomer_prediction",
-          "statementRef": "modules.artifact_exporter",
-          "architectureRefs": [
-            "modules.artifact_exporter",
-            "relations.final_predictions_enter_artifact_exporter",
-            "relations.artifact_exporter_writes_prediction_artifacts"
-          ],
-          "operation": "serialize_prediction_artifacts",
-          "inputs": [
-            "final_predictions"
-          ],
-          "outputs": [
-            "prediction_artifacts_output"
-          ],
-          "codeBindings": [
-            {
-              "lexeme": "artifacts",
-              "access": "write",
-              "symbolId": "prediction_artifacts_output",
-              "architectureRef": "value_sites.prediction_artifacts_output",
+              "symbolId": "recycled_pair_before_iteration",
+              "architectureRef": "value_sites.recycled_pair_before_iteration",
               "occurrences": [
                 {
                   "start": 0,
@@ -2010,25 +4774,63 @@ export const manifest = {
               ]
             },
             {
-              "lexeme": "ExportPredictionArtifacts",
-              "access": "call",
-              "architectureRef": "modules.artifact_exporter",
+              "lexeme": "next_pair",
+              "access": "read",
+              "symbolId": "recycled_pair_after_iteration",
+              "architectureRef": "value_sites.recycled_pair_after_iteration",
               "occurrences": [
                 {
                   "start": 12,
-                  "end": 37
+                  "end": 21
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "advance_coordinate_recycle_state",
+          "text": "prev_pseudo_beta = next_pseudo_beta",
+          "refs": "Algorithm 2 line 22",
+          "sourceRefs": [
+            {
+              "source": "supplement",
+              "locator": "Algorithm 2 line 22"
+            }
+          ],
+          "scopeRef": "scopes.recycling_loop",
+          "statementRef": "relations.recycled_coordinates_advance_to_next_iteration",
+          "architectureRefs": [
+            "relations.recycled_coordinates_advance_to_next_iteration"
+          ],
+          "operation": "advance_coordinate_recycling_state",
+          "inputs": [
+            "recycled_coordinates_after_iteration"
+          ],
+          "outputs": [
+            "recycled_coordinates_before_iteration"
+          ],
+          "codeBindings": [
+            {
+              "lexeme": "prev_pseudo_beta",
+              "access": "write",
+              "symbolId": "recycled_coordinates_before_iteration",
+              "architectureRef": "value_sites.recycled_coordinates_before_iteration",
+              "occurrences": [
+                {
+                  "start": 0,
+                  "end": 16
                 }
               ]
             },
             {
-              "lexeme": "final_predictions",
+              "lexeme": "next_pseudo_beta",
               "access": "read",
-              "symbolId": "final_predictions",
-              "architectureRef": "value_sites.final_predictions",
+              "symbolId": "recycled_coordinates_after_iteration",
+              "architectureRef": "value_sites.recycled_coordinates_after_iteration",
               "occurrences": [
                 {
-                  "start": 38,
-                  "end": 55
+                  "start": 19,
+                  "end": 35
                 }
               ]
             }
@@ -2048,563 +4850,1284 @@ export const manifest = {
     "items": [
       {
         "id": "monomer_prediction",
-        "title": "AlphaFold 2 Monomer Prediction",
-        "summary": "A single-chain FASTA is expanded into sequence, MSA, and template features; an ensemble of recycling model runs predicts candidate structures and confidence; candidates are ranked, optionally relaxed, and exported as prediction artifacts.",
+        "title": "AlphaFold 2 Monomer Network",
+        "summary": "Following the paper's Figure 1e, one target sequence branches into MSA, target-pair, and template evidence; MSA and pair states pass through 48 Evoformer blocks; an eight-block Structure Module predicts a confidence-coloured all-atom structure; the final MSA first row, pair state, and geometry are recycled three times.",
         "subject_ref": "architecture",
-        "expansion_depth": 1,
+        "expansion_depth": 2,
         "grid": {
-          "columns": 6,
-          "rows": 4,
+          "columns": 8,
+          "rows": 8,
           "column_sizing": "content",
-          "col_gap": 28,
-          "row_gap": 28
+          "col_gap": 20,
+          "row_gap": 20
         },
         "nodes": [
           {
-            "id": "fasta_input",
-            "ref": "value_sites.fasta_input",
-            "label": "single-chain FASTA",
-            "notation": ".fasta",
+            "id": "input_sequence",
+            "ref": "value_sites.input_sequence",
+            "label": "input sequence",
+            "notation": "sequence",
             "prominence": "context",
             "treatment": "chip",
             "density": "micro",
             "col": 1,
-            "row": 2
+            "row": 4
           },
           {
-            "id": "feature_pipeline",
-            "ref": "modules.feature_pipeline",
-            "label": "MSA + template feature pipeline",
-            "prominence": "primary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 2,
-            "row": 2
-          },
-          {
-            "id": "raw_feature_bundle",
-            "ref": "value_sites.raw_feature_bundle",
-            "label": "raw feature bundle",
-            "notation": "features",
+            "id": "genetic_database_search",
+            "ref": "modules.genetic_database_search",
+            "label": "genetic database search",
             "prominence": "secondary",
             "treatment": "compact",
             "density": "compact",
             "col": 2,
-            "row": 3
+            "row": 2
           },
           {
-            "id": "prediction_ensemble",
-            "ref": "modules.prediction_ensemble",
-            "label": "model ensemble + recycling",
-            "prominence": "primary",
+            "id": "multiple_sequence_alignment",
+            "ref": "value_sites.multiple_sequence_alignment",
+            "label": "MSA",
+            "notation": "M",
+            "prominence": "secondary",
             "treatment": "compact",
             "density": "compact",
+            "glyph": "matrix",
             "col": 3,
             "row": 2
           },
           {
-            "id": "model_predictions",
-            "ref": "value_sites.model_predictions",
-            "label": "candidate structures + confidence",
-            "notation": "predictions",
+            "id": "sequence_pairing",
+            "ref": "modules.sequence_pairing",
+            "label": "pairing",
             "prominence": "secondary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 3,
-            "row": 3
-          },
-          {
-            "id": "confidence_ranker",
-            "ref": "modules.confidence_ranker",
-            "label": "confidence ranking",
-            "prominence": "primary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 4,
-            "row": 2
-          },
-          {
-            "id": "ranked_predictions",
-            "ref": "value_sites.ranked_predictions",
-            "label": "ranked candidates",
-            "notation": "ranked",
-            "prominence": "secondary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 4,
-            "row": 3
-          },
-          {
-            "id": "relaxation_stage",
-            "ref": "modules.relaxation_stage",
-            "label": "optional Amber relaxation",
-            "prominence": "primary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 5,
-            "row": 2
-          },
-          {
-            "id": "final_predictions",
-            "ref": "value_sites.final_predictions",
-            "label": "relaxed or unrelaxed candidates",
-            "notation": "final",
-            "prominence": "secondary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 5,
-            "row": 3
-          },
-          {
-            "id": "artifact_exporter",
-            "ref": "modules.artifact_exporter",
-            "label": "prediction artifact exporter",
-            "prominence": "primary",
-            "treatment": "compact",
-            "density": "compact",
-            "col": 6,
-            "row": 2
-          },
-          {
-            "id": "prediction_artifacts_output",
-            "ref": "value_sites.prediction_artifacts_output",
-            "label": "ranked structures + confidence files",
-            "notation": "artifacts",
-            "prominence": "context",
             "treatment": "chip",
             "density": "micro",
-            "glyph": "vector",
+            "col": 2,
+            "row": 4
+          },
+          {
+            "id": "structure_database_search",
+            "ref": "modules.structure_database_search",
+            "label": "structure database search",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 6
+          },
+          {
+            "id": "structural_templates",
+            "ref": "value_sites.structural_templates",
+            "label": "templates",
+            "notation": "templates",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "volume",
+            "col": 3,
+            "row": 6
+          },
+          {
+            "id": "input_embedder",
+            "ref": "modules.input_embedder",
+            "label": "input integration",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 4,
+            "row": 4
+          },
+          {
+            "id": "msa_representation_before_evoformer",
+            "ref": "value_sites.msa_representation_before_evoformer",
+            "label": "MSA representation",
+            "notation": "m",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
+            "col": 4,
+            "row": 2
+          },
+          {
+            "id": "pair_representation_before_evoformer",
+            "ref": "value_sites.pair_representation_before_evoformer",
+            "label": "pair representation",
+            "notation": "z",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 4,
+            "row": 6
+          },
+          {
+            "id": "evoformer_stack",
+            "ref": "modules.evoformer_stack",
+            "label": "Evoformer · 48 blocks",
+            "prominence": "primary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 5,
+            "row": 4
+          },
+          {
+            "id": "msa_representation_after_evoformer",
+            "ref": "value_sites.msa_representation_after_evoformer",
+            "label": "processed MSA",
+            "notation": "m*",
+            "role": "its target row is retained for recycling",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "matrix",
             "col": 6,
-            "row": 3
+            "row": 2
+          },
+          {
+            "id": "single_representation_after_evoformer",
+            "ref": "value_sites.single_representation_after_evoformer",
+            "label": "single representation",
+            "notation": "s",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "single",
+            "col": 6,
+            "row": 4
+          },
+          {
+            "id": "pair_representation_after_evoformer",
+            "ref": "value_sites.pair_representation_after_evoformer",
+            "label": "pair representation",
+            "notation": "z*",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "pair",
+            "col": 6,
+            "row": 6
+          },
+          {
+            "id": "structure_module",
+            "ref": "modules.structure_module",
+            "label": "Structure Module · 8 blocks",
+            "prominence": "primary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 7,
+            "row": 4
+          },
+          {
+            "id": "predicted_structure_output",
+            "ref": "value_sites.predicted_structure_output",
+            "label": "confidence-coloured 3D structure",
+            "notation": "x, pLDDT",
+            "prominence": "primary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "coordinates",
+            "col": 8,
+            "row": 4
+          },
+          {
+            "id": "recycling_embedder",
+            "ref": "modules.recycling_embedder",
+            "label": "recycling ×3",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 7
+          }
+        ],
+        "elide": [
+          {
+            "ref": "value_sites.target_pair_features"
+          },
+          {
+            "ref": "value_sites.recycled_msa_after_iteration"
+          },
+          {
+            "ref": "value_sites.recycled_msa_before_iteration"
+          },
+          {
+            "ref": "value_sites.recycled_pair_after_iteration"
+          },
+          {
+            "ref": "value_sites.recycled_pair_before_iteration"
+          },
+          {
+            "ref": "value_sites.recycled_coordinates_after_iteration"
+          },
+          {
+            "ref": "value_sites.recycled_coordinates_before_iteration"
+          },
+          {
+            "ref": "value_sites.msa_recycle_update"
+          },
+          {
+            "ref": "value_sites.pair_recycle_update"
           }
         ],
         "edge_overrides": [
           {
             "match": {
-              "relation_ref": "relations.fasta_enters_feature_pipeline"
+              "relation_ref": "relations.input_sequence_queries_genetic_database"
             },
-            "label": "amino-acid sequence",
+            "label": "sequence",
             "connection": {
-              "title": "Monomer sequence input",
-              "role": "task boundary input",
-              "inside": "The data pipeline parses exactly one FASTA sequence before launching database searches and template lookup."
+              "title": "Sequence to genetic search",
+              "role": "evolutionary evidence query",
+              "inside": "The target sequence launches searches across genetic databases for homologous sequences."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.feature_pipeline_produces_raw_feature_bundle"
+              "relation_ref": "relations.genetic_search_produces_msa"
             },
-            "label": "sequence + MSA + templates",
+            "label": "homologues",
             "connection": {
-              "title": "Raw model features",
-              "role": "shared pipeline output",
-              "inside": "Sequence features are combined with deduplicated MSA features and featurized template hits for subsequent per-model processing."
+              "title": "Multiple-sequence alignment",
+              "role": "evolutionary input",
+              "inside": "Search hits are deduplicated and aligned with the target to expose evolutionary variation across residues."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.raw_feature_bundle_enters_prediction_ensemble"
+              "relation_ref": "relations.input_sequence_enters_pairing"
             },
-            "label": "shared raw features",
+            "label": "target features",
             "connection": {
-              "title": "Features enter model execution",
-              "role": "ensemble input",
-              "inside": "Each configured monomer model processes the shared raw bundle with its own seed before running its recycling inference path."
+              "title": "Target pairing branch",
+              "role": "pair-state initialization",
+              "inside": "Target residue features and relative residue indices seed the ordered residue-pair representation."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.prediction_ensemble_produces_model_predictions"
+              "relation_path": [
+                "relations.sequence_pairing_produces_target_pair_features",
+                "relations.target_pair_features_enter_input_embedder"
+              ]
             },
-            "label": "structures + confidence",
+            "label": "target pair seed",
             "connection": {
-              "title": "Candidate model outputs",
-              "role": "ensemble result set",
-              "inside": "Each model run returns atom coordinates and confidence outputs, including per-residue pLDDT and the scalar used for ranking."
+              "title": "Target pair features",
+              "role": "initial pair evidence",
+              "inside": "Two projected target-feature tracks are combined by outer sum and augmented with clipped relative positions."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.model_predictions_enter_confidence_ranker"
+              "relation_ref": "relations.input_sequence_queries_structure_database"
             },
-            "label": "candidate scores",
+            "label": "sequence-derived query",
             "connection": {
-              "title": "Confidence inputs",
-              "role": "candidate comparison",
-              "inside": "The ranker reads the monomer ranking confidence attached to every candidate while retaining the associated predicted structure."
+              "title": "Sequence to structure search",
+              "role": "template lookup",
+              "inside": "The target's sequence-derived alignment is used to retrieve and featurize structural homologues."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.confidence_ranker_produces_ranked_predictions"
+              "relation_ref": "relations.structure_search_produces_templates"
             },
-            "label": "descending mean pLDDT",
+            "label": "structural hits",
             "connection": {
-              "title": "Ranked candidate order",
-              "role": "monomer selection order",
-              "inside": "Monomer candidates are ordered by their mean predicted LDDT so the highest-confidence prediction is first."
+              "title": "Structural templates",
+              "role": "known-structure evidence",
+              "inside": "Template hits contribute residue, torsion, mask, and pair-geometry features to model input integration."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.ranked_predictions_enter_relaxation_stage"
+              "relation_ref": "relations.msa_features_enter_input_embedder"
             },
-            "label": "best / all / none",
+            "label": "MSA features",
             "connection": {
-              "title": "Relaxation policy",
-              "role": "optional physical refinement",
-              "inside": "The configured policy selects the best candidate, every candidate, or no candidates for Amber relaxation while preserving rank order."
+              "title": "MSA embedding",
+              "role": "initialize evolutionary state",
+              "inside": "Clustered MSA features initialize the main MSA track while extra sequences update the pair track through a shallow stack."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.relaxation_stage_produces_final_predictions"
+              "relation_ref": "relations.templates_enter_input_embedder"
             },
-            "label": "relaxed or pass-through",
+            "label": "template features",
             "connection": {
-              "title": "Final structure variants",
-              "role": "post-processing result",
-              "inside": "Selected structures use their relaxed coordinates; candidates not selected for relaxation pass through in unrelaxed form."
+              "title": "Template integration",
+              "role": "structure-derived input",
+              "inside": "Template angle features extend the MSA track and template pair features add geometric evidence to the pair track."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.final_predictions_enter_artifact_exporter"
+              "relation_ref": "relations.input_embedder_initializes_msa_representation"
             },
-            "label": "ordered structures + metadata",
+            "label": "m",
             "connection": {
-              "title": "Results enter serialization",
-              "role": "artifact assembly",
-              "inside": "The exporter pairs each ordered structure with its confidence values, ranking order, features, model outputs, timings, and optional relaxation metrics."
+              "title": "Initial MSA representation",
+              "role": "upper Evoformer track",
+              "inside": "Embedded target, aligned-sequence, template-angle, and recycled target-row features form the MSA state."
             }
           },
           {
             "match": {
-              "relation_ref": "relations.artifact_exporter_writes_prediction_artifacts"
+              "relation_ref": "relations.input_embedder_initializes_pair_representation"
             },
-            "label": "ranked outputs",
+            "label": "z",
             "connection": {
-              "title": "Prediction artifact directory",
+              "title": "Initial pair representation",
+              "role": "lower Evoformer track",
+              "inside": "Target pairing, relative positions, template geometry, extra-MSA updates, and recycled geometry form the pair state."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.initial_msa_enters_evoformer"
+            },
+            "label": "m",
+            "connection": {
+              "title": "MSA track enters Evoformer",
+              "role": "evolutionary state",
+              "inside": "Every Evoformer block updates the MSA state and exchanges information with the pair state."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.initial_pair_enters_evoformer"
+            },
+            "label": "z",
+            "connection": {
+              "title": "Pair track enters Evoformer",
+              "role": "residue-pair state",
+              "inside": "Every Evoformer block refines residue-pair relationships through outer-product and triangular updates."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.evoformer_produces_processed_msa"
+            },
+            "label": "processed MSA",
+            "connection": {
+              "title": "Final MSA state",
+              "role": "processed evolutionary representation",
+              "inside": "After 48 blocks, the full MSA state is retained and its first target row becomes part of the recycling state."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.evoformer_projects_single_representation"
+            },
+            "label": "target-row projection",
+            "connection": {
+              "title": "Single representation",
+              "role": "per-residue structure input",
+              "inside": "A learned projection of the final target MSA row produces one 384-channel feature vector per residue."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.evoformer_produces_processed_pair"
+            },
+            "label": "processed pair",
+            "connection": {
+              "title": "Final pair state",
+              "role": "geometric relationship input",
+              "inside": "The refined residue-pair representation carries the relational context used by the Structure Module and recycling."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.single_representation_enters_structure_module"
+            },
+            "label": "s",
+            "connection": {
+              "title": "Singles into Structure Module",
+              "role": "mutable per-residue state",
+              "inside": "The Structure Module repeatedly updates per-residue invariant features and rigid frames from the single representation."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.pair_representation_enters_structure_module"
+            },
+            "label": "z",
+            "connection": {
+              "title": "Pairs into Structure Module",
+              "role": "invariant point attention context",
+              "inside": "The final pair representation biases residue-to-residue reasoning while the module constructs explicit 3D geometry."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.structure_module_predicts_structure_and_confidence"
+            },
+            "label": "coordinates + pLDDT",
+            "connection": {
+              "title": "Confidence-coloured structure",
               "role": "task boundary output",
-              "inside": "The run writes ranked PDB and mmCIF structures alongside confidence JSON, raw result pickles, the feature bundle, ranking metadata, and timings."
+              "inside": "Eight structure blocks refine residue frames, predict torsions, reconstruct all heavy atoms, and attach per-residue confidence."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.processed_msa_supplies_recycled_first_row",
+                "relations.recycled_msa_advances_to_next_iteration",
+                "relations.recycled_msa_enters_recycling_embedder"
+              ]
+            },
+            "label": "target MSA row",
+            "route_side": "bottom",
+            "route_clearance": 26,
+            "connection": {
+              "title": "Recycle target MSA row",
+              "role": "previous evolutionary state",
+              "inside": "The next execution receives a normalized copy of the previous Evoformer's first MSA row, not the derived single representation."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.processed_pair_supplies_recycled_pair",
+                "relations.recycled_pair_advances_to_next_iteration",
+                "relations.recycled_pair_enters_recycling_embedder"
+              ]
+            },
+            "label": "pair state",
+            "route_side": "bottom",
+            "route_clearance": 40,
+            "connection": {
+              "title": "Recycle pair representation",
+              "role": "previous relational state",
+              "inside": "The complete final pair representation is normalized before contributing to the next pair input."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.predicted_structure_supplies_recycled_coordinates",
+                "relations.recycled_coordinates_advance_to_next_iteration",
+                "relations.recycled_coordinates_enter_recycling_embedder"
+              ]
+            },
+            "label": "pseudo-beta geometry",
+            "route_side": "bottom",
+            "route_clearance": 54,
+            "connection": {
+              "title": "Recycle predicted geometry",
+              "role": "previous structure state",
+              "inside": "Previous pseudo-beta distances are binned and projected into a pair-representation update for the next execution."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.recycling_embedder_produces_msa_update",
+                "relations.msa_recycle_update_conditions_input_embedder"
+              ]
+            },
+            "label": "recycled MSA",
+            "route_side": "bottom",
+            "route_clearance": 66,
+            "connection": {
+              "title": "Inject recycled MSA state",
+              "role": "additive target-row update",
+              "inside": "The normalized previous target row is added to the newly embedded first MSA row."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.recycling_embedder_produces_pair_update",
+                "relations.pair_recycle_update_conditions_input_embedder"
+              ]
+            },
+            "label": "recycled pair + distances",
+            "route_side": "bottom",
+            "route_clearance": 82,
+            "connection": {
+              "title": "Inject recycled pair state",
+              "role": "additive pair update",
+              "inside": "The normalized previous pair state and the embedded previous distance map are added to the new pair representation."
             }
           }
+        ],
+        "notes": [
+          "This starting board deliberately follows Nature Figure 1e rather than the released five-model ranking, Amber-relaxation, and artifact-export workflow.",
+          "The paper visually associates recycling with the post-Evoformer single path; the canonical facts preserve the supplement's exact state: final MSA first row, final pair state, and pseudo-beta coordinates."
         ],
         "projection_mode": "derived",
         "edges": [
           {
-            "id": "projection_4e98a57e3ece",
-            "from": "artifact_exporter",
-            "to": "prediction_artifacts_output",
+            "id": "projection_5435cb9b42b0",
+            "from": "evoformer_stack",
+            "to": "msa_representation_after_evoformer",
             "projection": "direct",
             "origin": "canonical",
             "kind": "data_flow",
             "relation_path": [
-              "relations.artifact_exporter_writes_prediction_artifacts"
+              "relations.evoformer_produces_processed_msa"
             ],
             "provenance_hops": [
               {
-                "relation_ref": "relations.artifact_exporter_writes_prediction_artifacts"
+                "relation_ref": "relations.evoformer_produces_processed_msa"
               }
             ],
             "hidden_refs": [
 
             ],
             "carries": [
-              "representations.prediction_artifact_bundle"
+              "representations.msa_representation"
             ],
             "presentation": {
-              "label": "ranked outputs",
+              "label": "processed MSA",
               "connection": {
-                "title": "Prediction artifact directory",
+                "title": "Final MSA state",
+                "role": "processed evolutionary representation",
+                "inside": "After 48 blocks, the full MSA state is retained and its first target row becomes part of the recycling state."
+              }
+            }
+          },
+          {
+            "id": "projection_5663e7713106",
+            "from": "evoformer_stack",
+            "to": "pair_representation_after_evoformer",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.evoformer_produces_processed_pair"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.evoformer_produces_processed_pair"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_representation"
+            ],
+            "presentation": {
+              "label": "processed pair",
+              "connection": {
+                "title": "Final pair state",
+                "role": "geometric relationship input",
+                "inside": "The refined residue-pair representation carries the relational context used by the Structure Module and recycling."
+              }
+            }
+          },
+          {
+            "id": "projection_e210b14944a7",
+            "from": "evoformer_stack",
+            "to": "single_representation_after_evoformer",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.evoformer_projects_single_representation"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.evoformer_projects_single_representation"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_representation"
+            ],
+            "presentation": {
+              "label": "target-row projection",
+              "connection": {
+                "title": "Single representation",
+                "role": "per-residue structure input",
+                "inside": "A learned projection of the final target MSA row produces one 384-channel feature vector per residue."
+              }
+            }
+          },
+          {
+            "id": "projection_06a493b2bb22",
+            "from": "genetic_database_search",
+            "to": "multiple_sequence_alignment",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.genetic_search_produces_msa"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.genetic_search_produces_msa"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.msa_features"
+            ],
+            "presentation": {
+              "label": "homologues",
+              "connection": {
+                "title": "Multiple-sequence alignment",
+                "role": "evolutionary input",
+                "inside": "Search hits are deduplicated and aligned with the target to expose evolutionary variation across residues."
+              }
+            }
+          },
+          {
+            "id": "projection_98467a194303",
+            "from": "input_embedder",
+            "to": "msa_representation_before_evoformer",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.input_embedder_initializes_msa_representation"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.input_embedder_initializes_msa_representation"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.msa_representation"
+            ],
+            "presentation": {
+              "label": "m",
+              "connection": {
+                "title": "Initial MSA representation",
+                "role": "upper Evoformer track",
+                "inside": "Embedded target, aligned-sequence, template-angle, and recycled target-row features form the MSA state."
+              }
+            }
+          },
+          {
+            "id": "projection_3aa8c2212ca8",
+            "from": "input_embedder",
+            "to": "pair_representation_before_evoformer",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.input_embedder_initializes_pair_representation"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.input_embedder_initializes_pair_representation"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_representation"
+            ],
+            "presentation": {
+              "label": "z",
+              "connection": {
+                "title": "Initial pair representation",
+                "role": "lower Evoformer track",
+                "inside": "Target pairing, relative positions, template geometry, extra-MSA updates, and recycled geometry form the pair state."
+              }
+            }
+          },
+          {
+            "id": "projection_56a1f60a1c23",
+            "from": "input_sequence",
+            "to": "genetic_database_search",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.input_sequence_queries_genetic_database"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.input_sequence_queries_genetic_database"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.amino_acid_sequence"
+            ],
+            "presentation": {
+              "label": "sequence",
+              "connection": {
+                "title": "Sequence to genetic search",
+                "role": "evolutionary evidence query",
+                "inside": "The target sequence launches searches across genetic databases for homologous sequences."
+              }
+            }
+          },
+          {
+            "id": "projection_774182058375",
+            "from": "input_sequence",
+            "to": "sequence_pairing",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.input_sequence_enters_pairing"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.input_sequence_enters_pairing"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.amino_acid_sequence"
+            ],
+            "presentation": {
+              "label": "target features",
+              "connection": {
+                "title": "Target pairing branch",
+                "role": "pair-state initialization",
+                "inside": "Target residue features and relative residue indices seed the ordered residue-pair representation."
+              }
+            }
+          },
+          {
+            "id": "projection_bb01f3e2d839",
+            "from": "input_sequence",
+            "to": "structure_database_search",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.input_sequence_queries_structure_database"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.input_sequence_queries_structure_database"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.amino_acid_sequence"
+            ],
+            "presentation": {
+              "label": "sequence-derived query",
+              "connection": {
+                "title": "Sequence to structure search",
+                "role": "template lookup",
+                "inside": "The target's sequence-derived alignment is used to retrieve and featurize structural homologues."
+              }
+            }
+          },
+          {
+            "id": "projection_00a4441ff8b5",
+            "from": "msa_representation_after_evoformer",
+            "to": "recycling_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.processed_msa_supplies_recycled_first_row",
+              "relations.recycled_msa_advances_to_next_iteration",
+              "relations.recycled_msa_enters_recycling_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.processed_msa_supplies_recycled_first_row"
+              },
+              {
+                "relation_ref": "relations.recycled_msa_advances_to_next_iteration"
+              },
+              {
+                "relation_ref": "relations.recycled_msa_enters_recycling_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.recycled_msa_after_iteration",
+              "value_sites.recycled_msa_before_iteration"
+            ],
+            "carries": [
+              "representations.msa_first_row"
+            ],
+            "presentation": {
+              "label": "target MSA row",
+              "route_side": "bottom",
+              "route_clearance": 26,
+              "connection": {
+                "title": "Recycle target MSA row",
+                "role": "previous evolutionary state",
+                "inside": "The next execution receives a normalized copy of the previous Evoformer's first MSA row, not the derived single representation."
+              }
+            }
+          },
+          {
+            "id": "projection_e2aa768b95f7",
+            "from": "msa_representation_before_evoformer",
+            "to": "evoformer_stack",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.initial_msa_enters_evoformer"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.initial_msa_enters_evoformer"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.msa_representation"
+            ],
+            "presentation": {
+              "label": "m",
+              "connection": {
+                "title": "MSA track enters Evoformer",
+                "role": "evolutionary state",
+                "inside": "Every Evoformer block updates the MSA state and exchanges information with the pair state."
+              }
+            }
+          },
+          {
+            "id": "projection_4b2f36065f1c",
+            "from": "multiple_sequence_alignment",
+            "to": "input_embedder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.msa_features_enter_input_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.msa_features_enter_input_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.msa_features"
+            ],
+            "presentation": {
+              "label": "MSA features",
+              "connection": {
+                "title": "MSA embedding",
+                "role": "initialize evolutionary state",
+                "inside": "Clustered MSA features initialize the main MSA track while extra sequences update the pair track through a shallow stack."
+              }
+            }
+          },
+          {
+            "id": "projection_fd6d4e76665f",
+            "from": "pair_representation_after_evoformer",
+            "to": "recycling_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.processed_pair_supplies_recycled_pair",
+              "relations.recycled_pair_advances_to_next_iteration",
+              "relations.recycled_pair_enters_recycling_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.processed_pair_supplies_recycled_pair"
+              },
+              {
+                "relation_ref": "relations.recycled_pair_advances_to_next_iteration"
+              },
+              {
+                "relation_ref": "relations.recycled_pair_enters_recycling_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.recycled_pair_after_iteration",
+              "value_sites.recycled_pair_before_iteration"
+            ],
+            "carries": [
+              "representations.pair_representation"
+            ],
+            "presentation": {
+              "label": "pair state",
+              "route_side": "bottom",
+              "route_clearance": 40,
+              "connection": {
+                "title": "Recycle pair representation",
+                "role": "previous relational state",
+                "inside": "The complete final pair representation is normalized before contributing to the next pair input."
+              }
+            }
+          },
+          {
+            "id": "projection_bb2b179034fa",
+            "from": "pair_representation_after_evoformer",
+            "to": "structure_module",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.pair_representation_enters_structure_module"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.pair_representation_enters_structure_module"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_representation"
+            ],
+            "presentation": {
+              "label": "z",
+              "connection": {
+                "title": "Pairs into Structure Module",
+                "role": "invariant point attention context",
+                "inside": "The final pair representation biases residue-to-residue reasoning while the module constructs explicit 3D geometry."
+              }
+            }
+          },
+          {
+            "id": "projection_02b89bacfe54",
+            "from": "pair_representation_before_evoformer",
+            "to": "evoformer_stack",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.initial_pair_enters_evoformer"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.initial_pair_enters_evoformer"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_representation"
+            ],
+            "presentation": {
+              "label": "z",
+              "connection": {
+                "title": "Pair track enters Evoformer",
+                "role": "residue-pair state",
+                "inside": "Every Evoformer block refines residue-pair relationships through outer-product and triangular updates."
+              }
+            }
+          },
+          {
+            "id": "projection_be0ee9245fbe",
+            "from": "predicted_structure_output",
+            "to": "recycling_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.predicted_structure_supplies_recycled_coordinates",
+              "relations.recycled_coordinates_advance_to_next_iteration",
+              "relations.recycled_coordinates_enter_recycling_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.predicted_structure_supplies_recycled_coordinates"
+              },
+              {
+                "relation_ref": "relations.recycled_coordinates_advance_to_next_iteration"
+              },
+              {
+                "relation_ref": "relations.recycled_coordinates_enter_recycling_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.recycled_coordinates_after_iteration",
+              "value_sites.recycled_coordinates_before_iteration"
+            ],
+            "carries": [
+              "representations.pseudo_beta_coordinates"
+            ],
+            "presentation": {
+              "label": "pseudo-beta geometry",
+              "route_side": "bottom",
+              "route_clearance": 54,
+              "connection": {
+                "title": "Recycle predicted geometry",
+                "role": "previous structure state",
+                "inside": "Previous pseudo-beta distances are binned and projected into a pair-representation update for the next execution."
+              }
+            }
+          },
+          {
+            "id": "projection_52f0d2f1cbed",
+            "from": "recycling_embedder",
+            "to": "input_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.recycling_embedder_produces_msa_update",
+              "relations.msa_recycle_update_conditions_input_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.recycling_embedder_produces_msa_update"
+              },
+              {
+                "relation_ref": "relations.msa_recycle_update_conditions_input_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.msa_recycle_update"
+            ],
+            "carries": [
+              "representations.msa_first_row"
+            ],
+            "presentation": {
+              "label": "recycled MSA",
+              "route_side": "bottom",
+              "route_clearance": 66,
+              "connection": {
+                "title": "Inject recycled MSA state",
+                "role": "additive target-row update",
+                "inside": "The normalized previous target row is added to the newly embedded first MSA row."
+              }
+            }
+          },
+          {
+            "id": "projection_13a68d2b7e4b",
+            "from": "recycling_embedder",
+            "to": "input_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.recycling_embedder_produces_pair_update",
+              "relations.pair_recycle_update_conditions_input_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.recycling_embedder_produces_pair_update"
+              },
+              {
+                "relation_ref": "relations.pair_recycle_update_conditions_input_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.pair_recycle_update"
+            ],
+            "carries": [
+              "representations.pair_representation"
+            ],
+            "presentation": {
+              "label": "recycled pair + distances",
+              "route_side": "bottom",
+              "route_clearance": 82,
+              "connection": {
+                "title": "Inject recycled pair state",
+                "role": "additive pair update",
+                "inside": "The normalized previous pair state and the embedded previous distance map are added to the new pair representation."
+              }
+            }
+          },
+          {
+            "id": "projection_1aed0c9bfb84",
+            "from": "sequence_pairing",
+            "to": "input_embedder",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.sequence_pairing_produces_target_pair_features",
+              "relations.target_pair_features_enter_input_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.sequence_pairing_produces_target_pair_features"
+              },
+              {
+                "relation_ref": "relations.target_pair_features_enter_input_embedder"
+              }
+            ],
+            "hidden_refs": [
+              "value_sites.target_pair_features"
+            ],
+            "carries": [
+              "representations.target_pair_features"
+            ],
+            "presentation": {
+              "label": "target pair seed",
+              "connection": {
+                "title": "Target pair features",
+                "role": "initial pair evidence",
+                "inside": "Two projected target-feature tracks are combined by outer sum and augmented with clipped relative positions."
+              }
+            }
+          },
+          {
+            "id": "projection_534e1ccb2c34",
+            "from": "single_representation_after_evoformer",
+            "to": "structure_module",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_representation_enters_structure_module"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_representation_enters_structure_module"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_representation"
+            ],
+            "presentation": {
+              "label": "s",
+              "connection": {
+                "title": "Singles into Structure Module",
+                "role": "mutable per-residue state",
+                "inside": "The Structure Module repeatedly updates per-residue invariant features and rigid frames from the single representation."
+              }
+            }
+          },
+          {
+            "id": "projection_13441ac9b809",
+            "from": "structural_templates",
+            "to": "input_embedder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.templates_enter_input_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.templates_enter_input_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.template_features"
+            ],
+            "presentation": {
+              "label": "template features",
+              "connection": {
+                "title": "Template integration",
+                "role": "structure-derived input",
+                "inside": "Template angle features extend the MSA track and template pair features add geometric evidence to the pair track."
+              }
+            }
+          },
+          {
+            "id": "projection_bf7e6afb90c4",
+            "from": "structure_database_search",
+            "to": "structural_templates",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.structure_search_produces_templates"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.structure_search_produces_templates"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.template_features"
+            ],
+            "presentation": {
+              "label": "structural hits",
+              "connection": {
+                "title": "Structural templates",
+                "role": "known-structure evidence",
+                "inside": "Template hits contribute residue, torsion, mask, and pair-geometry features to model input integration."
+              }
+            }
+          },
+          {
+            "id": "projection_58100c267487",
+            "from": "structure_module",
+            "to": "predicted_structure_output",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.structure_module_predicts_structure_and_confidence"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.structure_module_predicts_structure_and_confidence"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.structure_prediction"
+            ],
+            "presentation": {
+              "label": "coordinates + pLDDT",
+              "connection": {
+                "title": "Confidence-coloured structure",
                 "role": "task boundary output",
-                "inside": "The run writes ranked PDB and mmCIF structures alongside confidence JSON, raw result pickles, the feature bundle, ranking metadata, and timings."
-              }
-            }
-          },
-          {
-            "id": "projection_553fc376c83b",
-            "from": "confidence_ranker",
-            "to": "ranked_predictions",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.confidence_ranker_produces_ranked_predictions"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.confidence_ranker_produces_ranked_predictions"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.ranked_prediction_set"
-            ],
-            "presentation": {
-              "label": "descending mean pLDDT",
-              "connection": {
-                "title": "Ranked candidate order",
-                "role": "monomer selection order",
-                "inside": "Monomer candidates are ordered by their mean predicted LDDT so the highest-confidence prediction is first."
-              }
-            }
-          },
-          {
-            "id": "projection_7d54931630fe",
-            "from": "fasta_input",
-            "to": "feature_pipeline",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.fasta_enters_feature_pipeline"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.fasta_enters_feature_pipeline"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.fasta_sequence"
-            ],
-            "presentation": {
-              "label": "amino-acid sequence",
-              "connection": {
-                "title": "Monomer sequence input",
-                "role": "task boundary input",
-                "inside": "The data pipeline parses exactly one FASTA sequence before launching database searches and template lookup."
-              }
-            }
-          },
-          {
-            "id": "projection_fd63652b20d9",
-            "from": "feature_pipeline",
-            "to": "raw_feature_bundle",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.feature_pipeline_produces_raw_feature_bundle"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.feature_pipeline_produces_raw_feature_bundle"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.raw_feature_bundle"
-            ],
-            "presentation": {
-              "label": "sequence + MSA + templates",
-              "connection": {
-                "title": "Raw model features",
-                "role": "shared pipeline output",
-                "inside": "Sequence features are combined with deduplicated MSA features and featurized template hits for subsequent per-model processing."
-              }
-            }
-          },
-          {
-            "id": "projection_dc5acf5cbd91",
-            "from": "final_predictions",
-            "to": "artifact_exporter",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.final_predictions_enter_artifact_exporter"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.final_predictions_enter_artifact_exporter"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.final_prediction_set"
-            ],
-            "presentation": {
-              "label": "ordered structures + metadata",
-              "connection": {
-                "title": "Results enter serialization",
-                "role": "artifact assembly",
-                "inside": "The exporter pairs each ordered structure with its confidence values, ranking order, features, model outputs, timings, and optional relaxation metrics."
-              }
-            }
-          },
-          {
-            "id": "projection_08f70e669d3d",
-            "from": "model_predictions",
-            "to": "confidence_ranker",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.model_predictions_enter_confidence_ranker"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.model_predictions_enter_confidence_ranker"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.model_prediction_set"
-            ],
-            "presentation": {
-              "label": "candidate scores",
-              "connection": {
-                "title": "Confidence inputs",
-                "role": "candidate comparison",
-                "inside": "The ranker reads the monomer ranking confidence attached to every candidate while retaining the associated predicted structure."
-              }
-            }
-          },
-          {
-            "id": "projection_1a6bf8767568",
-            "from": "prediction_ensemble",
-            "to": "model_predictions",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.prediction_ensemble_produces_model_predictions"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.prediction_ensemble_produces_model_predictions"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.model_prediction_set"
-            ],
-            "presentation": {
-              "label": "structures + confidence",
-              "connection": {
-                "title": "Candidate model outputs",
-                "role": "ensemble result set",
-                "inside": "Each model run returns atom coordinates and confidence outputs, including per-residue pLDDT and the scalar used for ranking."
-              }
-            }
-          },
-          {
-            "id": "projection_bbb8f6a08e10",
-            "from": "ranked_predictions",
-            "to": "relaxation_stage",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.ranked_predictions_enter_relaxation_stage"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.ranked_predictions_enter_relaxation_stage"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.ranked_prediction_set"
-            ],
-            "presentation": {
-              "label": "best / all / none",
-              "connection": {
-                "title": "Relaxation policy",
-                "role": "optional physical refinement",
-                "inside": "The configured policy selects the best candidate, every candidate, or no candidates for Amber relaxation while preserving rank order."
-              }
-            }
-          },
-          {
-            "id": "projection_f6292b9ea156",
-            "from": "raw_feature_bundle",
-            "to": "prediction_ensemble",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.raw_feature_bundle_enters_prediction_ensemble"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.raw_feature_bundle_enters_prediction_ensemble"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.raw_feature_bundle"
-            ],
-            "presentation": {
-              "label": "shared raw features",
-              "connection": {
-                "title": "Features enter model execution",
-                "role": "ensemble input",
-                "inside": "Each configured monomer model processes the shared raw bundle with its own seed before running its recycling inference path."
-              }
-            }
-          },
-          {
-            "id": "projection_f7e65e18aa14",
-            "from": "relaxation_stage",
-            "to": "final_predictions",
-            "projection": "direct",
-            "origin": "canonical",
-            "kind": "data_flow",
-            "relation_path": [
-              "relations.relaxation_stage_produces_final_predictions"
-            ],
-            "provenance_hops": [
-              {
-                "relation_ref": "relations.relaxation_stage_produces_final_predictions"
-              }
-            ],
-            "hidden_refs": [
-
-            ],
-            "carries": [
-              "representations.final_prediction_set"
-            ],
-            "presentation": {
-              "label": "relaxed or pass-through",
-              "connection": {
-                "title": "Final structure variants",
-                "role": "post-processing result",
-                "inside": "Selected structures use their relaxed coordinates; candidates not selected for relaxation pass through in unrelaxed form."
+                "inside": "Eight structure blocks refine residue frames, predict torsions, reconstruct all heavy atoms, and attach per-residue confidence."
               }
             }
           }
         ],
         "classifications": {
-          "modules.artifact_exporter": "visible",
-          "modules.confidence_ranker": "visible",
-          "modules.feature_pipeline": "visible",
-          "modules.prediction_ensemble": "visible",
-          "modules.relaxation_stage": "visible",
-          "value_sites.fasta_input": "visible",
-          "value_sites.final_predictions": "visible",
-          "value_sites.model_predictions": "visible",
-          "value_sites.prediction_artifacts_output": "visible",
-          "value_sites.ranked_predictions": "visible",
-          "value_sites.raw_feature_bundle": "visible"
+          "modules.evoformer_stack": "visible",
+          "modules.genetic_database_search": "visible",
+          "modules.input_embedder": "visible",
+          "modules.recycling_embedder": "visible",
+          "modules.sequence_pairing": "visible",
+          "modules.structure_database_search": "visible",
+          "modules.structure_module": "visible",
+          "value_sites.input_sequence": "visible",
+          "value_sites.msa_recycle_update": "elided",
+          "value_sites.msa_representation_after_evoformer": "visible",
+          "value_sites.msa_representation_before_evoformer": "visible",
+          "value_sites.multiple_sequence_alignment": "visible",
+          "value_sites.pair_recycle_update": "elided",
+          "value_sites.pair_representation_after_evoformer": "visible",
+          "value_sites.pair_representation_before_evoformer": "visible",
+          "value_sites.predicted_structure_output": "visible",
+          "value_sites.recycled_coordinates_after_iteration": "elided",
+          "value_sites.recycled_coordinates_before_iteration": "elided",
+          "value_sites.recycled_msa_after_iteration": "elided",
+          "value_sites.recycled_msa_before_iteration": "elided",
+          "value_sites.recycled_pair_after_iteration": "elided",
+          "value_sites.recycled_pair_before_iteration": "elided",
+          "value_sites.single_representation_after_evoformer": "visible",
+          "value_sites.structural_templates": "visible",
+          "value_sites.target_pair_features": "elided"
         },
         "projectionMode": "derived"
       }

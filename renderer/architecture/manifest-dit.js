@@ -3,7 +3,7 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.4.6",
     "inputDigests": {
-      "references/bibliography.yaml": "d7246b55d54f7c3816e2a9b0a3c53b2a30f9ae755edc4f934bb82c496f0d081b",
+      "references/bibliography.yaml": "abe9226586bfb64261c81b7756b7275c48a3a172a9a18b5f91f7acfd3145e374",
       "architectures/diffusion-transformer.yaml": "5d7c09d2a97999cd526241976db9881acc2499d98abbe3624520562a53510aad",
       "views/dit-semantic-zoom.view.yaml": "ebca6fefd29f612792b8957db940cc3237132140722d52b76999194823dbc5eb",
       "pseudocode/diffusion-transformer.yaml": "c30de43fb5cb70827e520b7f60c410d348de1c10d72646ab68e6b4a2d6064c65",
@@ -3949,6 +3949,17 @@ export const manifest = {
         "path": "src/genie3/generation/utils/feat_utils.py",
         "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py",
         "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py"
+      },
+      {
+        "id": "genie3_feature_schema_code",
+        "kind": "code",
+        "title": "Genie 3 feature dictionary registry",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/np/features.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py"
       },
       {
         "id": "genie3_sample_dataset_registry_code",

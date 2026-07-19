@@ -3,9 +3,9 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.4.6",
     "inputDigests": {
-      "references/bibliography.yaml": "d7246b55d54f7c3816e2a9b0a3c53b2a30f9ae755edc4f934bb82c496f0d081b",
-      "architectures/genie3.yaml": "a7706d0d536a0c7a2d2fea654b53726725450196bd0409b519ed07265c2a70a6",
-      "views/genie3-semantic-zoom.view.yaml": "b59de924d5f50b63352cee0f0088f751bf7f9097602a17a341a3fee1ac686ac2",
+      "references/bibliography.yaml": "abe9226586bfb64261c81b7756b7275c48a3a172a9a18b5f91f7acfd3145e374",
+      "architectures/genie3.yaml": "d5fa7111d849a7e83ec13468283da422c9e3de8973c995324ae1ff457b6a2bc3",
+      "views/genie3-semantic-zoom.view.yaml": "e9574098fcaa8cde9cbe3b508dc0a6a4d0431919af338ad1fb4146f57f638fe9",
       "pseudocode/genie3.yaml": "f6980f6073739ce70e5ef72d6f4530987b0887cd67723788195569b161f5cc87",
       "standard_blocks/pair-biased-attention.yaml": "88379fcd3ad641e38da23ce3b5a9ccef84344149d9c8fac51792ad63cb9da7dc",
       "standard_blocks/invariant-point-attention.yaml": "a88d3bd473e6bbfeb6846085f7d5091e6e8b0e33fbbd8292af4d578df22b2c27"
@@ -2828,11 +2828,193 @@ export const manifest = {
             {
               "source_ref": "genie3_feature_code",
               "role": "implementation_evidence",
-              "locator": "create_np_features_from_chain"
+              "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+            },
+            {
+              "source_ref": "genie3_feature_schema_code",
+              "role": "schema_evidence",
+              "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
             }
           ]
         },
-        "glyph": "single"
+        "glyph": "dictionary",
+        "field_groups": [
+          {
+            "id": "layout_and_identity",
+            "label": "Layout and identity",
+            "axis": "token",
+            "shape": "B x N",
+            "fields": [
+              "token_mask",
+              "token_index",
+              "residue_index",
+              "asym_id",
+              "sym_id",
+              "entity_id",
+              "is_atomized"
+            ],
+            "semantic_role": "Defines which padded token slots are active, maps them to residues and chains, and marks tokens created by partial atomization.",
+            "task_behavior": "Present for every task; the selected featurizer determines the token count, chain layout, and atomization flags.",
+            "evidence": {
+              "status": "confirmed_from_code",
+              "refs": [
+                {
+                  "source_ref": "genie3_feature_code",
+                  "role": "implementation_evidence",
+                  "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+                },
+                {
+                  "source_ref": "genie3_feature_schema_code",
+                  "role": "schema_evidence",
+                  "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
+                }
+              ]
+            }
+          },
+          {
+            "id": "residue_identity",
+            "label": "Known residue identity",
+            "axis": "token",
+            "shape": "B x N x residue type",
+            "fields": [
+              "gt_restype"
+            ],
+            "semantic_role": "Carries the one-hot amino-acid identity available at each token position.",
+            "task_behavior": "Unknown design positions are zeroed; conditioned motif or target residues retain known identities.",
+            "evidence": {
+              "status": "confirmed_from_code",
+              "refs": [
+                {
+                  "source_ref": "genie3_feature_code",
+                  "role": "implementation_evidence",
+                  "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+                },
+                {
+                  "source_ref": "genie3_feature_schema_code",
+                  "role": "schema_evidence",
+                  "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
+                }
+              ]
+            }
+          },
+          {
+            "id": "atom_identity_and_coordinates",
+            "label": "Atom identity and coordinates",
+            "axis": "atom",
+            "shape": "B x A, with categorical or xyz trailing dimensions",
+            "fields": [
+              "atom_type",
+              "atom_symbol",
+              "gt_atom_mask",
+              "gt_atom_positions"
+            ],
+            "semantic_role": "Describes each atom row, whether it is valid, and its available three-dimensional coordinate.",
+            "task_behavior": "Every residue contributes a C-alpha row; selected known residues may contribute additional Atom14 side-chain heavy-atom rows.",
+            "evidence": {
+              "status": "confirmed_from_code",
+              "refs": [
+                {
+                  "source_ref": "genie3_feature_code",
+                  "role": "implementation_evidence",
+                  "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+                },
+                {
+                  "source_ref": "genie3_feature_schema_code",
+                  "role": "schema_evidence",
+                  "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
+                }
+              ]
+            }
+          },
+          {
+            "id": "frame_construction",
+            "label": "Frame construction",
+            "axis": "token",
+            "shape": "B x N",
+            "fields": [
+              "token_struct_mask",
+              "token_struct_frame_mask",
+              "token_frame_lindex",
+              "token_frame_rindex",
+              "token_frame_cindex_adj",
+              "token_frame_lindex_adj",
+              "token_frame_rindex_adj"
+            ],
+            "semantic_role": "Identifies structurally valid tokens and their neighboring token indices for local-frame construction.",
+            "task_behavior": "Indices exist in every task; validity masks determine where current or conditioned frames may actually be used.",
+            "evidence": {
+              "status": "confirmed_from_code",
+              "refs": [
+                {
+                  "source_ref": "genie3_feature_code",
+                  "role": "implementation_evidence",
+                  "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+                },
+                {
+                  "source_ref": "genie3_feature_schema_code",
+                  "role": "schema_evidence",
+                  "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
+                }
+              ]
+            }
+          },
+          {
+            "id": "task_conditioning",
+            "label": "Task conditioning",
+            "axis": "token",
+            "shape": "B x N",
+            "fields": [
+              "cond_seq_mask",
+              "cond_group",
+              "cond_struct_mask",
+              "cond_struct_frame_mask",
+              "cond_interface_mask"
+            ],
+            "semantic_role": "States which token identities, coordinates, frames, motif groups, and target-interface positions are exposed to the model.",
+            "task_behavior": "Disabled for unconditional generation, set on known motif positions for scaffolding, and set on target or interface positions for binder design.",
+            "evidence": {
+              "status": "confirmed_from_code",
+              "refs": [
+                {
+                  "source_ref": "genie3_feature_code",
+                  "role": "implementation_evidence",
+                  "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+                },
+                {
+                  "source_ref": "genie3_feature_schema_code",
+                  "role": "schema_evidence",
+                  "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
+                }
+              ]
+            }
+          },
+          {
+            "id": "source_confidence",
+            "label": "Source confidence",
+            "axis": "token",
+            "shape": "B x N",
+            "fields": [
+              "plddt"
+            ],
+            "semantic_role": "Preserves per-token confidence supplied by an input structure when that field is available.",
+            "task_behavior": "Relevant to structure-sourced motif and target examples; it is not created by the length-only unconditional path.",
+            "evidence": {
+              "status": "confirmed_from_code",
+              "refs": [
+                {
+                  "source_ref": "genie3_feature_code",
+                  "role": "implementation_evidence",
+                  "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+                },
+                {
+                  "source_ref": "genie3_feature_schema_code",
+                  "role": "schema_evidence",
+                  "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "id": "token_coordinates",
@@ -3083,7 +3265,12 @@ export const manifest = {
             {
               "source_ref": "genie3_feature_code",
               "role": "implementation_evidence",
-              "locator": "create_np_features_from_chain"
+              "locator": "create_np_features_from_chain, batchify_np_features, and prepare_tensor_features"
+            },
+            {
+              "source_ref": "genie3_feature_schema_code",
+              "role": "schema_evidence",
+              "locator": "FEATURES, FEATURE_LEVEL, and FEATURE_DTYPE"
             }
           ]
         }
@@ -7536,6 +7723,17 @@ export const manifest = {
         "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/feat_utils.py"
       },
       {
+        "id": "genie3_feature_schema_code",
+        "kind": "code",
+        "title": "Genie 3 feature dictionary registry",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/np/features.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/np/features.py"
+      },
+      {
         "id": "genie3_sample_dataset_registry_code",
         "kind": "code",
         "title": "Genie 3 generation task-source router",
@@ -9465,7 +9663,7 @@ export const manifest = {
           "shape": "B x N token fields + B x A atom fields",
           "representationRef": "representations.feature_bundle",
           "scale": "mixed",
-          "glyph": "single",
+          "glyph": "dictionary",
           "scopeRef": "scopes.inference",
           "architectureRef": "value_sites.feature_bundle"
         },
@@ -11201,8 +11399,7 @@ export const manifest = {
           {
             "id": "feature_bundle",
             "ref": "value_sites.feature_bundle",
-            "label": "token + conditioning features",
-            "notation": "F",
+            "label": "feature dictionary",
             "prominence": "secondary",
             "treatment": "compact",
             "density": "compact",
@@ -11312,7 +11509,6 @@ export const manifest = {
             "match": {
               "relation_ref": "relations.feature_bundle_sizes_coordinate_initializer"
             },
-            "label": "100 DDIM steps",
             "connection": {
               "title": "Features enter sampling",
               "role": "cached sampling context",
@@ -11468,7 +11664,6 @@ export const manifest = {
               "representations.feature_bundle"
             ],
             "presentation": {
-              "label": "100 DDIM steps",
               "connection": {
                 "title": "Features enter sampling",
                 "role": "cached sampling context",
@@ -11667,12 +11862,10 @@ export const manifest = {
           {
             "id": "feature_bundle",
             "ref": "value_sites.feature_bundle",
-            "label": "cached task features",
-            "notation": "F",
+            "label": "cached feature dictionary",
             "prominence": "secondary",
             "treatment": "compact",
             "density": "compact",
-            "glyph": "pair",
             "col": 1,
             "row": 1
           },
@@ -19153,6 +19346,7 @@ export const manifest = {
           {
             "id": "value_feature_bundle",
             "ref": "value_sites.feature_bundle",
+            "label": "feature dictionary",
             "prominence": "secondary",
             "treatment": "compact",
             "density": "compact",

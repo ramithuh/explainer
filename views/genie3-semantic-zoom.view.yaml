@@ -35,8 +35,7 @@ boards:
         board_ref: task_featurization
       - id: feature_bundle
         ref: value_sites.feature_bundle
-        label: token + conditioning features
-        notation: F
+        label: feature dictionary
         prominence: secondary
         treatment: compact
         density: compact
@@ -110,7 +109,6 @@ boards:
           role: prepared conditioning
           inside: Unknown scaffold residues become C-alpha tokens; known motif or interface residues can expand into atom14-ordered heavy-atom tokens.
       - match: { relation_ref: relations.feature_bundle_sizes_coordinate_initializer }
-        label: 100 DDIM steps
         connection:
           title: Features enter sampling
           role: cached sampling context
@@ -160,12 +158,10 @@ boards:
     nodes:
       - id: feature_bundle
         ref: value_sites.feature_bundle
-        label: cached task features
-        notation: F
+        label: cached feature dictionary
         prominence: secondary
         treatment: compact
         density: compact
-        glyph: pair
         col: 1
         row: 1
       - id: coordinate_initializer
@@ -1201,6 +1197,7 @@ boards:
       detail: Whichever task path was selected emits the same feature vocabulary. This stage pads token and atom axes, stacks samples, and prepares typed tensors for the sampler.
     - id: value_feature_bundle
       ref: value_sites.feature_bundle
+      label: feature dictionary
       prominence: secondary
       treatment: compact
       density: compact

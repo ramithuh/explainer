@@ -21,12 +21,33 @@ class RendererWorkspaceTest < Minitest::Test
 
     assert_includes html, 'id="referencePanelLayer"'
     assert_includes html, 'class="reference-panel-layer board-chrome"'
+    assert_includes html, 'id="referenceFigureDialog"'
+    assert_includes html, 'id="referenceFigureControls"'
     assert_includes renderer, "function renderReferencePanels(board)"
+    assert_includes renderer, "function openReferenceFigure(panel)"
+    assert_includes renderer, "function setReferenceFigureScale(nextScale, anchor = null)"
     assert_includes renderer, "bibliographySource(panel.source_ref)"
     assert_includes renderer, 'image.loading = "eager"'
+    assert_includes renderer, 'imageButton.setAttribute("aria-label", `Zoom into reference figure:'
     assert_includes renderer, 'classList.toggle("has-reference-panels"'
     assert_match(/\.reference-panel-layer\s*\{[^}]*position:\s*absolute/m, css)
+    assert_match(/\.reference-figure-dialog\s*\{[^}]*height:\s*min\(/m, css)
     refute_match(/referencePanelLayer\.style\.transform/, renderer)
+  end
+
+  def test_structured_feature_bundles_render_as_selectable_field_tables
+    renderer = read("renderer/architecture/renderer.js")
+    css = read("styles.css")
+
+    assert_includes renderer, "function renderRepresentationFieldTable(rep)"
+    assert_includes renderer, "Feature bundle contents"
+    assert_includes renderer, 'card.classList.add("has-field-table")'
+    assert_includes renderer, 'kind === "scalar" || kind === "dictionary"'
+    assert_includes renderer, "fieldGroups.reduce"
+    assert_includes renderer, "renderRepresentationFieldTable(rep)"
+    assert_includes css, ".representation-field-table"
+    assert_includes css, ".arch-rep.has-field-table::after"
+    assert_includes css, ".arch-rep.tensor-dictionary"
   end
 
   def test_audience_surfaces_do_not_offer_yaml_downloads

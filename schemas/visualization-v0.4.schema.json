@@ -33,7 +33,7 @@
       "pattern": "^(?!.*_\\().+$"
     },
     "representationGlyph": {
-      "enum": ["scalar", "vector", "single", "matrix", "pair", "volume", "coordinates", "frames"]
+      "enum": ["scalar", "vector", "single", "matrix", "pair", "volume", "dictionary", "coordinates", "frames"]
     },
     "nodeRef": { "type": "string", "pattern": "^(modules|value_sites)\\.[a-z][a-z0-9_]*$" },
     "moduleRef": { "type": "string", "pattern": "^modules\\.[a-z][a-z0-9_]*$" },
