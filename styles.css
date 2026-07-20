@@ -1129,11 +1129,16 @@ code {
 }
 
 .renderer-grid {
+  --inspector-column-width: clamp(340px, 25vw, 400px);
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(340px, 25vw, 400px);
+  grid-template-columns: minmax(0, 1fr) var(--inspector-column-width);
   gap: 12px;
+}
+
+.renderer-page.is-inspector-collapsed .renderer-grid {
+  --inspector-column-width: 44px;
 }
 
 .canvas-workspace {
@@ -2029,6 +2034,7 @@ code {
 
 .arch-node,
 .arch-rep {
+  --selection-color: var(--accent);
   position: relative;
   z-index: 4;
   align-self: center;
@@ -2544,7 +2550,8 @@ code {
 }
 
 .focus-reset,
-.focus-question {
+.focus-question,
+.focus-collapse {
   flex: none;
   min-height: 32px;
   padding: 5px 8px;
@@ -2570,13 +2577,62 @@ code {
   font-size: 0.9rem;
 }
 
+.focus-collapse {
+  display: inline-grid;
+  width: 32px;
+  min-width: 32px;
+  padding: 5px;
+  place-items: center;
+  border-radius: 7px;
+}
+
+.focus-collapse svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 120ms ease;
+}
+
 .focus-reset:hover,
 .focus-reset:focus-visible,
 .focus-question:hover,
 .focus-question:focus-visible,
-.focus-question[aria-expanded="true"] {
+.focus-question[aria-expanded="true"],
+.focus-collapse:hover,
+.focus-collapse:focus-visible {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.renderer-page.is-inspector-collapsed .focus-panel {
+  min-width: 44px;
+}
+
+.renderer-page.is-inspector-collapsed .focus-panel-header {
+  flex: 1;
+  width: 100%;
+  padding: 6px;
+  align-items: flex-start;
+  justify-content: center;
+  border-bottom: 0;
+}
+
+.renderer-page.is-inspector-collapsed .focus-panel-header > div:first-child,
+.renderer-page.is-inspector-collapsed .focus-header-actions > :not(.focus-collapse) {
+  display: none;
+}
+
+.renderer-page.is-inspector-collapsed .focus-header-actions {
+  width: 100%;
+  justify-content: center;
+}
+
+.renderer-page.is-inspector-collapsed .focus-collapse svg {
+  transform: rotate(180deg);
 }
 
 .architecture-question-menu {
@@ -3602,6 +3658,7 @@ code {
 
 .arch-rep {
   --glyph-color: var(--accent);
+  --selection-color: var(--glyph-color);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -3662,6 +3719,33 @@ code {
   letter-spacing: 0.035em;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.arch-node.is-selected-node,
+.arch-rep.is-selected-node {
+  z-index: 7;
+  outline: 3px solid color-mix(in srgb, var(--selection-color) 84%, var(--ink));
+  outline-offset: 4px;
+  box-shadow:
+    0 0 0 8px color-mix(in srgb, var(--selection-color) 18%, transparent),
+    var(--node-shadow);
+}
+
+@keyframes architecture-selection-arrival {
+  from {
+    outline-offset: 11px;
+  }
+
+  to {
+    outline-offset: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arch-node.is-selected-node,
+  .arch-rep.is-selected-node {
+    animation: architecture-selection-arrival 180ms ease-out;
+  }
 }
 
 .arch-rep.scale-item,
@@ -4859,6 +4943,21 @@ code {
   .renderer-grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .renderer-page.is-inspector-collapsed .focus-panel {
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .renderer-page.is-inspector-collapsed .focus-panel-header {
+    height: 100%;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .renderer-page.is-inspector-collapsed .focus-header-actions {
+    width: auto;
   }
 
   .comparison-band {

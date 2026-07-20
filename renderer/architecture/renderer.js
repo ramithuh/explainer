@@ -175,6 +175,8 @@ const elements = {
   focusCompare: document.getElementById("focusCompare"),
   focusQuestion: document.getElementById("focusQuestion"),
   focusReset: document.getElementById("focusReset"),
+  focusCollapse: document.getElementById("focusCollapse"),
+  focusPanelPages: document.getElementById("focusPanelPages"),
   focusBody: document.getElementById("focusBody"),
   semanticTraceBody: document.getElementById("semanticTraceBody"),
   semanticTraceCount: document.getElementById("semanticTraceCount"),
@@ -259,6 +261,7 @@ const state = {
   modelMapDirty: true,
   isTransitioning: false,
   userMovedViewport: false,
+  inspectorCollapsed: false,
 };
 
 const viewport = {
@@ -283,6 +286,7 @@ function render() {
   renderPageChrome();
   ensureBoardChrome();
   ensureQuestionMenu();
+  ensureInspectorCollapse();
   elements.focusReset.addEventListener("click", resetFocusedDetail);
   elements.focusCompare?.addEventListener("click", onFocusCompareClick);
   elements.focusQuestion?.addEventListener("click", onFocusQuestionClick);
@@ -297,6 +301,49 @@ function render() {
     canonicalize: true,
     announceIssues: true,
   });
+}
+
+const INSPECTOR_COLLAPSED_STORAGE_KEY = "explainer-inspector-collapsed";
+
+function storedInspectorCollapsed() {
+  try {
+    return window.sessionStorage.getItem(INSPECTOR_COLLAPSED_STORAGE_KEY) === "true";
+  } catch (_error) {
+    return false;
+  }
+}
+
+function persistInspectorCollapsed(collapsed) {
+  try {
+    window.sessionStorage.setItem(INSPECTOR_COLLAPSED_STORAGE_KEY, String(collapsed));
+  } catch (_error) {
+    // Storage can be unavailable in strict privacy contexts. The control
+    // remains fully functional for the current page.
+  }
+}
+
+function ensureInspectorCollapse() {
+  const button = elements.focusCollapse;
+  if (!button || button.dataset.ready) return;
+  button.dataset.ready = "true";
+  button.addEventListener("click", () => {
+    setInspectorCollapsed(!state.inspectorCollapsed);
+  });
+  setInspectorCollapsed(storedInspectorCollapsed(), { persist: false, refresh: false });
+}
+
+function setInspectorCollapsed(collapsed, { persist = true, refresh = true } = {}) {
+  state.inspectorCollapsed = Boolean(collapsed);
+  document.body.classList.toggle("is-inspector-collapsed", state.inspectorCollapsed);
+  elements.focusPanel.classList.toggle("is-collapsed", state.inspectorCollapsed);
+  if (elements.focusPanelPages) elements.focusPanelPages.hidden = state.inspectorCollapsed;
+  const label = state.inspectorCollapsed ? "Expand details panel" : "Collapse details panel";
+  elements.focusCollapse.setAttribute("aria-expanded", String(!state.inspectorCollapsed));
+  elements.focusCollapse.setAttribute("aria-label", label);
+  elements.focusCollapse.title = label;
+  if (state.inspectorCollapsed) closeQuestionMenu({ restoreFocus: false });
+  if (persist) persistInspectorCollapsed(state.inspectorCollapsed);
+  if (refresh) window.requestAnimationFrame(refreshResponsiveGeometry);
 }
 
 function renderPageChrome() {
@@ -3539,7 +3586,7 @@ function renderRepresentationNode(node) {
   const pointerHighlightKey = `pointer:representation:${node.id}`;
   const focusHighlightKey = `focus:representation:${node.id}`;
   card.addEventListener("pointerenter", () => {
-    beginConnectivityHighlight(pointerHighlightKey, node.id);
+    beginConnectivityHighlight(pointerHighlightKey, node.id, { dimUnrelated: true });
   });
   card.addEventListener("pointerleave", () => {
     endConnectivityHighlight(pointerHighlightKey);
@@ -3655,7 +3702,9 @@ function repFocusHtml(node, rep) {
 function focusRepresentation(node, rep) {
   setSelection({ kind: "node", node });
   clearActiveNodes();
-  elements.moduleLayer.querySelector(`[data-node-id="${node.id}"]`)?.classList.add("is-focused");
+  elements.moduleLayer
+    .querySelector(`[data-node-id="${node.id}"]`)
+    ?.classList.add("is-focused", "is-selected-node");
   elements.focusTitle.textContent = node.label || rep?.id || node.id;
   setFocusBody(repFocusHtml(node, rep), { selected: true });
 }
@@ -3727,7 +3776,7 @@ function renderBlockNode(node) {
   const pointerHighlightKey = `pointer:node:${node.id}`;
   const focusHighlightKey = `focus:node:${node.id}`;
   card.addEventListener("mouseenter", () => {
-    beginConnectivityHighlight(pointerHighlightKey, node.id);
+    beginConnectivityHighlight(pointerHighlightKey, node.id, { dimUnrelated: true });
   });
   card.addEventListener("mouseleave", () => {
     endConnectivityHighlight(pointerHighlightKey);
@@ -4307,7 +4356,7 @@ function restoreSelectionVisuals() {
   if (state.selection.kind === "node") {
     elements.moduleLayer
       .querySelector(`[data-node-id="${state.selection.occurrenceId}"]`)
-      ?.classList.add("is-focused");
+      ?.classList.add("is-focused", "is-selected-node");
     return;
   }
   const edgeIndex = (state.displayEdges || []).findIndex(
@@ -5074,7 +5123,9 @@ function resetFocusedDetail() {
 function focusModule(module, node) {
   setSelection(node ? { kind: "node", node } : null);
   clearActiveNodes();
-  elements.moduleLayer.querySelector(`[data-module-id="${module.id}"]`)?.classList.add("is-focused");
+  elements.moduleLayer
+    .querySelector(`[data-module-id="${module.id}"]`)
+    ?.classList.add("is-focused", "is-selected-node");
   elements.focusTitle.textContent = module.label;
 
   const blockHtml = renderStandardBlocks(module);
@@ -5094,7 +5145,9 @@ function focusModule(module, node) {
 function focusOperation(node) {
   setSelection({ kind: "node", node });
   clearActiveNodes();
-  elements.moduleLayer.querySelector(`[data-node-id="${node.id}"]`)?.classList.add("is-focused");
+  elements.moduleLayer
+    .querySelector(`[data-node-id="${node.id}"]`)
+    ?.classList.add("is-focused", "is-selected-node");
   elements.focusTitle.textContent = node.label || node.id;
   setFocusBody(`
     <div class="focus-section">
@@ -5113,7 +5166,7 @@ function focusOperation(node) {
 
 function clearActiveNodes() {
   elements.moduleLayer.querySelectorAll(".arch-node, .arch-rep").forEach((node) => {
-    node.classList.remove("is-focused");
+    node.classList.remove("is-focused", "is-selected-node");
   });
   elements.edgeLayer.querySelectorAll("[data-edge-index]").forEach((edge) => {
     edge.classList.remove("is-selected");
