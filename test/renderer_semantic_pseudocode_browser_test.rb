@@ -355,6 +355,7 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
           count: linesBefore.length,
           heading: document.querySelector('.semantic-trace-heading strong')?.textContent || '',
           hasSampler: linesBefore.some((line) => line.textContent.includes('DiffusionSampler')),
+          traceSelected: document.querySelector('#focusTraceTab')?.getAttribute('aria-selected'),
         };
         builder.click();
         const linesAfter = [...document.querySelectorAll('.semantic-trace-line')];
@@ -364,6 +365,8 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
           heading: document.querySelector('.semantic-trace-heading strong')?.textContent || '',
           hasSampler: linesAfter.some((line) => line.textContent.includes('DiffusionSampler')),
           selectedLine: selectedLine?.classList.contains('is-trace-selected') || false,
+          traceSelected: document.querySelector('#focusTraceTab')?.getAttribute('aria-selected'),
+          detailsHidden: document.querySelector('#focusDetailPanel')?.hidden || false,
         };
         return after.selectedLine ? { before, after } : null;
       JS
@@ -372,6 +375,10 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
       "selecting a component must not narrow the board pseudocode"
     assert_equal result["before"]["heading"], result["after"]["heading"]
     assert result["before"]["hasSampler"] && result["after"]["hasSampler"]
+    assert_equal "true", result["before"]["traceSelected"]
+    assert_equal "true", result["after"]["traceSelected"],
+      "selecting a component should keep the board pseudocode tab open"
+    assert result["after"]["detailsHidden"]
     assert result["after"]["selectedLine"],
       "the selected component's corresponding line should be highlighted in place"
   end
@@ -896,9 +903,10 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
         return {
           innerWidth: window.innerWidth,
           selectedNode: document.querySelector('.focus-panel')?.classList.contains('is-selected') || false,
-          combined: pages.contains(details) && pages.contains(trace)
-            && Boolean(details.compareDocumentPosition(trace) & Node.DOCUMENT_POSITION_FOLLOWING),
           hasTabs: Boolean(document.querySelector('[role="tablist"]')),
+          traceSelected: document.querySelector('#focusTraceTab')?.getAttribute('aria-selected'),
+          traceVisible: !trace.hidden,
+          detailsHidden: details.hidden,
           lines: body.querySelectorAll('.semantic-trace-line').length,
           hasSampler: body.textContent.includes('DiffusionSampler(features)'),
         };
@@ -906,8 +914,10 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
     end
     assert_operator mobile["innerWidth"], :<=, 680
     refute mobile["selectedNode"], "the test must exercise the unselected board overview"
-    assert mobile["combined"], "mobile details and pseudocode should share one scroll"
-    refute mobile["hasTabs"]
+    assert mobile["hasTabs"]
+    assert_equal "true", mobile["traceSelected"]
+    assert mobile["traceVisible"]
+    assert mobile["detailsHidden"]
     assert_operator mobile["lines"], :>=, 3
     assert mobile["hasSampler"]
   end
@@ -920,7 +930,7 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
         return Boolean(document.querySelector('[data-node-id="denoiser"]'));
       JS
     end
-    layout = wait_for(browser, "the continuous details and pseudocode inspector") do
+    layout = wait_for(browser, "the tabbed board inspector") do
       browser.execute(<<~JS)
         const panel = document.querySelector('.focus-panel');
         const pages = document.querySelector('.focus-panel-pages');
@@ -931,7 +941,9 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
         const status = body?.querySelector('.semantic-trace-status');
         const target = body?.querySelector('.is-semantic-unavailable[data-semantic-interaction]');
         const line = target?.closest('.semantic-trace-line');
-        if (!panel || !pages || !details || !trace || !body || !scroll || !status || !target || !line) return null;
+        const traceTab = document.querySelector('#focusTraceTab');
+        const detailTab = document.querySelector('#focusDetailTab');
+        if (!panel || !pages || !details || !trace || !body || !scroll || !status || !target || !line || !traceTab || !detailTab) return null;
 
         const beforeTop = line.getBoundingClientRect().top;
         target.dispatchEvent(new PointerEvent('pointerenter'));
@@ -940,15 +952,22 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
           panelWidth: panel.getBoundingClientRect().width,
           traceLines: [...body.querySelectorAll('.semantic-trace-code')]
             .map((code) => code.textContent.replace(/\s+/g, ' ').trim()),
-          combined: pages.contains(details) && pages.contains(trace)
-            && Boolean(details.compareDocumentPosition(trace) & Node.DOCUMENT_POSITION_FOLLOWING),
           hasTabs: Boolean(document.querySelector('[role="tablist"]')),
+          traceDefault: traceTab.getAttribute('aria-selected') === 'true'
+            && !trace.hidden && details.hidden,
           inspectorOverflow: pages.scrollWidth - pages.clientWidth,
           statusBelowTrace: status.getBoundingClientRect().top >= scroll.getBoundingClientRect().bottom,
           statusText: status.textContent,
           lineShift: Math.abs(afterTop - beforeTop),
         };
         target.dispatchEvent(new PointerEvent('pointerleave'));
+        detailTab.click();
+        result.detailActivation = detailTab.getAttribute('aria-selected') === 'true'
+          && trace.hidden && !details.hidden;
+        detailTab.focus();
+        detailTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        result.keyboardReturn = traceTab.getAttribute('aria-selected') === 'true'
+          && document.activeElement === traceTab && !trace.hidden && details.hidden;
         return result;
       JS
     end
@@ -963,8 +982,10 @@ class RendererSemanticPseudocodeBrowserTest < Minitest::Test
       "the reverse-step board should show the collapsed sampler call"
     refute layout["traceLines"].any? { |line| line.include?("DDIMUpdate") || line.include?("epsilon_theta =") },
       "sampler internals should appear only on the sampler-math detail board"
-    assert layout["combined"], "Details should flow directly into Pseudocode"
-    refute layout["hasTabs"]
+    assert layout["hasTabs"]
+    assert layout["traceDefault"], "Pseudocode should be the default inspector tab"
+    assert layout["detailActivation"], "Details should open only when its tab is chosen"
+    assert layout["keyboardReturn"], "arrow keys should move between inspector tabs"
     assert_operator layout["inspectorOverflow"], :<=, 1,
       "the continuous inspector should not overflow horizontally"
     assert layout["statusBelowTrace"], "transient trace guidance should live below the code"

@@ -152,7 +152,8 @@ class RendererWorkspaceTest < Minitest::Test
     css = read("styles.css")
 
     assert_includes html, 'id="focusCollapse"'
-    assert_includes html, 'aria-controls="focusPanelPages"'
+    assert_includes html, 'aria-controls="focusPanelWorkspace"'
+    assert_includes html, 'id="focusPanelWorkspace" class="focus-panel-workspace"'
     assert_includes html, 'aria-expanded="true"'
     assert_includes html, 'id="focusPanelPages" class="focus-panel-pages"'
     assert_includes renderer, "function ensureInspectorCollapse()"

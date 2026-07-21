@@ -2856,8 +2856,59 @@ code {
 
 .focus-body {
   min-width: 0;
-  padding: 0 14px 14px;
+  padding: 14px;
   columns: auto;
+}
+
+.focus-panel-workspace {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.focus-panel-tabs {
+  flex: none;
+  display: flex;
+  padding: 6px;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-control);
+}
+
+.focus-panel-tabs button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.focus-panel-tabs button:hover {
+  color: var(--ink);
+}
+
+.focus-panel-tabs button[aria-selected="true"] {
+  border-color: var(--line);
+  background: var(--surface-card);
+  color: var(--accent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.focus-panel-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .focus-panel-pages {
@@ -2871,34 +2922,6 @@ code {
 
 .focus-page-section {
   min-width: 0;
-}
-
-.focus-trace-section {
-  border-top: 1px solid var(--line);
-}
-
-.focus-page-heading {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  display: flex;
-  min-height: 38px;
-  padding: 9px 14px 7px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface-control) 94%, transparent);
-  backdrop-filter: blur(8px);
-}
-
-.focus-page-heading h3 {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 #semanticTraceCount:not(:empty) {
@@ -5376,15 +5399,15 @@ code {
   }
 
   .focus-body {
-    padding: 0 10px 10px;
+    padding: 10px;
   }
 
   .semantic-trace-body {
     padding: 10px;
   }
 
-  .focus-page-heading {
-    padding-inline: 10px;
+  .focus-panel-tabs {
+    padding-inline: 6px;
   }
 
   .board-navigation {

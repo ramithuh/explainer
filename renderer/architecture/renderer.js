@@ -186,7 +186,13 @@ const elements = {
   focusQuestion: document.getElementById("focusQuestion"),
   focusReset: document.getElementById("focusReset"),
   focusCollapse: document.getElementById("focusCollapse"),
+  focusPanelWorkspace: document.getElementById("focusPanelWorkspace"),
+  focusPanelTabs: document.getElementById("focusPanelTabs"),
+  focusTraceTab: document.getElementById("focusTraceTab"),
+  focusDetailTab: document.getElementById("focusDetailTab"),
   focusPanelPages: document.getElementById("focusPanelPages"),
+  focusTracePanel: document.getElementById("focusTracePanel"),
+  focusDetailPanel: document.getElementById("focusDetailPanel"),
   focusBody: document.getElementById("focusBody"),
   semanticTraceBody: document.getElementById("semanticTraceBody"),
   semanticTraceCount: document.getElementById("semanticTraceCount"),
@@ -277,6 +283,10 @@ const state = {
   isTransitioning: false,
   userMovedViewport: false,
   inspectorCollapsed: false,
+  inspectorView: "trace",
+  inspectorScroll: { trace: 0, detail: 0 },
+  focusDetailTitle: "",
+  focusDetailSelected: false,
 };
 
 const viewport = {
@@ -301,6 +311,7 @@ function render() {
   renderPageChrome();
   ensureBoardChrome();
   ensureQuestionMenu();
+  ensureInspectorTabs();
   ensureInspectorCollapse();
   ensureKeyboardNavigation();
   elements.focusReset.addEventListener("click", resetFocusedDetail);
@@ -320,6 +331,75 @@ function render() {
 }
 
 const INSPECTOR_COLLAPSED_STORAGE_KEY = "explainer-inspector-collapsed";
+
+function inspectorTabEntries() {
+  return [
+    { id: "trace", tab: elements.focusTraceTab, panel: elements.focusTracePanel },
+    { id: "detail", tab: elements.focusDetailTab, panel: elements.focusDetailPanel },
+  ];
+}
+
+function updateInspectorHeading() {
+  const showingTrace = state.inspectorView === "trace";
+  elements.focusEyebrow.textContent = showingTrace
+    ? "Board overview"
+    : state.focusDetailSelected ? "Selected" : "Board overview";
+  elements.focusTitle.textContent = showingTrace
+    ? currentBoard().title
+    : state.focusDetailTitle || currentBoard().title;
+}
+
+function setInspectorView(view, { focus = false, restoreScroll = true } = {}) {
+  const entries = inspectorTabEntries();
+  const next = entries.some((entry) => entry.id === view) ? view : "trace";
+  const previous = state.inspectorView;
+  if (elements.focusPanelPages && previous !== next) {
+    state.inspectorScroll[previous] = elements.focusPanelPages.scrollTop;
+  }
+  state.inspectorView = next;
+  entries.forEach(({ id, tab, panel }) => {
+    const active = id === next;
+    tab?.setAttribute("aria-selected", String(active));
+    if (tab) tab.tabIndex = active ? 0 : -1;
+    if (panel) panel.hidden = !active;
+  });
+  elements.focusPanel.dataset.inspectorView = next;
+  updateInspectorHeading();
+  if (focus) entries.find((entry) => entry.id === next)?.tab?.focus();
+  if (restoreScroll && elements.focusPanelPages) {
+    window.requestAnimationFrame(() => {
+      elements.focusPanelPages.scrollTop = state.inspectorScroll[next] || 0;
+    });
+  }
+}
+
+function ensureInspectorTabs() {
+  const tablist = elements.focusPanelTabs;
+  if (!tablist || tablist.dataset.ready) return;
+  tablist.dataset.ready = "true";
+  const entries = inspectorTabEntries();
+  entries.forEach(({ id, tab }) => {
+    tab?.addEventListener("click", () => setInspectorView(id));
+  });
+  tablist.addEventListener("keydown", (event) => {
+    const currentIndex = entries.findIndex(({ tab }) => tab === document.activeElement);
+    if (currentIndex < 0) return;
+    let nextIndex = null;
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      nextIndex = (currentIndex - 1 + entries.length) % entries.length;
+    } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      nextIndex = (currentIndex + 1) % entries.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = entries.length - 1;
+    }
+    if (nextIndex === null) return;
+    event.preventDefault();
+    setInspectorView(entries[nextIndex].id, { focus: true });
+  });
+  setInspectorView("trace", { restoreScroll: false });
+}
 
 function storedInspectorCollapsed() {
   try {
@@ -352,8 +432,9 @@ function setInspectorCollapsed(collapsed, { persist = true, refresh = true } = {
   state.inspectorCollapsed = Boolean(collapsed);
   document.body.classList.toggle("is-inspector-collapsed", state.inspectorCollapsed);
   elements.focusPanel.classList.toggle("is-collapsed", state.inspectorCollapsed);
+  if (elements.focusPanelWorkspace) elements.focusPanelWorkspace.hidden = state.inspectorCollapsed;
   if (elements.focusPanelPages) elements.focusPanelPages.hidden = state.inspectorCollapsed;
-  const label = state.inspectorCollapsed ? "Expand details panel" : "Collapse details panel";
+  const label = state.inspectorCollapsed ? "Expand inspector panel" : "Collapse inspector panel";
   elements.focusCollapse.setAttribute("aria-expanded", String(!state.inspectorCollapsed));
   elements.focusCollapse.setAttribute("aria-label", label);
   elements.focusCollapse.title = label;
@@ -803,12 +884,14 @@ function typesetBoardMathAsync() {
 
 function setFocusBody(html, { selected = false } = {}) {
   hideCanvasTooltip();
-  elements.focusEyebrow.textContent = selected ? "Selected" : "Board overview";
+  state.focusDetailTitle = elements.focusTitle.textContent || currentBoard().title;
+  state.focusDetailSelected = selected;
   elements.focusReset.hidden = !selected;
   elements.focusPanel.classList.toggle("is-selected", selected);
   elements.focusPanel.dataset.mode = selected ? "selected" : "overview";
   elements.focusBody.innerHTML = html;
   state.focusHasMath = html.includes("math-step");
+  updateInspectorHeading();
   typesetMath();
   renderSemanticTracePane();
 }

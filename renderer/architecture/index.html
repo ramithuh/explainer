@@ -188,10 +188,10 @@
                 id="focusCollapse"
                 class="focus-collapse"
                 type="button"
-                aria-controls="focusPanelPages"
+                aria-controls="focusPanelWorkspace"
                 aria-expanded="true"
-                aria-label="Collapse details panel"
-                title="Collapse details panel"
+                aria-label="Collapse inspector panel"
+                title="Collapse inspector panel"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path d="m9 5 7 7-7 7"></path>
@@ -199,20 +199,51 @@
               </button>
             </div>
           </div>
-          <div id="focusPanelPages" class="focus-panel-pages">
-            <section class="focus-page-section focus-detail-section" aria-labelledby="focusDetailHeading">
-              <div class="focus-page-heading">
-                <h3 id="focusDetailHeading">Details</h3>
-              </div>
-              <div id="focusBody" class="focus-body"></div>
-            </section>
-            <section class="focus-page-section focus-trace-section" aria-labelledby="focusTraceHeading">
-              <div class="focus-page-heading">
-                <h3 id="focusTraceHeading">Pseudocode</h3>
+          <div id="focusPanelWorkspace" class="focus-panel-workspace">
+            <div
+              id="focusPanelTabs"
+              class="focus-panel-tabs"
+              role="tablist"
+              aria-label="Board overview views"
+            >
+              <button
+                id="focusTraceTab"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="focusTracePanel"
+              >
+                <span>Pseudocode</span>
                 <span id="semanticTraceCount" aria-label="Pseudocode statement count"></span>
-              </div>
-              <div id="semanticTraceBody" class="semantic-trace-body"></div>
-            </section>
+              </button>
+              <button
+                id="focusDetailTab"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="focusDetailPanel"
+                tabindex="-1"
+              >Details</button>
+            </div>
+            <div id="focusPanelPages" class="focus-panel-pages">
+              <section
+                id="focusTracePanel"
+                class="focus-page-section focus-trace-section"
+                role="tabpanel"
+                aria-labelledby="focusTraceTab"
+              >
+                <div id="semanticTraceBody" class="semantic-trace-body"></div>
+              </section>
+              <section
+                id="focusDetailPanel"
+                class="focus-page-section focus-detail-section"
+                role="tabpanel"
+                aria-labelledby="focusDetailTab"
+                hidden
+              >
+                <div id="focusBody" class="focus-body"></div>
+              </section>
+            </div>
           </div>
         </aside>
       </section>

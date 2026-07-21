@@ -53,12 +53,15 @@ class RendererSemanticPseudocodeTest < Minitest::Test
     assert_includes html, 'class="focus-panel-pages"'
     assert_includes html, 'class="focus-page-section focus-detail-section"'
     assert_includes html, 'class="focus-page-section focus-trace-section"'
-    assert_operator html.index('id="focusBody"'), :<, html.index('id="semanticTraceBody"')
-    refute_includes html, 'role="tablist"'
-    refute_includes html, 'id="focusDetailTab"'
-    refute_includes html, 'id="focusTraceTab"'
-    refute_includes renderer, "inspectorView"
-    refute_includes renderer, "setInspectorView"
+    assert_operator html.index('id="semanticTraceBody"'), :<, html.index('id="focusBody"')
+    assert_includes html, 'role="tablist"'
+    assert_includes html, 'id="focusDetailTab"'
+    assert_includes html, 'id="focusTraceTab"'
+    assert_includes html, 'id="focusTracePanel"'
+    assert_includes html, 'id="focusDetailPanel"'
+    assert_includes renderer, 'inspectorView: "trace"'
+    assert_includes renderer, "function setInspectorView"
+    assert_includes renderer, 'setInspectorView("trace", { restoreScroll: false })'
     assert_includes styles, ".semantic-token"
     assert_includes styles, ".semantic-token-math"
     assert_includes styles, ".semantic-token-math-fallback"
@@ -72,15 +75,14 @@ class RendererSemanticPseudocodeTest < Minitest::Test
     assert_includes styles, ".semantic-code-comment"
     assert_includes styles, ".semantic-code-atom"
     assert_includes styles, ".semantic-trace-scroll"
-    assert_includes styles, ".focus-page-heading"
-    assert_includes styles, ".focus-trace-section"
+    assert_includes styles, ".focus-panel-workspace"
+    assert_includes styles, ".focus-panel-tabs"
     assert_match(/\.focus-panel-pages\s*\{[^}]*overflow-y:\s*auto/m, styles)
     assert_match(/\.semantic-trace-scroll\s*\{[^}]*overflow:\s*visible/m, styles)
     assert_includes styles, "height: 4.35em"
     assert_includes styles, "clamp(340px, 25vw, 400px)"
     assert_includes styles, "overflow-wrap: normal"
     assert_includes styles, ".arch-node.is-connectivity-muted"
-    refute_includes styles, ".focus-panel-tabs"
     refute_includes styles, ".focus-panel.is-trace-open"
   end
 end
