@@ -29,6 +29,26 @@ class StandardBlockCompilerTest < Minitest::Test
     assert_includes groundings, "standard_block_template"
   end
 
+  def test_standalone_template_scene_has_symbolic_shapes_without_fake_instance_grounding
+    path = "standard_blocks/af3-msa-module.yaml"
+    template = catalog_for(path).compile_template(path)
+
+    assert_equal "af3_msa_module", template.fetch("standardBlockId")
+    assert_equal "af3_four_block_pair_weighted", template.fetch("variant")
+    nodes = template.dig("scene", "nodes")
+    edges = template.dig("scene", "edges")
+    pair = nodes.find { |node| node.fetch("id") == "pair_after_outer_product" }
+    assert_equal "N_{token} x N_{token} x C_z", pair.fetch("shape")
+    assert_equal "symbolic", pair.fetch("shape_status")
+    assert nodes.none? { |node| node.key?("block_instance_ref") || node.key?("instance_fact_ref") }
+    assert edges.none? { |edge| edge.key?("block_instance_ref") || edge.key?("instance_fact_ref") }
+    assert edges.all? { |edge| edge.fetch("grounding") == "standard_block_template" }
+    pair_weighted = template.fetch("pseudocode").find { |step| step.fetch("id") == "pair_weighted_average" }
+    assert pair_weighted.fetch("codeBindings").all? { |binding|
+      binding.fetch("templateFactRef").start_with?("standard_blocks.af3_msa_module.")
+    }
+  end
+
   def test_variant_filtering_keeps_reduced_pair_values_without_point_geometry
     architecture = load_yaml("architectures/genie3.yaml")
     catalog = catalog_for(

@@ -40,6 +40,7 @@ class PagesBuildTest < Minitest::Test
     refute output_files.any? { |path| path.include?(PagesBuild::OUTPUT_MARKER_SUFFIX) }
     assert File.file?(File.join(@output, "index.html"))
     assert File.file?(File.join(@output, "renderer/architecture/index.html"))
+    assert File.file?(File.join(@output, "server/index.js"))
     @source_sets.each do |id|
       assert File.file?(File.join(@output, "renderer/architecture/manifest-#{id}.js")), id
     end
@@ -129,7 +130,10 @@ class PagesBuildTest < Minitest::Test
     manifests = JSON.parse(manifest_payload)
     comparisons = JSON.parse(comparison_payload)
 
-    assert_equal %w[generic genie3], manifests.map { |entry| entry.fetch("id") }
+    assert_equal %w[generic genie3],
+      manifests.select { |entry| entry.fetch("role") != "standard_block" }
+        .map { |entry| entry.fetch("id") }
+    assert manifests.any? { |entry| entry.fetch("role") == "standard_block" }
     assert_equal ["genie3_reduced_vs_full_ipa"],
       comparisons.fetch("items").map { |item| item.fetch("id") }
     comparisons.fetch("items").each do |comparison|
@@ -139,7 +143,7 @@ class PagesBuildTest < Minitest::Test
     end
   end
 
-  def test_filtered_directory_is_a_minimal_architecture_only_list
+  def test_filtered_directory_separates_architectures_from_standard_components
     PagesBuild.build!(output: @output, validate: false, source_sets: ["genie3"])
 
     html = File.read(File.join(@output, "index.html"))
@@ -147,14 +151,31 @@ class PagesBuildTest < Minitest::Test
     index = File.read(File.join(@output, "renderer/architecture/manifest-index.js"))
 
     assert_includes html, 'id="architectureList"'
+    assert_includes html, 'id="standardComponentSelect"'
     refute_includes html, "Language reference"
     refute_includes html, "Design language"
     refute_includes html, "Authoring resources"
     refute_includes landing, "referenceSection"
     assert_includes landing, 'entry.role === "architecture"'
+    assert_includes landing, 'entry.role === "standard_block"'
     refute_includes landing, "await import"
     assert_includes index, '"id": "genie3"'
+    assert_includes index, '"role": "standard_block"'
     refute_includes index, '"id": "generic"'
+    refute_includes index, '"id": "standard_block_af3_msa_module"'
+  end
+
+  def test_af3_filtered_build_includes_the_msa_component_projection
+    PagesBuild.build!(output: @output, validate: false, source_sets: ["af3_pairformer"])
+
+    index = File.read(File.join(@output, "renderer/architecture/manifest-index.js"))
+    component = File.join(
+      @output,
+      "renderer/architecture/manifest-standard-block-af3_msa_module.js",
+    )
+
+    assert_includes index, '"id": "standard_block_af3_msa_module"'
+    assert File.file?(component)
   end
 
   private

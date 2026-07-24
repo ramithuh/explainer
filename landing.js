@@ -3,6 +3,10 @@ import { installThemeSwitcher } from "./theme-state.mjs";
 
 const architectureList = document.querySelector("#architectureList");
 const emptyState = document.querySelector("#directoryEmpty");
+const standardComponentForm = document.querySelector("#standardComponentForm");
+const standardComponentSelect = document.querySelector("#standardComponentSelect");
+const standardComponentOpen = document.querySelector("#standardComponentOpen");
+const standardComponentEmpty = document.querySelector("#standardComponentEmpty");
 const themeSwitcher = document.querySelector("#directoryThemeSwitcher");
 
 function architectureItem(entry) {
@@ -30,5 +34,24 @@ function architectureItem(entry) {
 const architectures = manifestIndex.filter((entry) => entry.role === "architecture");
 architectureList.replaceChildren(...architectures.map(architectureItem));
 emptyState.hidden = architectures.length > 0;
+
+const standardComponents = manifestIndex.filter((entry) => entry.role === "standard_block");
+standardComponents.forEach((entry) => {
+  const option = document.createElement("option");
+  option.value = entry.id;
+  option.textContent = entry.name;
+  standardComponentSelect.appendChild(option);
+});
+standardComponentForm.hidden = standardComponents.length === 0;
+standardComponentEmpty.hidden = standardComponents.length > 0;
+standardComponentSelect.addEventListener("change", () => {
+  standardComponentOpen.disabled = standardComponentSelect.value === "";
+});
+standardComponentForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!standardComponentSelect.value) return;
+  window.location.href =
+    `./renderer/architecture/?arch=${encodeURIComponent(standardComponentSelect.value)}`;
+});
 
 installThemeSwitcher(themeSwitcher);

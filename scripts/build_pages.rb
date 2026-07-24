@@ -56,6 +56,13 @@ module PagesBuild
         Referrer-Policy: strict-origin-when-cross-origin
         X-Frame-Options: SAMEORIGIN
     HEADERS
+    "server/index.js" => <<~JAVASCRIPT,
+      export default {
+        fetch(request, env) {
+          return env.ASSETS.fetch(request);
+        },
+      };
+    JAVASCRIPT
   }.freeze
 
   class Error < StandardError; end
@@ -85,7 +92,24 @@ module PagesBuild
     [
       "renderer/architecture/manifest-index.js",
       *selected_source_set_ids.map { |id| "renderer/architecture/manifest-#{id}.js" },
+      *standard_block_manifest_ids(selected_source_set_ids).map do |id|
+        "renderer/architecture/manifest-standard-block-#{id}.js"
+      end,
     ]
+  end
+
+  def standard_block_manifest_ids(selected_source_set_ids)
+    selected = selected_source_set_ids.to_set
+    Array(registry["source_sets"]).filter_map do |source_set|
+      source_set if selected.include?(source_set.fetch("id"))
+    end.flat_map do |source_set|
+      source_set.fetch("standard_blocks")
+    end.uniq.filter_map do |path|
+      block = StrictYaml.load_file(File.join(ROOT, path))
+      block.fetch("id") if %w[standard-block-v0.2 standard-block-v0.3].include?(
+        block.fetch("schema_version"),
+      )
+    end.uniq.sort
   end
 
   def reference_panel_assets(selected_source_set_ids = source_set_ids)

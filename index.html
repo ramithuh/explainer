@@ -35,6 +35,28 @@
         No model architectures are included in this build.
       </p>
 
+      <section class="standard-component-directory" aria-labelledby="standardComponentHeading">
+        <div class="standard-component-copy">
+          <p class="eyebrow">Reusable internals</p>
+          <h2 id="standardComponentHeading">Standard components</h2>
+          <p>
+            Explore a focused algorithm block without treating it as a complete model architecture.
+          </p>
+        </div>
+        <form id="standardComponentForm" class="standard-component-form">
+          <label for="standardComponentSelect">Choose a component</label>
+          <div class="standard-component-controls">
+            <select id="standardComponentSelect" aria-describedby="standardComponentHeading">
+              <option value="">Select a standard component…</option>
+            </select>
+            <button id="standardComponentOpen" type="submit" disabled>Open component →</button>
+          </div>
+        </form>
+        <p id="standardComponentEmpty" class="directory-empty" hidden>
+          No standard components are included in this build.
+        </p>
+      </section>
+
       <noscript>
         <p class="directory-error">
           JavaScript is required to list the available architecture explainers.

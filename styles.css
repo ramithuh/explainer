@@ -943,8 +943,8 @@ code {
   }
 }
 
-/* The published landing page is intentionally just a registry-backed list.
-   Architecture detail and language documentation belong behind the links. */
+/* The published landing page keeps full architectures in the primary list and
+   presents reusable internals as a deliberately separate compact catalog. */
 .directory-page {
   min-height: 100svh;
 }
@@ -1028,6 +1028,90 @@ code {
   text-align: left;
 }
 
+.standard-component-directory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  gap: 32px;
+  align-items: end;
+  margin-top: 44px;
+  padding: 30px 4px 0;
+  border-top: 1px solid var(--line);
+}
+
+.standard-component-copy h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.2rem, 3vw, 1.55rem);
+  letter-spacing: -0.025em;
+}
+
+.standard-component-copy > p:not(.eyebrow) {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--copy-soft);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.standard-component-form {
+  display: grid;
+  gap: 7px;
+}
+
+.standard-component-form > label {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.standard-component-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.standard-component-controls select,
+.standard-component-controls button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.standard-component-controls select {
+  min-width: 0;
+  padding: 0 34px 0 12px;
+  background: var(--surface-control);
+  color: var(--ink);
+}
+
+.standard-component-controls button {
+  padding: 0 14px;
+  background: var(--ink);
+  color: var(--panel);
+  font-size: 0.75rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.standard-component-controls button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.standard-component-controls select:focus-visible,
+.standard-component-controls button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 72%, transparent);
+  outline-offset: 2px;
+}
+
+.standard-component-directory > .directory-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-left: 0;
+}
+
 @media (max-width: 600px) {
   .directory-shell {
     width: min(100% - 28px, 760px);
@@ -1045,6 +1129,16 @@ code {
 
   .directory-header .theme-switcher-label {
     width: 108px;
+  }
+
+  .standard-component-directory {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 36px;
+  }
+
+  .standard-component-controls {
+    grid-template-columns: 1fr;
   }
 }
 

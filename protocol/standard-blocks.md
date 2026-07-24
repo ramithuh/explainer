@@ -23,6 +23,13 @@ Template internals never become canonical architecture modules or relations.
 Boundary edges retain their bound `relations.*` provenance; internal edges are
 explicitly grounded as `standard_block_template`.
 
+The homepage exposes registered typed templates in a separate **Standard
+components** chooser. The manifest builder compiles each default variant into a
+standalone browser projection, but that generated wrapper is not an
+architecture source set and does not add template steps to canonical
+`modules` or `relations`. A concrete method still needs an evidence-bearing
+`block_instances` occurrence before claiming that it uses the template.
+
 ## Template Shape
 
 ```yaml

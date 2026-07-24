@@ -263,6 +263,79 @@ def standard_block_manifest(paths, blocks_by_path)
   end
 end
 
+def build_standard_block_browser_manifest(path, block, template, bibliography, bibliography_path)
+  block_id = block.fetch("id")
+  board_id = "standard_block_#{block_id}"
+  scene = template.fetch("scene")
+  {
+    "schemaVersion" => "standard-block-browser-manifest-v0.1",
+    "build" => {
+      "generator" => GENERATOR_VERSION,
+      "inputDigests" => input_digests([bibliography_path, path]),
+    },
+    # The shared renderer consumes a small generated wrapper. It is explicitly
+    # a browser projection of the template, not an authored architecture.
+    "architecture" => {
+      "schemaVersion" => block.fetch("schema_version"),
+      "id" => "standard_block_#{block_id}",
+      "name" => block.fetch("name"),
+      "family" => "standard_component",
+      "status" => block.fetch("status"),
+      "taskModes" => [],
+      "sourceYaml" => web_ref(path),
+      "sources" => [],
+      "decomposition" => { "status" => "leaf" },
+      "coverage" => {},
+      "modules" => [],
+      "blockInstances" => [],
+      "representations" => [],
+      "valueSites" => [],
+      "valueSiteInterfaces" => {},
+      "execution" => {},
+      "stateSemantics" => {},
+      "stateSemanticsBySite" => {},
+      "conditioning" => [],
+      "scaleTransitions" => [],
+      "trainingInference" => {},
+      "relations" => [],
+      "claims" => [],
+      "openQuestions" => [],
+    },
+    "bibliography" => bibliography_manifest(bibliography, bibliography_path),
+    "standardBlocks" => standard_block_manifest([path], { path => block }),
+    "pseudocode" => {},
+    "boards" => {
+      "schemaVersion" => "standard-block-browser-v0.1",
+      "sourceYaml" => web_ref(path),
+      "rootBoard" => board_id,
+      "items" => [
+        {
+          "id" => board_id,
+          "kind" => "standard_block_template",
+          "title" => block.fetch("name"),
+          "summary" => block.fetch("description"),
+          "notes" => [
+            template.fetch("variantDescription"),
+            block.dig("evidence_policy", "generic_definition"),
+          ].compact,
+          "subject_ref" => "standard_blocks.#{block_id}",
+          "expansion_depth" => 0,
+          "grid" => scene.fetch("grid"),
+          "nodes" => scene.fetch("nodes"),
+          "edges" => scene.fetch("edges"),
+          "segments" => scene["segments"],
+          "projectionMode" => "standard_block_template",
+          "standardBlockRef" => path,
+          "standardBlockId" => block_id,
+          "variant" => template.fetch("variant"),
+          "variantLabel" => template.fetch("variantLabel"),
+          "pseudocode" => template.fetch("pseudocode"),
+        }.compact,
+      ],
+    },
+  }
+end
+
 def build_manifest(config, bibliography, bibliography_path)
   architecture = load_yaml(config.fetch("architecture"))
   SourceContract.validate!(architecture) if %w[architecture-v0.4 architecture-v0.5].include?(architecture["schema_version"])
@@ -426,6 +499,50 @@ selected_source_set_configs.each do |config|
     "role" => config.fetch("directory_role"),
     "file" => "manifest-#{set_id}.js",
   }
+end
+
+selected_standard_block_paths = selected_source_set_configs
+  .flat_map { |config| config.fetch("standard_blocks") }
+  .uniq
+selected_standard_blocks_by_path = selected_standard_block_paths.to_h do |path|
+  [path, load_yaml(path)]
+end
+typed_standard_block_paths = selected_standard_block_paths.select do |path|
+  StandardBlockContract::SUPPORTED_VERSIONS.include?(
+    selected_standard_blocks_by_path.fetch(path).fetch("schema_version"),
+  )
+end
+unless typed_standard_block_paths.empty?
+  standard_block_catalog = StandardBlockCompiler::Catalog.new(
+    blocks_by_path: typed_standard_block_paths.to_h do |path|
+      [path, selected_standard_blocks_by_path.fetch(path)]
+    end,
+  )
+  typed_standard_block_paths.sort_by do |path|
+    selected_standard_blocks_by_path.fetch(path).fetch("name")
+  end.each do |path|
+    block = selected_standard_blocks_by_path.fetch(path)
+    template = standard_block_catalog.compile_template(path)
+    block_id = block.fetch("id")
+    out = File.join(OUTPUT_DIR, "manifest-standard-block-#{block_id}.js")
+    browser_manifest = build_standard_block_browser_manifest(
+      path,
+      block,
+      template,
+      bibliography,
+      bibliography_path,
+    )
+    write_output.call(out, "export const manifest = #{JSON.pretty_generate(browser_manifest)};\n")
+    index_entries << {
+      "id" => "standard_block_#{block_id}",
+      "standardBlockId" => block_id,
+      "name" => block.fetch("name"),
+      "kind" => block.fetch("kind"),
+      "status" => block.fetch("status"),
+      "role" => "standard_block",
+      "file" => "manifest-standard-block-#{block_id}.js",
+    }
+  end
 end
 
 comparison_registry_path = registry.fetch("comparisons")

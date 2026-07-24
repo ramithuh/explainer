@@ -445,21 +445,37 @@ function setInspectorCollapsed(collapsed, { persist = true, refresh = true } = {
 }
 
 function renderPageChrome() {
-  document.title = `${manifest.architecture.name} — Architecture Renderer`;
+  const isStandardBlock = activeManifestEntry.role === "standard_block";
+  document.title = isStandardBlock
+    ? `${manifest.architecture.name} — Standard Component`
+    : `${manifest.architecture.name} — Architecture Renderer`;
   const title = document.getElementById("archTitle");
   if (title) title.textContent = manifest.architecture.name;
   const eyebrow = document.getElementById("rendererEyebrow");
-  if (eyebrow) eyebrow.textContent = "Interactive architecture";
+  if (eyebrow) {
+    eyebrow.textContent = isStandardBlock ? "Standard component" : "Interactive architecture";
+  }
   const intro = document.getElementById("rendererIntro");
   if (intro) {
-    intro.textContent = "Explore the model from system flow to implementation detail.";
+    intro.textContent = isStandardBlock
+      ? "Explore the reusable algorithm template and its internal information flow."
+      : "Explore the model from system flow to implementation detail.";
   }
   const focusEyebrow = document.getElementById("focusEyebrow");
-  if (focusEyebrow) focusEyebrow.textContent = "Board overview";
+  if (focusEyebrow) {
+    focusEyebrow.textContent = isStandardBlock ? "Component overview" : "Board overview";
+  }
+  const switcherLabel = document.getElementById("archSwitcherLabel");
+  if (switcherLabel) {
+    switcherLabel.textContent = isStandardBlock ? "Standard component" : "Architecture";
+  }
   const switcher = document.getElementById("archSwitcher");
   if (switcher && !switcher.dataset.ready) {
     switcher.dataset.ready = "true";
-    for (const entry of manifestIndex) {
+    const switcherEntries = manifestIndex.filter((entry) =>
+      isStandardBlock ? entry.role === "standard_block" : entry.role !== "standard_block",
+    );
+    for (const entry of switcherEntries) {
       const option = document.createElement("option");
       option.value = entry.id;
       option.textContent = entry.name;
@@ -947,6 +963,24 @@ function semanticTraceForCurrentContext() {
         statement,
         symbolsById: new Map(),
         boundaryRefs: [instance.subjectRef || instance.subject_ref].filter(Boolean),
+        phase: segments.find((segment) =>
+          (segment.node_ids || segment.nodeIds || []).includes(statement.id),
+        ) || null,
+      })),
+    };
+  }
+  const board = currentBoard();
+  const templateBlockId = board.standardBlockId || board.standard_block_id;
+  const templateBlock = templateBlockId ? standardBlocksById.get(templateBlockId) : null;
+  if (templateBlock && board.pseudocode?.length) {
+    const segments = board.segments || [];
+    return {
+      title: templateBlock.name || board.title,
+      subtitle: `${board.variantLabel || readableReuse(board.variant)} · reusable template`,
+      statements: board.pseudocode.map((statement) => ({
+        statement,
+        symbolsById: new Map(),
+        boundaryRefs: [board.subject_ref || board.subjectRef].filter(Boolean),
         phase: segments.find((segment) =>
           (segment.node_ids || segment.nodeIds || []).includes(statement.id),
         ) || null,

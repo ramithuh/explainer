@@ -34,6 +34,60 @@ export const manifestIndex = [
     "name": "Genie 3 Atom-Aware Protein Diffusion",
     "role": "architecture",
     "file": "manifest-genie3.js"
+  },
+  {
+    "id": "standard_block_af3_msa_module",
+    "standardBlockId": "af3_msa_module",
+    "name": "AlphaFold 3 MSA Module",
+    "kind": "composite_msa_encoder",
+    "status": "review",
+    "role": "standard_block",
+    "file": "manifest-standard-block-af3_msa_module.js"
+  },
+  {
+    "id": "standard_block_invariant_point_attention",
+    "standardBlockId": "invariant_point_attention",
+    "name": "Invariant Point Attention",
+    "kind": "attention",
+    "status": "review",
+    "role": "standard_block",
+    "file": "manifest-standard-block-invariant_point_attention.js"
+  },
+  {
+    "id": "standard_block_pair_biased_attention",
+    "standardBlockId": "pair_biased_attention",
+    "name": "Pair-Biased Attention",
+    "kind": "attention",
+    "status": "review",
+    "role": "standard_block",
+    "file": "manifest-standard-block-pair_biased_attention.js"
+  },
+  {
+    "id": "standard_block_pair_transition",
+    "standardBlockId": "pair_transition",
+    "name": "Pointwise Pair Transition",
+    "kind": "feed_forward",
+    "status": "review",
+    "role": "standard_block",
+    "file": "manifest-standard-block-pair_transition.js"
+  },
+  {
+    "id": "standard_block_single_to_pair_endpoint_update",
+    "standardBlockId": "single_to_pair_endpoint_update",
+    "name": "Single-to-Pair Endpoint Update",
+    "kind": "communication",
+    "status": "review",
+    "role": "standard_block",
+    "file": "manifest-standard-block-single_to_pair_endpoint_update.js"
+  },
+  {
+    "id": "standard_block_structure_transition",
+    "standardBlockId": "structure_transition",
+    "name": "Structure Transition",
+    "kind": "feed_forward",
+    "status": "review",
+    "role": "standard_block",
+    "file": "manifest-standard-block-structure_transition.js"
   }
 ];
 export const comparisonIndex = {
@@ -59,6 +113,7 @@ export const comparisonIndex = {
       "views/alphafold2-semantic-zoom.view.yaml": "6b317c6d224a7e3b8416839247c0c12d6b9e0cd34d859475f4529a939d51fe8e",
       "architectures/alphafold3-pairformer.yaml": "0e9baf415f97e87da42420e5fde1916ff0563839695638aea1c159c09d20419d",
       "views/alphafold3-pairformer-semantic-zoom.view.yaml": "3978a4c18d06c27104497dce4c349e90e65ea95f684ddf878f22c323badc440b",
+      "standard_blocks/af3-msa-module.yaml": "333b5ac4e9aa09e25a22d140c14fbd6aabb4eb7d8b752b71cf360c386745aac0",
       "architectures/genie2.yaml": "dc70626daca21c212b372e601a3a064ee1a1ea01e226b955b21e00e4c308bdb0",
       "views/genie2-semantic-zoom.view.yaml": "e5ed5c07d6c8bc3215aa09b1e2ca261c2861a1dc19bdf8c3968d69c23e28b0d2",
       "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5",

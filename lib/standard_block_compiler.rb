@@ -85,6 +85,80 @@ module StandardBlockCompiler
       end
     end
 
+    # Compile one reusable template without pretending that it is a concrete
+    # architecture occurrence. The resulting scene is suitable for a catalog
+    # projection: internal edges remain template-grounded, symbolic v0.3 shapes
+    # stay symbolic, and no block-instance facts or canonical relations are
+    # invented.
+    def compile_template(block_path, variant_id: nil)
+      block = @blocks_by_path.fetch(block_path)
+      unless StandardBlockContract::SUPPORTED_VERSIONS.include?(block["schema_version"])
+        raise CompileError.new(
+          "unsupported_standard_block_template",
+          "#{block_path} uses #{block['schema_version'].inspect}; standalone views require v0.2 or v0.3",
+        )
+      end
+
+      variant_id ||= block.fetch("default_variant")
+      variant = Array(block.fetch("variants")).find { |candidate| candidate.fetch("id") == variant_id }
+      unless variant
+        raise CompileError.new(
+          "unknown_standard_block_template_variant",
+          "#{variant_id.inspect} is not a variant of #{block_path}",
+        )
+      end
+
+      active_step_refs = Set.new(variant.fetch("step_refs"))
+      steps = Array(block.fetch("steps")).select do |step|
+        active_step_refs.include?("steps.#{step.fetch('id')}")
+      end
+      active_data_refs = steps.flat_map { |step| Array(step["inputs"]) + Array(step["outputs"]) }.to_set
+      active_refs = active_data_refs | active_step_refs
+      synthetic_instance = {
+        "id" => "template_#{block.fetch('id')}",
+        "subject_ref" => "standard_blocks.#{block.fetch('id')}",
+      }
+      context = {
+        architecture: {},
+        relations_by_ref: {},
+        representations_by_ref: {},
+      }
+      scene = compile_scene(
+        block: block,
+        block_path: block_path,
+        instance: synthetic_instance,
+        steps: steps,
+        active_refs: active_refs,
+        bindings_by_port: {},
+        resolved_shapes: symbolic_shapes(block),
+        context: context,
+      )
+      strip_instance_grounding!(scene)
+
+      {
+        "standardBlockId" => block.fetch("id"),
+        "standardBlockRef" => block_path,
+        "standardBlockName" => block.fetch("name"),
+        "variant" => variant.fetch("id"),
+        "variantLabel" => variant.fetch("label"),
+        "variantDescription" => variant.fetch("description"),
+        "pseudocode" => steps.map do |step|
+          {
+            "id" => step.fetch("id"),
+            "templateFactRef" => template_fact_ref(block, "steps", step.fetch("id")),
+            "label" => step.fetch("label"),
+            "operation" => step.fetch("operation"),
+            "code" => step.fetch("code"),
+            "tex" => step["tex"],
+            "inputs" => step.fetch("inputs"),
+            "outputs" => step.fetch("outputs"),
+            "codeBindings" => compile_code_bindings(block, nil, step),
+          }.compact
+        end,
+        "scene" => scene,
+      }
+    end
+
     private
 
     def compilation_context(architecture)
@@ -196,9 +270,9 @@ module StandardBlockCompiler
           "access" => binding.fetch("access"),
           "localRef" => binding.fetch("ref"),
           "templateFactRef" => template_fact_ref(block, namespace, local_id),
-          "instanceFactRef" => "block_instances.#{instance.fetch('id')}.#{namespace}.#{local_id}",
+          "instanceFactRef" => instance && "block_instances.#{instance.fetch('id')}.#{namespace}.#{local_id}",
           "occurrences" => code_identifier_occurrences(code, binding.fetch("lexeme")),
-        }
+        }.compact
       end
     end
 
@@ -322,7 +396,9 @@ module StandardBlockCompiler
           "rep_ref" => representation_ref&.delete_prefix("representations."),
           "shape" => resolved_shape&.dig("label") || object["shape"] || representation&.dig("shape"),
           "resolved_shape" => resolved_shape,
-          "shape_status" => resolved_shape ? "resolved" : nil,
+          "shape_status" => if resolved_shape
+            resolved_shape["_template_symbolic"] ? "symbolic" : "resolved"
+          end,
           "scale" => object["scale"] || representation&.dig("scale") || "item",
           "glyph" => glyph,
           "flow_family" => flow_family(glyph),
@@ -394,6 +470,61 @@ module StandardBlockCompiler
 
     def template_fact_ref(block, collection, id)
       "standard_blocks.#{block.fetch('id')}.#{collection}.#{id}"
+    end
+
+    def symbolic_shapes(block)
+      return {} unless block["schema_version"] == StandardBlockShapes::SUPPORTED_VERSION
+
+      notations = Array(block["parameters"]).to_h do |parameter|
+        [parameter.fetch("id"), parameter.fetch("notation")]
+      end
+      %w[ports values].each_with_object({}) do |collection, shapes|
+        Array(block[collection]).each do |object|
+          contract = object["shape_contract"]
+          next unless contract
+
+          shapes["#{collection}.#{object.fetch('id')}"] =
+            symbolic_shape(contract, notations).merge("_template_symbolic" => true)
+        end
+      end
+    end
+
+    def symbolic_shape(contract, notations)
+      if contract.fetch("kind") == "tuple"
+        fields = contract.fetch("fields").map do |field|
+          { "id" => field.fetch("id"), "shape" => symbolic_shape(field.fetch("shape"), notations) }
+        end
+        return {
+          "kind" => "tuple",
+          "fields" => fields,
+          "label" => fields.map { |field| "#{field['id']}: #{field.dig('shape', 'label')}" }.join("; "),
+        }
+      end
+
+      axes = contract.fetch("axes").map do |axis|
+        dimension = axis.fetch("dimension")
+        {
+          "id" => axis.fetch("id"),
+          "dimension" => dimension.is_a?(Integer) ? dimension : notations.fetch(dimension, dimension),
+        }
+      end
+      {
+        "kind" => contract.fetch("kind"),
+        "axes" => axes,
+        "label" => axes.map { |axis| axis.fetch("dimension") }.join(" x "),
+      }
+    end
+
+    def strip_instance_grounding!(scene)
+      Array(scene["nodes"]).each do |node|
+        node.delete("block_instance_ref")
+        node.delete("instance_fact_ref")
+      end
+      Array(scene["edges"]).each do |edge|
+        edge.delete("block_instance_ref")
+        edge.delete("instance_fact_ref")
+      end
+      scene
     end
   end
 end

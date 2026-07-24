@@ -6,7 +6,8 @@ export const manifest = {
       "references/bibliography.yaml": "82f709e900c8a4856e4b834e7d3d7269313b9e4aa08f6bea91d75c33ef974bdd",
       "architectures/alphafold3-pairformer.yaml": "0e9baf415f97e87da42420e5fde1916ff0563839695638aea1c159c09d20419d",
       "views/alphafold3-pairformer-semantic-zoom.view.yaml": "3978a4c18d06c27104497dce4c349e90e65ea95f684ddf878f22c323badc440b",
-      "pseudocode/alphafold3-pairformer.yaml": "babbe2e580f0f283bc953051127f5cba2fe2905f215334f3850e3794b229de27"
+      "pseudocode/alphafold3-pairformer.yaml": "babbe2e580f0f283bc953051127f5cba2fe2905f215334f3850e3794b229de27",
+      "standard_blocks/af3-msa-module.yaml": "333b5ac4e9aa09e25a22d140c14fbd6aabb4eb7d8b752b71cf360c386745aac0"
     }
   },
   "architecture": {
@@ -3361,6 +3362,1559 @@ export const manifest = {
     ]
   },
   "standardBlocks": {
+    "af3_msa_module": {
+      "id": "af3_msa_module",
+      "schemaVersion": "standard-block-v0.3",
+      "name": "AlphaFold 3 MSA Module",
+      "sourceYaml": "../../standard_blocks/af3-msa-module.yaml",
+      "description": "Embed a sampled MSA, exchange information between MSA rows and the pair representation through outer-product mean and pair-weighted averaging, refine the pair state with triangle operations, repeat the homogeneous block four times, then discard the MSA state and return only the pair state.",
+      "math": [
+        {
+          "id": "sample_and_embed_msa",
+          "text": "initial_msa_state = embed(sample_rows(msa_features, msa_mask)) + project(input_single_state)",
+          "tex": "m^0_{si}=W_m Sample(f^{msa},m^{msa})_{si}+W_s s^{input}_i",
+          "operation": "msa_sampling_and_embedding"
+        },
+        {
+          "id": "initialize_loop_state",
+          "text": "current_msa_state, current_pair_state = initial_msa_state, pair_state",
+          "operation": "loop_state_initialization"
+        },
+        {
+          "id": "outer_product_mean",
+          "text": "outer_product_delta = outer_product_mean(current_msa_state, msa_mask)",
+          "tex": "delta z^{opm}_{ij}=W_o Mean_s(a_{si} tensor_product b_{sj})",
+          "operation": "outer_product_mean"
+        },
+        {
+          "id": "add_outer_product_residual",
+          "text": "pair_after_outer_product = current_pair_state + outer_product_delta",
+          "tex": "z^{opm}=z^l+delta z^{opm}",
+          "operation": "residual_add"
+        },
+        {
+          "id": "pair_weighted_average",
+          "text": "msa_attention_delta = output_project(sigmoid(project_gate(layer_norm(current_msa_state))) * pair_weighted_sum(softmax(project_pair(layer_norm(pair_after_outer_product)) + mask_bias(msa_mask)), project_value(layer_norm(current_msa_state))))",
+          "tex": "delta m^{pwa}_{si}=W_o concat_h(g^h_{si} elementwise_product sum_j softmax_j(W_b^h z^{opm}_{ij})v^h_{sj})",
+          "operation": "pair_weighted_averaging"
+        },
+        {
+          "id": "add_msa_attention_residual",
+          "text": "msa_after_attention = current_msa_state + rowwise_dropout_0_15(msa_attention_delta)",
+          "operation": "rowwise_dropout_residual"
+        },
+        {
+          "id": "msa_transition",
+          "text": "next_msa_state = msa_after_attention + swiglu_transition(msa_after_attention)",
+          "operation": "swiglu_transition_residual"
+        },
+        {
+          "id": "triangle_multiplication_outgoing",
+          "text": "pair_after_outgoing = pair_after_outer_product + rowwise_dropout_0_25(triangle_multiplication_outgoing(pair_after_outer_product, pair_mask))",
+          "operation": "triangle_multiplication_outgoing"
+        },
+        {
+          "id": "triangle_multiplication_incoming",
+          "text": "pair_after_incoming = pair_after_outgoing + rowwise_dropout_0_25(triangle_multiplication_incoming(pair_after_outgoing, pair_mask))",
+          "operation": "triangle_multiplication_incoming"
+        },
+        {
+          "id": "triangle_attention_starting_node",
+          "text": "pair_after_starting_attention = pair_after_incoming + rowwise_dropout_0_25(triangle_attention_starting_node(pair_after_incoming, pair_mask))",
+          "operation": "triangle_attention_starting_node"
+        },
+        {
+          "id": "triangle_attention_ending_node",
+          "text": "pair_after_ending_attention = pair_after_starting_attention + columnwise_dropout_0_25(triangle_attention_ending_node(pair_after_starting_attention, pair_mask))",
+          "operation": "triangle_attention_ending_node"
+        },
+        {
+          "id": "pair_transition",
+          "text": "next_pair_state = pair_after_ending_attention + swiglu_pair_transition(pair_after_ending_attention, pair_mask)",
+          "operation": "swiglu_pair_transition_residual"
+        },
+        {
+          "id": "advance_four_block_loop",
+          "text": "final_msa_state, final_pair_state = advance_until_block_4(next_msa_state, next_pair_state)",
+          "operation": "fixed_depth_loop"
+        },
+        {
+          "id": "discard_msa_and_return_pair",
+          "text": "updated_pair_state = return_pair_and_discard_msa(final_pair_state, final_msa_state)",
+          "operation": "boundary_projection"
+        }
+      ],
+      "kind": "composite_msa_encoder",
+      "status": "review",
+      "parameters": [
+        {
+          "id": "n_msa",
+          "notation": "N_{msa}",
+          "kind": "sequence",
+          "resolution": "boundary",
+          "role": "sampled MSA row count"
+        },
+        {
+          "id": "n_token",
+          "notation": "N_{token}",
+          "kind": "sequence",
+          "resolution": "boundary",
+          "role": "token count"
+        },
+        {
+          "id": "c_raw",
+          "notation": "C_{raw}",
+          "kind": "channel",
+          "resolution": "boundary",
+          "role": "concatenated raw MSA feature width"
+        },
+        {
+          "id": "c_single",
+          "notation": "C_s",
+          "kind": "channel",
+          "resolution": "boundary",
+          "role": "input single-feature width"
+        },
+        {
+          "id": "c_pair",
+          "notation": "C_z",
+          "kind": "channel",
+          "resolution": "boundary",
+          "role": "pair-state channel width"
+        },
+        {
+          "id": "c_msa",
+          "notation": "C_m",
+          "kind": "channel",
+          "resolution": "instance",
+          "role": "embedded MSA channel width"
+        },
+        {
+          "id": "n_head",
+          "notation": "H",
+          "kind": "heads",
+          "resolution": "instance",
+          "role": "pair-weighted averaging head count"
+        },
+        {
+          "id": "c_value",
+          "notation": "C_v",
+          "kind": "channel",
+          "resolution": "instance",
+          "role": "pair-weighted averaging value width per head"
+        }
+      ],
+      "ports": [
+        {
+          "id": "msa_features",
+          "label": "raw MSA features",
+          "direction": "input",
+          "kind": "representation",
+          "required": true,
+          "cardinality": "one",
+          "relation_kinds": [
+            "data_flow"
+          ],
+          "glyph": "matrix",
+          "notation": "f^{msa}",
+          "role": "sampled alignment symbols plus deletion-presence and deletion-value features",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "raw_feature",
+                "dimension": "c_raw"
+              }
+            ]
+          }
+        },
+        {
+          "id": "input_single_state",
+          "label": "input single features",
+          "direction": "conditioning",
+          "kind": "representation",
+          "required": true,
+          "cardinality": "one",
+          "relation_kinds": [
+            "conditioning",
+            "data_flow"
+          ],
+          "glyph": "single",
+          "notation": "s^{input}",
+          "role": "token-wise input embedding broadcast into every sampled MSA row",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "single_channel",
+                "dimension": "c_single"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_state",
+          "label": "incoming pair state",
+          "direction": "input",
+          "kind": "representation",
+          "required": true,
+          "cardinality": "one",
+          "relation_kinds": [
+            "data_flow",
+            "state_update"
+          ],
+          "glyph": "pair",
+          "notation": "z",
+          "role": "ordered token-pair state entering the four-block MSA module",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msa_mask",
+          "label": "MSA validity mask",
+          "direction": "conditioning",
+          "kind": "mask",
+          "required": true,
+          "cardinality": "one",
+          "relation_kinds": [
+            "conditioning",
+            "control"
+          ],
+          "glyph": "matrix",
+          "notation": "m^{msa}",
+          "role": "valid MSA rows and token columns used by sampling, outer-product mean, and pair-weighted averaging",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_mask",
+          "label": "valid-pair mask",
+          "direction": "conditioning",
+          "kind": "mask",
+          "required": true,
+          "cardinality": "one",
+          "relation_kinds": [
+            "conditioning",
+            "control"
+          ],
+          "glyph": "pair",
+          "notation": "m^{pair}",
+          "role": "token-pair validity mask applied throughout the triangle and pair-transition stack",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              }
+            ]
+          }
+        },
+        {
+          "id": "updated_pair_state",
+          "label": "updated pair state",
+          "direction": "output",
+          "kind": "representation",
+          "required": true,
+          "cardinality": "one",
+          "relation_kinds": [
+            "data_flow",
+            "state_update"
+          ],
+          "glyph": "pair",
+          "notation": "z^{out}",
+          "role": "pair state returned to the downstream Pairformer after the MSA state is discarded",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        }
+      ],
+      "variants": [
+        {
+          "id": "af3_four_block_pair_weighted",
+          "label": "AF3 four-block MSA module",
+          "description": "Four independently parameterized homogeneous blocks use outer-product mean for MSA-to-pair communication, pair-only attention weights for pair-to-MSA communication, and the AF2-style triangle pair stack before returning only the pair state.",
+          "step_refs": [
+            "steps.sample_and_embed_msa",
+            "steps.initialize_loop_state",
+            "steps.outer_product_mean",
+            "steps.add_outer_product_residual",
+            "steps.pair_weighted_average",
+            "steps.add_msa_attention_residual",
+            "steps.msa_transition",
+            "steps.triangle_multiplication_outgoing",
+            "steps.triangle_multiplication_incoming",
+            "steps.triangle_attention_starting_node",
+            "steps.triangle_attention_ending_node",
+            "steps.pair_transition",
+            "steps.advance_four_block_loop",
+            "steps.discard_msa_and_return_pair"
+          ]
+        }
+      ],
+      "defaultVariant": "af3_four_block_pair_weighted",
+      "values": [
+        {
+          "id": "initial_msa_state",
+          "label": "embedded MSA state",
+          "kind": "representation",
+          "glyph": "matrix",
+          "notation": "m^{0}",
+          "role": "64-channel MSA representation after row sampling, feature embedding, and broadcast input conditioning",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "msa_channel",
+                "dimension": "c_msa"
+              }
+            ]
+          }
+        },
+        {
+          "id": "current_msa_state",
+          "label": "current block MSA state",
+          "kind": "representation",
+          "glyph": "matrix",
+          "notation": "m^{l}",
+          "role": "loop-carried MSA state entering homogeneous block l",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "msa_channel",
+                "dimension": "c_msa"
+              }
+            ]
+          }
+        },
+        {
+          "id": "current_pair_state",
+          "label": "current block pair state",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{l}",
+          "role": "loop-carried pair state entering homogeneous block l",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "outer_product_delta",
+          "label": "MSA-derived pair update",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "delta z^{opm}",
+          "role": "outer-product mean projection averaged over sampled MSA rows",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_after_outer_product",
+          "label": "pair after MSA aggregation",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{opm}",
+          "role": "current pair state after the MSA-derived outer-product update",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msa_attention_delta",
+          "label": "pair-routed MSA update",
+          "kind": "representation",
+          "glyph": "matrix",
+          "notation": "delta m^{pwa}",
+          "role": "gated weighted average of MSA values using attention weights projected only from the pair state",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "msa_channel",
+                "dimension": "c_msa"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msa_after_attention",
+          "label": "MSA after pair routing",
+          "kind": "representation",
+          "glyph": "matrix",
+          "notation": "m^{pwa}",
+          "role": "MSA state after the row-wise dropout and residual addition",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "msa_channel",
+                "dimension": "c_msa"
+              }
+            ]
+          }
+        },
+        {
+          "id": "next_msa_state",
+          "label": "next block MSA state",
+          "kind": "representation",
+          "glyph": "matrix",
+          "notation": "m^{l+1}",
+          "role": "loop-carried MSA state after the SwiGLU transition residual",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "msa_channel",
+                "dimension": "c_msa"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_after_outgoing",
+          "label": "pair after outgoing update",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{out_tri}",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_after_incoming",
+          "label": "pair after incoming update",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{in_tri}",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_after_starting_attention",
+          "label": "pair after starting-node attention",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{start}",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "pair_after_ending_attention",
+          "label": "pair after ending-node attention",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{end}",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "next_pair_state",
+          "label": "next block pair state",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{l+1}",
+          "role": "loop-carried pair state after the pointwise pair transition",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        },
+        {
+          "id": "final_msa_state",
+          "label": "final MSA state",
+          "kind": "representation",
+          "glyph": "matrix",
+          "notation": "m^{4}",
+          "role": "fourth-block MSA result, intentionally discarded at the module boundary",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "msa_sequence",
+                "dimension": "n_msa"
+              },
+              {
+                "id": "token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "msa_channel",
+                "dimension": "c_msa"
+              }
+            ]
+          }
+        },
+        {
+          "id": "final_pair_state",
+          "label": "final pair state",
+          "kind": "representation",
+          "glyph": "pair",
+          "notation": "z^{4}",
+          "role": "fourth-block pair result returned by the module",
+          "shape_contract": {
+            "kind": "tensor",
+            "axes": [
+              {
+                "id": "query_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "key_token",
+                "dimension": "n_token"
+              },
+              {
+                "id": "pair_channel",
+                "dimension": "c_pair"
+              }
+            ]
+          }
+        }
+      ],
+      "steps": [
+        {
+          "id": "sample_and_embed_msa",
+          "label": "Sample and embed MSA rows",
+          "operation": "msa_sampling_and_embedding",
+          "shape_rule": "linear",
+          "inputs": [
+            "ports.msa_features",
+            "ports.input_single_state",
+            "ports.msa_mask"
+          ],
+          "outputs": [
+            "values.initial_msa_state"
+          ],
+          "code": "initial_msa_state = embed(sample_rows(msa_features, msa_mask)) + project(input_single_state)",
+          "tex": "m^0_{si}=W_m Sample(f^{msa},m^{msa})_{si}+W_s s^{input}_i",
+          "role": "sample a fresh MSA subset for the recycling iteration, embed the concatenated MSA features, and broadcast-add the input single features",
+          "code_bindings": [
+            {
+              "lexeme": "msa_features",
+              "ref": "ports.msa_features",
+              "access": "read"
+            },
+            {
+              "lexeme": "input_single_state",
+              "ref": "ports.input_single_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "msa_mask",
+              "ref": "ports.msa_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "initial_msa_state",
+              "ref": "values.initial_msa_state",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "initialize_loop_state",
+          "label": "Initialize four-block loop",
+          "operation": "loop_state_initialization",
+          "shape_rule": "linear",
+          "inputs": [
+            "values.initial_msa_state",
+            "ports.pair_state"
+          ],
+          "outputs": [
+            "values.current_msa_state",
+            "values.current_pair_state"
+          ],
+          "code": "current_msa_state, current_pair_state = initial_msa_state, pair_state",
+          "role": "expose distinct current states for one homogeneous block without encoding either update as a self-edge",
+          "code_bindings": [
+            {
+              "lexeme": "initial_msa_state",
+              "ref": "values.initial_msa_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_state",
+              "ref": "ports.pair_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "current_msa_state",
+              "ref": "values.current_msa_state",
+              "access": "write"
+            },
+            {
+              "lexeme": "current_pair_state",
+              "ref": "values.current_pair_state",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "outer_product_mean",
+          "label": "Aggregate MSA into pair update",
+          "operation": "outer_product_mean",
+          "shape_rule": "linear",
+          "inputs": [
+            "values.current_msa_state",
+            "ports.msa_mask"
+          ],
+          "outputs": [
+            "values.outer_product_delta"
+          ],
+          "code": "outer_product_delta = outer_product_mean(current_msa_state, msa_mask)",
+          "tex": "delta z^{opm}_{ij}=W_o Mean_s(a_{si} tensor_product b_{sj})",
+          "role": "communicate alignment information into the pair representation by averaging projected outer products over sampled MSA rows",
+          "code_bindings": [
+            {
+              "lexeme": "current_msa_state",
+              "ref": "values.current_msa_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "msa_mask",
+              "ref": "ports.msa_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "outer_product_delta",
+              "ref": "values.outer_product_delta",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "add_outer_product_residual",
+          "label": "Add MSA-derived pair update",
+          "operation": "residual_add",
+          "shape_rule": "residual_add",
+          "inputs": [
+            "values.current_pair_state",
+            "values.outer_product_delta"
+          ],
+          "outputs": [
+            "values.pair_after_outer_product"
+          ],
+          "code": "pair_after_outer_product = current_pair_state + outer_product_delta",
+          "tex": "z^{opm}=z^l+delta z^{opm}",
+          "code_bindings": [
+            {
+              "lexeme": "current_pair_state",
+              "ref": "values.current_pair_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "outer_product_delta",
+              "ref": "values.outer_product_delta",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_after_outer_product",
+              "ref": "values.pair_after_outer_product",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "pair_weighted_average",
+          "label": "Route each MSA row with pair weights",
+          "operation": "pair_weighted_averaging",
+          "shape_rule": "linear",
+          "inputs": [
+            "values.current_msa_state",
+            "values.pair_after_outer_product",
+            "ports.msa_mask"
+          ],
+          "outputs": [
+            "values.msa_attention_delta"
+          ],
+          "code": "msa_attention_delta = output_project(sigmoid(project_gate(layer_norm(current_msa_state))) * pair_weighted_sum(softmax(project_pair(layer_norm(pair_after_outer_product)) + mask_bias(msa_mask)), project_value(layer_norm(current_msa_state))))",
+          "tex": "delta m^{pwa}_{si}=W_o concat_h(g^h_{si} elementwise_product sum_j softmax_j(W_b^h z^{opm}_{ij})v^h_{sj})",
+          "role": "project one token-to-token weight matrix per head from the pair state, reuse it for every MSA row, gate the weighted values at each query token, and omit query-key content logits",
+          "code_bindings": [
+            {
+              "lexeme": "current_msa_state",
+              "ref": "values.current_msa_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_after_outer_product",
+              "ref": "values.pair_after_outer_product",
+              "access": "read"
+            },
+            {
+              "lexeme": "msa_mask",
+              "ref": "ports.msa_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "msa_attention_delta",
+              "ref": "values.msa_attention_delta",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "add_msa_attention_residual",
+          "label": "Add pair-routed MSA update",
+          "operation": "rowwise_dropout_residual",
+          "shape_rule": "residual_add",
+          "inputs": [
+            "values.current_msa_state",
+            "values.msa_attention_delta"
+          ],
+          "outputs": [
+            "values.msa_after_attention"
+          ],
+          "code": "msa_after_attention = current_msa_state + rowwise_dropout_0_15(msa_attention_delta)",
+          "role": "apply the training-time row-wise dropout boundary and add the pair-routed update to the MSA state",
+          "code_bindings": [
+            {
+              "lexeme": "current_msa_state",
+              "ref": "values.current_msa_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "msa_attention_delta",
+              "ref": "values.msa_attention_delta",
+              "access": "read"
+            },
+            {
+              "lexeme": "msa_after_attention",
+              "ref": "values.msa_after_attention",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "msa_transition",
+          "label": "Apply MSA SwiGLU transition",
+          "operation": "swiglu_transition_residual",
+          "shape_rule": "preserve",
+          "inputs": [
+            "values.msa_after_attention"
+          ],
+          "outputs": [
+            "values.next_msa_state"
+          ],
+          "code": "next_msa_state = msa_after_attention + swiglu_transition(msa_after_attention)",
+          "role": "refine every MSA token independently before the state is carried to the next homogeneous block",
+          "code_bindings": [
+            {
+              "lexeme": "msa_after_attention",
+              "ref": "values.msa_after_attention",
+              "access": "read"
+            },
+            {
+              "lexeme": "next_msa_state",
+              "ref": "values.next_msa_state",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "triangle_multiplication_outgoing",
+          "label": "Triangle multiplication, outgoing",
+          "operation": "triangle_multiplication_outgoing",
+          "shape_rule": "preserve",
+          "inputs": [
+            "values.pair_after_outer_product",
+            "ports.pair_mask"
+          ],
+          "outputs": [
+            "values.pair_after_outgoing"
+          ],
+          "code": "pair_after_outgoing = pair_after_outer_product + rowwise_dropout_0_25(triangle_multiplication_outgoing(pair_after_outer_product, pair_mask))",
+          "code_bindings": [
+            {
+              "lexeme": "pair_after_outer_product",
+              "ref": "values.pair_after_outer_product",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_mask",
+              "ref": "ports.pair_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_after_outgoing",
+              "ref": "values.pair_after_outgoing",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "triangle_multiplication_incoming",
+          "label": "Triangle multiplication, incoming",
+          "operation": "triangle_multiplication_incoming",
+          "shape_rule": "preserve",
+          "inputs": [
+            "values.pair_after_outgoing",
+            "ports.pair_mask"
+          ],
+          "outputs": [
+            "values.pair_after_incoming"
+          ],
+          "code": "pair_after_incoming = pair_after_outgoing + rowwise_dropout_0_25(triangle_multiplication_incoming(pair_after_outgoing, pair_mask))",
+          "code_bindings": [
+            {
+              "lexeme": "pair_after_outgoing",
+              "ref": "values.pair_after_outgoing",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_mask",
+              "ref": "ports.pair_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_after_incoming",
+              "ref": "values.pair_after_incoming",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "triangle_attention_starting_node",
+          "label": "Triangle attention, starting node",
+          "operation": "triangle_attention_starting_node",
+          "shape_rule": "preserve",
+          "inputs": [
+            "values.pair_after_incoming",
+            "ports.pair_mask"
+          ],
+          "outputs": [
+            "values.pair_after_starting_attention"
+          ],
+          "code": "pair_after_starting_attention = pair_after_incoming + rowwise_dropout_0_25(triangle_attention_starting_node(pair_after_incoming, pair_mask))",
+          "code_bindings": [
+            {
+              "lexeme": "pair_after_incoming",
+              "ref": "values.pair_after_incoming",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_mask",
+              "ref": "ports.pair_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_after_starting_attention",
+              "ref": "values.pair_after_starting_attention",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "triangle_attention_ending_node",
+          "label": "Triangle attention, ending node",
+          "operation": "triangle_attention_ending_node",
+          "shape_rule": "preserve",
+          "inputs": [
+            "values.pair_after_starting_attention",
+            "ports.pair_mask"
+          ],
+          "outputs": [
+            "values.pair_after_ending_attention"
+          ],
+          "code": "pair_after_ending_attention = pair_after_starting_attention + columnwise_dropout_0_25(triangle_attention_ending_node(pair_after_starting_attention, pair_mask))",
+          "code_bindings": [
+            {
+              "lexeme": "pair_after_starting_attention",
+              "ref": "values.pair_after_starting_attention",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_mask",
+              "ref": "ports.pair_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_after_ending_attention",
+              "ref": "values.pair_after_ending_attention",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "pair_transition",
+          "label": "Apply pair SwiGLU transition",
+          "operation": "swiglu_pair_transition_residual",
+          "shape_rule": "preserve",
+          "inputs": [
+            "values.pair_after_ending_attention",
+            "ports.pair_mask"
+          ],
+          "outputs": [
+            "values.next_pair_state"
+          ],
+          "code": "next_pair_state = pair_after_ending_attention + swiglu_pair_transition(pair_after_ending_attention, pair_mask)",
+          "role": "apply the pointwise pair transition and carry the result to the next homogeneous block",
+          "code_bindings": [
+            {
+              "lexeme": "pair_after_ending_attention",
+              "ref": "values.pair_after_ending_attention",
+              "access": "read"
+            },
+            {
+              "lexeme": "pair_mask",
+              "ref": "ports.pair_mask",
+              "access": "read"
+            },
+            {
+              "lexeme": "next_pair_state",
+              "ref": "values.next_pair_state",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "advance_four_block_loop",
+          "label": "Advance until block 4",
+          "operation": "fixed_depth_loop",
+          "shape_rule": "linear",
+          "inputs": [
+            "values.next_msa_state",
+            "values.next_pair_state"
+          ],
+          "outputs": [
+            "values.final_msa_state",
+            "values.final_pair_state"
+          ],
+          "code": "final_msa_state, final_pair_state = advance_until_block_4(next_msa_state, next_pair_state)",
+          "role": "feed the distinct next states into the next independently parameterized block until four total blocks have run",
+          "code_bindings": [
+            {
+              "lexeme": "next_msa_state",
+              "ref": "values.next_msa_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "next_pair_state",
+              "ref": "values.next_pair_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "final_msa_state",
+              "ref": "values.final_msa_state",
+              "access": "write"
+            },
+            {
+              "lexeme": "final_pair_state",
+              "ref": "values.final_pair_state",
+              "access": "write"
+            }
+          ]
+        },
+        {
+          "id": "discard_msa_and_return_pair",
+          "label": "Discard MSA and return pair",
+          "operation": "boundary_projection",
+          "shape_rule": "linear",
+          "inputs": [
+            "values.final_msa_state",
+            "values.final_pair_state"
+          ],
+          "outputs": [
+            "ports.updated_pair_state"
+          ],
+          "code": "updated_pair_state = return_pair_and_discard_msa(final_pair_state, final_msa_state)",
+          "role": "terminate the MSA track at this boundary and expose only the pair state to the downstream Pairformer",
+          "code_bindings": [
+            {
+              "lexeme": "final_msa_state",
+              "ref": "values.final_msa_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "final_pair_state",
+              "ref": "values.final_pair_state",
+              "access": "read"
+            },
+            {
+              "lexeme": "updated_pair_state",
+              "ref": "ports.updated_pair_state",
+              "access": "write"
+            }
+          ]
+        }
+      ],
+      "visualTemplate": {
+        "grid": {
+          "columns": 23,
+          "rows": 7,
+          "column_sizing": "content",
+          "row_sizing": "content",
+          "col_gap": 24,
+          "row_gap": 34
+        },
+        "nodes": [
+          {
+            "id": "msa_features",
+            "ref": "ports.msa_features",
+            "col": 1,
+            "row": 1,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "input_single_state",
+            "ref": "ports.input_single_state",
+            "col": 1,
+            "row": 2,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "msa_mask",
+            "ref": "ports.msa_mask",
+            "col": 1,
+            "row": 3,
+            "prominence": "context",
+            "treatment": "chip"
+          },
+          {
+            "id": "pair_state",
+            "ref": "ports.pair_state",
+            "col": 1,
+            "row": 5,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_mask",
+            "ref": "ports.pair_mask",
+            "col": 1,
+            "row": 6,
+            "prominence": "context",
+            "treatment": "chip"
+          },
+          {
+            "id": "sample_and_embed_msa",
+            "ref": "steps.sample_and_embed_msa",
+            "col": 2,
+            "row": 1,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "initial_msa_state",
+            "ref": "values.initial_msa_state",
+            "col": 3,
+            "row": 1,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "initialize_loop_state",
+            "ref": "steps.initialize_loop_state",
+            "col": 4,
+            "row": 3,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "current_msa_state",
+            "ref": "values.current_msa_state",
+            "col": 5,
+            "row": 1,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "current_pair_state",
+            "ref": "values.current_pair_state",
+            "col": 5,
+            "row": 5,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "outer_product_mean",
+            "ref": "steps.outer_product_mean",
+            "col": 6,
+            "row": 3,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "outer_product_delta",
+            "ref": "values.outer_product_delta",
+            "col": 7,
+            "row": 4,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "add_outer_product_residual",
+            "ref": "steps.add_outer_product_residual",
+            "col": 8,
+            "row": 5,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_after_outer_product",
+            "ref": "values.pair_after_outer_product",
+            "col": 9,
+            "row": 5,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_weighted_average",
+            "ref": "steps.pair_weighted_average",
+            "col": 10,
+            "row": 2,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "msa_attention_delta",
+            "ref": "values.msa_attention_delta",
+            "col": 11,
+            "row": 2,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "add_msa_attention_residual",
+            "ref": "steps.add_msa_attention_residual",
+            "col": 12,
+            "row": 1,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "msa_after_attention",
+            "ref": "values.msa_after_attention",
+            "col": 13,
+            "row": 1,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "msa_transition",
+            "ref": "steps.msa_transition",
+            "col": 14,
+            "row": 1,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "next_msa_state",
+            "ref": "values.next_msa_state",
+            "col": 15,
+            "row": 1,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "triangle_multiplication_outgoing",
+            "ref": "steps.triangle_multiplication_outgoing",
+            "col": 10,
+            "row": 5,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_after_outgoing",
+            "ref": "values.pair_after_outgoing",
+            "col": 11,
+            "row": 5,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "triangle_multiplication_incoming",
+            "ref": "steps.triangle_multiplication_incoming",
+            "col": 12,
+            "row": 5,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_after_incoming",
+            "ref": "values.pair_after_incoming",
+            "col": 13,
+            "row": 5,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "triangle_attention_starting_node",
+            "ref": "steps.triangle_attention_starting_node",
+            "col": 14,
+            "row": 5,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_after_starting_attention",
+            "ref": "values.pair_after_starting_attention",
+            "col": 15,
+            "row": 5,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "triangle_attention_ending_node",
+            "ref": "steps.triangle_attention_ending_node",
+            "col": 16,
+            "row": 5,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_after_ending_attention",
+            "ref": "values.pair_after_ending_attention",
+            "col": 17,
+            "row": 5,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "pair_transition",
+            "ref": "steps.pair_transition",
+            "col": 18,
+            "row": 5,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "next_pair_state",
+            "ref": "values.next_pair_state",
+            "col": 19,
+            "row": 5,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "advance_four_block_loop",
+            "ref": "steps.advance_four_block_loop",
+            "col": 20,
+            "row": 3,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "final_msa_state",
+            "ref": "values.final_msa_state",
+            "col": 21,
+            "row": 1,
+            "prominence": "context",
+            "treatment": "compact"
+          },
+          {
+            "id": "final_pair_state",
+            "ref": "values.final_pair_state",
+            "col": 21,
+            "row": 5,
+            "prominence": "secondary",
+            "treatment": "compact"
+          },
+          {
+            "id": "discard_msa_and_return_pair",
+            "ref": "steps.discard_msa_and_return_pair",
+            "col": 22,
+            "row": 4,
+            "prominence": "primary",
+            "treatment": "compact"
+          },
+          {
+            "id": "updated_pair_state",
+            "ref": "ports.updated_pair_state",
+            "col": 23,
+            "row": 5,
+            "prominence": "secondary",
+            "treatment": "compact"
+          }
+        ],
+        "segments": [
+          {
+            "id": "module_inputs",
+            "label": "Build initial states",
+            "description": "Sample and embed the MSA, broadcast the input single features, and initialize distinct loop-carried MSA and pair states.",
+            "node_refs": [
+              "ports.msa_features",
+              "ports.input_single_state",
+              "ports.msa_mask",
+              "ports.pair_state",
+              "ports.pair_mask",
+              "steps.sample_and_embed_msa",
+              "values.initial_msa_state",
+              "steps.initialize_loop_state",
+              "values.current_msa_state",
+              "values.current_pair_state"
+            ]
+          },
+          {
+            "id": "msa_pair_exchange",
+            "label": "Exchange MSA and pair information",
+            "description": "Outer-product mean moves alignment information into the pair state; pair-weighted averaging sends pair-defined token routing back into every MSA row.",
+            "node_refs": [
+              "steps.outer_product_mean",
+              "values.outer_product_delta",
+              "steps.add_outer_product_residual",
+              "values.pair_after_outer_product",
+              "steps.pair_weighted_average",
+              "values.msa_attention_delta",
+              "steps.add_msa_attention_residual",
+              "values.msa_after_attention",
+              "steps.msa_transition",
+              "values.next_msa_state"
+            ]
+          },
+          {
+            "id": "pair_refinement",
+            "label": "Refine pair geometry",
+            "description": "Apply outgoing and incoming triangle multiplication, starting- and ending-node triangle attention, then the pointwise pair transition.",
+            "node_refs": [
+              "steps.triangle_multiplication_outgoing",
+              "values.pair_after_outgoing",
+              "steps.triangle_multiplication_incoming",
+              "values.pair_after_incoming",
+              "steps.triangle_attention_starting_node",
+              "values.pair_after_starting_attention",
+              "steps.triangle_attention_ending_node",
+              "values.pair_after_ending_attention",
+              "steps.pair_transition",
+              "values.next_pair_state"
+            ]
+          },
+          {
+            "id": "module_output",
+            "label": "Repeat ×4 and keep only pair",
+            "description": "Advance the independently parameterized loop to four blocks, discard the final MSA representation, and expose the final pair representation.",
+            "node_refs": [
+              "steps.advance_four_block_loop",
+              "values.final_msa_state",
+              "values.final_pair_state",
+              "steps.discard_msa_and_return_pair",
+              "ports.updated_pair_state"
+            ]
+          }
+        ]
+      },
+      "evidencePolicy": {
+        "generic_definition": "This AF3-specific template follows Supplementary Algorithms 8–15 and the released MSAAttention and EvoformerIteration implementation; the template itself remains reusable vocabulary rather than a concrete architecture occurrence.",
+        "usage_requires": [
+          "Evidence for the four-block execution count, operation order, MSA sampling, channel widths, attention head configuration, mask behavior, and training-time dropout boundaries.",
+          "Evidence that pair-weighted averaging projects attention weights only from the pair state, shares them across MSA rows, and uses MSA-derived values plus a query-side gate.",
+          "Evidence that only the pair representation crosses the MSA-module output boundary while the final MSA representation is discarded."
+        ]
+      }
+    }
   },
   "pseudocode": {
     "alphafold3_pairformer": {

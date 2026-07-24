@@ -29,6 +29,22 @@ class RendererStandardBlockTest < Minitest::Test
     assert board.fetch("nodes").all? { |node| node.fetch("block_instance_ref") == "block_instances.latent_reduced_pair_attention" }
   end
 
+  def test_af3_msa_template_is_browseable_without_becoming_an_architecture
+    manifest = standard_block_manifest("af3_msa_module")
+    board = manifest.dig("boards", "items").fetch(0)
+
+    assert_equal "standard-block-browser-manifest-v0.1", manifest.fetch("schemaVersion")
+    assert_empty manifest.dig("architecture", "modules")
+    assert_empty manifest.dig("architecture", "relations")
+    assert_equal "standard_block_template", board.fetch("projectionMode")
+    assert_equal "af3_msa_module", board.fetch("standardBlockId")
+    assert board.fetch("nodes").any? { |node| node.fetch("id") == "pair_weighted_average" }
+    assert board.fetch("nodes").none? { |node| node.key?("block_instance_ref") }
+    assert board.fetch("edges").all? do |edge|
+      edge.fetch("grounding") == "standard_block_template"
+    end
+  end
+
   def test_both_board_surfaces_render_declarative_visual_segments
     renderer = read("renderer/architecture/renderer.js")
     comparison = read("renderer/architecture/comparison-board-renderer.mjs")
@@ -116,6 +132,11 @@ class RendererStandardBlockTest < Minitest::Test
 
   def manifest(id)
     source = read("renderer/architecture/manifest-#{id}.js")
+    JSON.parse(source.sub(/\Aexport const manifest = /, "").sub(/;\s*\z/, ""))
+  end
+
+  def standard_block_manifest(id)
+    source = read("renderer/architecture/manifest-standard-block-#{id}.js")
     JSON.parse(source.sub(/\Aexport const manifest = /, "").sub(/;\s*\z/, ""))
   end
 end
