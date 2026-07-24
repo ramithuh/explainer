@@ -113,6 +113,12 @@ Common presentation fields:
 
 Do not author `expandable`; drilldown is determined only by `board_ref`.
 
+A normal-detail module card also displays the canonical module's optional
+`equation`. Equations belong to the architecture module because they describe
+computation, not board styling. Compact and chip occurrences intentionally
+omit them; use those treatments when the board needs the module without its
+mathematical detail.
+
 ## Published Reference Panels
 
 An ordinary board may place one or more cited author figures beside its

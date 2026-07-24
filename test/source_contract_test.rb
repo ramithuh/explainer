@@ -120,6 +120,24 @@ class SourceContractTest < Minitest::Test
     assert_diagnostic diagnostics, "schema_unique_items", /modules\[0\].mechanisms/
   end
 
+  def test_modules_accept_a_readable_and_tex_equation
+    architecture = deep_copy(@architecture)
+    module_fact = architecture.fetch("modules").first
+    module_fact["equation"] = {
+      "text" => "updated = input + delta",
+      "tex" => "s'=s+\\Delta s",
+    }
+
+    assert_empty SourceContract.errors(architecture)
+
+    invalid = deep_copy(architecture)
+    invalid.fetch("modules").first.fetch("equation").delete("text")
+    invalid.fetch("modules").first.fetch("equation")["placement"] = "card"
+    diagnostics = SourceContract.errors(invalid)
+    assert_diagnostic diagnostics, "schema_required", /modules\[0\].equation/
+    assert_diagnostic diagnostics, "schema_unknown_property", /modules\[0\].equation.placement/
+  end
+
   def test_repeat_regions_have_a_typed_execution_backed_shape
     view = deep_copy(@view)
     board = view.fetch("boards").first

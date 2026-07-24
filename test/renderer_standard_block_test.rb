@@ -87,6 +87,27 @@ class RendererStandardBlockTest < Minitest::Test
     assert_includes styles, ".model-map-operation-relu"
   end
 
+  def test_normal_module_cards_render_canonical_equations_generically
+    renderer = read("renderer/architecture/renderer.js")
+    comparison = read("renderer/architecture/comparison-board-renderer.mjs")
+    notation = read("renderer/architecture/math-notation.mjs")
+    styles = read("styles.css")
+    manifest = manifest("genie3")
+    modules = manifest.dig("architecture", "modules")
+
+    endpoint = modules.find { |mod| mod.fetch("id") == "endpoint_pair_constructor" }
+    assembler = modules.find { |mod| mod.fetch("id") == "pair_feature_assembler" }
+
+    assert_equal "a_{ij}=W_{\\mathrm{src}}s_i+W_{\\mathrm{dst}}s_j",
+      endpoint.dig("equation", "tex")
+    assert_includes assembler.dig("equation", "tex"), "a_{ij}+r_{ij}"
+    assert_includes renderer, "equationMarkup(module?.equation)"
+    assert_includes renderer, 'html.includes("math-step") || html.includes("\\\\(")'
+    assert_includes comparison, "equationMarkup(module?.equation)"
+    assert_includes notation, "function equationMarkup"
+    assert_includes styles, ".arch-equation"
+  end
+
   private
 
   def read(relative)

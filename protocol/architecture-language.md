@@ -276,6 +276,9 @@ modules:
     kind: operator
     mechanisms: [ddpm]
     role: combine the current latent and model prediction into the next latent
+    equation:
+      text: "x_previous = reverse_step(x_current, predicted_noise, timestep)"
+      tex: 'x_{t-1}=\operatorname{ReverseStep}(x_t,\hat{\epsilon},t)'
     scale: spatial
     evidence:
       status: confirmed_from_code
@@ -285,9 +288,17 @@ modules:
           locator: relevant_symbol
 ```
 
-Optional module fields include `mechanisms`, `repeats`, `depth`, `attention`,
-`standard_block_ref`, `pseudocode_ref`, and `frozen`. Do not author module
-`inputs` or `outputs`; canonical relations define the interface.
+Optional module fields include `mechanisms`, `equation`, `repeats`, `depth`,
+`attention`, `standard_block_ref`, `pseudocode_ref`, and `frozen`. Use
+`equation.text` for a readable, implementation-oriented fallback and
+`equation.tex` for the corresponding concise mathematical statement. Add an
+equation only when it makes the module's complete operation easier to
+understand; do not compress a multi-stage algorithm into misleading shorthand.
+Short symbol legends in `role` prose may use explicit MathJax inline delimiters
+such as `\(D^x\)`; ordinary code-like text is never interpreted as TeX.
+Normal-detail module cards display it generically, while compact and chip
+treatments omit it. Do not author module `inputs` or `outputs`; canonical
+relations define the interface.
 
 ## Reusable Block Instances
 

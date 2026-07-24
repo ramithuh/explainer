@@ -11,6 +11,14 @@ export function texMarkup(tex) {
   return `\\(${escapeHtml(tex)}\\)`;
 }
 
+export function equationMarkup(equation = {}) {
+  const text = String(equation.text || "").trim();
+  const tex = String(equation.tex || "").trim();
+  if (!text || !tex) return "";
+
+  return `<span class="arch-equation math-step" aria-label="${escapeHtml(text)}">${texMarkup(tex)}</span>`;
+}
+
 // Board notation may be a compact plain label (for example `.pdb`) or a
 // mathematical symbol. Keep plain labels readable while routing the supported
 // mathematical forms through MathJax. Multi-token subscripts are authored as

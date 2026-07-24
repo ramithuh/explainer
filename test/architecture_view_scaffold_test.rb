@@ -242,13 +242,20 @@ class ArchitectureViewScaffoldTest < Minitest::Test
                                   .sort_by { |ref| [depths.fetch(ref), ref] }
       expandable.each do |subject_ref|
         mod = modules_by_ref.fetch(subject_ref)
+        parent_ref = mod.fetch("parent_ref")
+        parent_id = if parent_ref == "architecture"
+                      root_id
+                    else
+                      "#{parent_ref.delete_prefix('modules.')}_generated_detail"
+                    end
         result = ArchitectureViewScaffold.compile(
           architecture: architecture,
           view: view,
           subject_ref: subject_ref,
           id: "#{mod.fetch('id')}_generated_detail",
           title: mod.fetch("label"),
-          summary: mod.fetch("role")
+          summary: mod.fetch("role"),
+          parent: parent_id
         )
         view.fetch("boards") << result.board
         compiled_count += 1

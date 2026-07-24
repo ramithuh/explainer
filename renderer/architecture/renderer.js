@@ -18,7 +18,7 @@ import {
   shapeDimsLabel,
   tensorGlyphSvg,
 } from "./representation-glyphs.mjs";
-import { notationMarkup, texMarkup } from "./math-notation.mjs";
+import { equationMarkup, notationMarkup, texMarkup } from "./math-notation.mjs";
 import {
   PAYLOAD_FLOW_FAMILIES,
   edgeFlowProfile,
@@ -891,7 +891,7 @@ function setFocusBody(html, { selected = false } = {}) {
   elements.focusPanel.classList.toggle("is-selected", selected);
   elements.focusPanel.dataset.mode = selected ? "selected" : "overview";
   elements.focusBody.innerHTML = html;
-  state.focusHasMath = html.includes("math-step");
+  state.focusHasMath = html.includes("math-step") || html.includes("\\(");
   updateInspectorHeading();
   typesetMath();
   renderSemanticTracePane();
@@ -4351,6 +4351,7 @@ function blockCardHtml(node, module) {
   const detail = node.detail || moduleDetail(module) || kind;
   const repeat = module?.repeats ? `<span class="arch-repeat">x${escapeHtml(module.repeats)}</span>` : "";
   const badges = blockBadges(node, module);
+  const equation = equationMarkup(module?.equation);
   const operationGlyph = node.kind === "operation" ? operationGlyphMarkup(node.operation) : "";
   if (operationGlyph) {
     return `
@@ -4388,9 +4389,10 @@ function blockCardHtml(node, module) {
       <span class="arch-kind">${escapeHtml(kind)}</span>
       ${repeat}
     </span>
-    <strong>${escapeHtml(label)}</strong>
-    <span class="arch-role">${escapeHtml(role)}</span>
-    <span class="arch-spec">${escapeHtml(detail)}</span>
+      <strong>${escapeHtml(label)}</strong>
+      <span class="arch-role">${escapeHtml(role)}</span>
+      ${equation}
+      <span class="arch-spec">${escapeHtml(detail)}</span>
     <span class="arch-badges">
       ${badges.map((badge) => `<i>${escapeHtml(badge)}</i>`).join("")}
     </span>
@@ -5754,6 +5756,7 @@ function focusModule(module, node) {
   setFocusBody(`
     <div class="focus-section">
       <p>${escapeHtml(module.role)}</p>
+      ${equationMarkup(module.equation)}
       ${renderAttentionSummary(module)}
       ${module.accepts_but_does_not_use ? renderUnusedInputs(module.accepts_but_does_not_use) : ""}
       ${renderContains(module.contains || [])}

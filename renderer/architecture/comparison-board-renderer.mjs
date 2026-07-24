@@ -9,7 +9,7 @@ import {
   shapeDimsLabel,
   tensorGlyphSvg,
 } from "./representation-glyphs.mjs";
-import { notationMarkup } from "./math-notation.mjs";
+import { equationMarkup, notationMarkup } from "./math-notation.mjs";
 import {
   edgeFlowProfile,
   nodeFlowProfiles,
@@ -188,6 +188,7 @@ function renderOperationNode(node, module, alignment, onSelectNode) {
     <span class="arch-node-top"><span class="arch-kind">${escapeHtml(kind)}</span></span>
     <strong>${escapeHtml(label)}</strong>
     ${role ? `<span class="arch-role">${escapeHtml(role)}</span>` : ""}
+    ${equationMarkup(module?.equation)}
     ${detail ? `<span class="arch-spec">${escapeHtml(detail)}</span>` : ""}
   `;
   card.appendChild(button);

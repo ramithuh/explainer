@@ -1667,6 +1667,7 @@ boards:
       treatment: block
       col: 2
       row: 4
+      board_ref: conditioned_pair_geometry_encoder
     - id: module_relative_position_embedder
       ref: modules.relative_position_embedder
       prominence: primary
@@ -1799,3 +1800,101 @@ boards:
         title: Final pair validity
         role: output masking
         inside: The outer product of token-validity masks zeros invalid rows and columns after the four pair terms are added.
+  - id: conditioned_pair_geometry_encoder
+    title: Conditioned Pair Geometry
+    summary: Known task coordinates become conditional frames; only endpoints in the same conditioning group contribute 65-bin distances, valid relative-frame quaternions, and two mask indicators before a 71-to-128 projection.
+    subject_ref: modules.conditioned_pair_geometry_encoder
+    expansion_depth: 1
+    grid:
+      columns: 8
+      rows: 5
+      column_sizing: content
+    nodes:
+    - id: module_pair_feature_embedder
+      ref: modules.pair_feature_embedder
+      label: conditioned fields from pair embedder
+      prominence: context
+      treatment: compact
+      density: compact
+      col: 1
+      row: 3
+    - id: module_conditioned_pair_geometry_encoder
+      ref: modules.conditioned_pair_geometry_encoder
+      prominence: context
+      treatment: compact
+      density: compact
+      col: 2
+      row: 3
+    - id: module_conditioned_pair_mask_builder
+      ref: modules.conditioned_pair_mask_builder
+      prominence: primary
+      treatment: block
+      col: 3
+      row: 1
+    - id: module_conditional_structure_frame_builder
+      ref: modules.conditional_structure_frame_builder
+      prominence: primary
+      treatment: block
+      row: 4
+      col: 3
+    - id: value_conditioned_group_pair_mask
+      ref: value_sites.conditioned_group_pair_mask
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 4
+      row: 1
+    - id: value_conditioned_group_frame_pair_mask
+      ref: value_sites.conditioned_group_frame_pair_mask
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 4
+      row: 2
+    - id: value_conditional_structure_frames
+      ref: value_sites.conditional_structure_frames
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 4
+      row: 4
+    - id: module_conditioned_distance_binner
+      ref: modules.conditioned_distance_binner
+      prominence: primary
+      treatment: block
+      col: 5
+      row: 3
+    - id: module_conditioned_orientation_encoder
+      ref: modules.conditioned_orientation_encoder
+      prominence: primary
+      treatment: block
+      col: 5
+      row: 5
+    - id: value_conditioned_distance_bin_features
+      ref: value_sites.conditioned_distance_bin_features
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 6
+      row: 3
+    - id: value_conditioned_orientation_features
+      ref: value_sites.conditioned_orientation_features
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 6
+      row: 5
+    - id: module_conditioned_geometry_projector
+      ref: modules.conditioned_geometry_projector
+      prominence: primary
+      treatment: block
+      col: 7
+      row: 3
+    - id: value_conditioned_pair_features
+      ref: value_sites.conditioned_pair_features
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 8
+      row: 3
+    parent: pair_feature_embedder

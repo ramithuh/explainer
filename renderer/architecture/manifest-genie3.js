@@ -4,8 +4,8 @@ export const manifest = {
     "generator": "architecture-manifest-builder-v0.5.0",
     "inputDigests": {
       "references/bibliography.yaml": "82f709e900c8a4856e4b834e7d3d7269313b9e4aa08f6bea91d75c33ef974bdd",
-      "architectures/genie3.yaml": "19cbf29d593acad3a8a93ac275de668b1b5f8187605d039fc2922267f461a37d",
-      "views/genie3-semantic-zoom.view.yaml": "11cc5437e51ad87c6af03242817f6d6bfc4a143c0507fbd9499f03e26b8d432e",
+      "architectures/genie3.yaml": "e1681f7d81c9887505a3b13decf0d773842f8cf8d4c26e41c01371e16dfa8900",
+      "views/genie3-semantic-zoom.view.yaml": "9f6e321145753993bd3604cdea84b2a9d42a924b7be6a3ec835050f61f49ac88",
       "pseudocode/genie3.yaml": "822369fcf368f6fc2cf07c70a810d408a122d4cc1bad4f33ef2fbbf6b848d09c",
       "standard_blocks/pair-biased-attention.yaml": "3c6be1ec47623fa320eb6eace772216f41014d4bf14765b8ff52b1602cf26fb7",
       "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5",
@@ -515,11 +515,15 @@ export const manifest = {
           ]
         },
         "modules.conditioned_pair_geometry_encoder": {
-          "status": "leaf",
+          "status": "complete",
           "depth": 5,
-          "immediateModuleCount": 0,
+          "immediateModuleCount": 5,
           "immediateModuleRefs": [
-
+            "modules.conditioned_pair_mask_builder",
+            "modules.conditional_structure_frame_builder",
+            "modules.conditioned_distance_binner",
+            "modules.conditioned_orientation_encoder",
+            "modules.conditioned_geometry_projector"
           ]
         },
         "modules.pair_feature_assembler": {
@@ -529,17 +533,57 @@ export const manifest = {
           "immediateModuleRefs": [
 
           ]
+        },
+        "modules.conditioned_pair_mask_builder": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.conditional_structure_frame_builder": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.conditioned_distance_binner": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.conditioned_orientation_encoder": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.conditioned_geometry_projector": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
         }
       },
       "summary": {
-        "scopeCount": 50,
-        "expandedScopeCount": 12,
-        "completeExpandedScopeCount": 12,
+        "scopeCount": 55,
+        "expandedScopeCount": 13,
+        "completeExpandedScopeCount": 13,
         "partialScopeCount": 0,
-        "leafFrontierCount": 38,
+        "leafFrontierCount": 42,
         "opaqueFrontierCount": 0,
         "partialFrontierCount": 0,
-        "maximumAuthoredDepth": 5
+        "maximumAuthoredDepth": 6
       },
       "opaqueFrontierRefs": [
 
@@ -1699,6 +1743,10 @@ export const manifest = {
           "broadcast_sum"
         ],
         "role": "separately project every single feature as a source and destination endpoint, then broadcast-add the two projections for every ordered token pair",
+        "equation": {
+          "text": "a_ij = W_source s_i + W_destination s_j",
+          "tex": "a_{ij}=W_{\\mathrm{src}}s_i+W_{\\mathrm{dst}}s_j"
+        },
         "scale": "pair",
         "evidence": {
           "status": "confirmed_from_code",
@@ -1750,7 +1798,11 @@ export const manifest = {
           "linear_projection",
           "masking"
         ],
-        "role": "encode pairwise distances and relative frame orientations from the current noisy structure, together with structure-availability indicators, into 128 pair channels",
+        "role": "encode pairwise distances and relative frame orientations from the current noisy structure, together with structure-availability indicators, into 128 pair channels (\\(D^x\\): noisy-frame distance bins; \\(Q^x\\): noisy relative quaternion; \\(m^s\\): structure-pair mask; \\(m^f\\): valid-frame pair mask; \\(m^g\\): same-conditioning-group mask; \\(m^{gf}\\): same-group valid-frame mask)",
+        "equation": {
+          "text": "g_noisy_ij = m_struct_ij W_noisy [D_noisy_ij; m_frame_ij Q_noisy_ij; m_struct_ij; m_frame_ij; m_group_ij; m_group_frame_ij]",
+          "tex": "\\begin{aligned}g^{\\mathrm{noisy}}_{ij}&=m^{s}_{ij}W_n\\!\\left[D^{x}_{ij}\\mathbin\\Vert m^{f}_{ij}Q^{x}_{ij}\\right.\\\\[-2pt]&\\qquad\\left.\\mathbin\\Vert m^{s}_{ij}\\mathbin\\Vert m^{f}_{ij}\\mathbin\\Vert m^{g}_{ij}\\mathbin\\Vert m^{gf}_{ij}\\right]\\end{aligned}"
+        },
         "scale": "pair",
         "evidence": {
           "status": "confirmed_from_code",
@@ -1767,9 +1819,9 @@ export const manifest = {
         "id": "conditioned_pair_geometry_encoder",
         "parent_ref": "modules.pair_feature_embedder",
         "decomposition": {
-          "status": "leaf"
+          "status": "complete"
         },
-        "label": "Conditioned Geometry Encoder",
+        "label": "Conditioned Pair-Geometry Encoder",
         "kind": "encoder",
         "mechanisms": [
           "conditional_frame_construction",
@@ -1777,7 +1829,11 @@ export const manifest = {
           "relative_orientation",
           "group_masking"
         ],
-        "role": "encode distances and relative orientations only between structurally conditioned tokens that belong to the same conditioning group",
+        "role": "build same-group conditioning masks and conditional frames, encode their pairwise distances and relative orientations, and project the masked descriptor into 128 pair channels (\\(D^c\\): conditioned-frame distance bins; \\(Q^c\\): conditioned relative quaternion; \\(m^g\\): same-conditioning-group mask; \\(m^{gf}\\): same-group valid-frame mask)",
+        "equation": {
+          "text": "g_conditioned_ij = m_group_ij W_conditioned [D_conditioned_ij; m_group_frame_ij Q_conditioned_ij; m_group_ij; m_group_frame_ij]",
+          "tex": "\\begin{aligned}g^{\\mathrm{cond}}_{ij}&=m^{g}_{ij}W_c\\!\\left[D^{c}_{ij}\\mathbin\\Vert m^{gf}_{ij}Q^{c}_{ij}\\right.\\\\[-2pt]&\\qquad\\left.\\mathbin\\Vert m^{g}_{ij}\\mathbin\\Vert m^{gf}_{ij}\\right]\\end{aligned}"
+        },
         "scale": "pair",
         "evidence": {
           "status": "confirmed_from_code",
@@ -1803,6 +1859,10 @@ export const manifest = {
           "pair_masking"
         ],
         "role": "add the endpoint, relative-position, noisy-geometry, and conditioned-geometry terms and zero invalid token pairs with the token-pair mask",
+        "equation": {
+          "text": "z0_ij = m_ij (a_ij + r_ij + g_noisy_ij + g_conditioned_ij)",
+          "tex": "z^{(0)}_{ij}=m_{ij}\\!\\left(a_{ij}+r_{ij}+g^{\\mathrm{noisy}}_{ij}+g^{\\mathrm{cond}}_{ij}\\right)"
+        },
         "scale": "pair",
         "evidence": {
           "status": "confirmed_from_code",
@@ -1811,6 +1871,134 @@ export const manifest = {
               "source_ref": "genie3_pair_feature_code",
               "role": "implementation_evidence",
               "locator": "V1PairFeatureNet.forward accumulated zij updates and final masked return"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_pair_mask_builder",
+        "parent_ref": "modules.conditioned_pair_geometry_encoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Same-Group Pair Masks",
+        "kind": "adapter",
+        "mechanisms": [
+          "group_masking",
+          "outer_product"
+        ],
+        "role": "mark pairs whose endpoints are structurally conditioned in the same nonzero group, then additionally mark the subset whose two local frames are valid",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional pair masks"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditional_structure_frame_builder",
+        "parent_ref": "modules.conditioned_pair_geometry_encoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Conditional Frame Builder",
+        "kind": "encoder",
+        "mechanisms": [
+          "conditional_frame_construction",
+          "frenet_frames"
+        ],
+        "role": "mask known coordinates, gather left and right frame neighbors, and reconstruct conditioned Frenet frames with separate translation and rotation validity masks",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_conditional_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_distance_binner",
+        "parent_ref": "modules.conditioned_pair_geometry_encoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Conditioned Distance Bins",
+        "kind": "encoder",
+        "mechanisms": [
+          "pairwise_distance",
+          "distance_binning",
+          "one_hot_encoding"
+        ],
+        "role": "compute distances between conditional-frame translations and assign each ordered pair to its nearest one of 65 distance bins",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional _encode_positions call and V1PairFeatureNet._encode_positions"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_orientation_encoder",
+        "parent_ref": "modules.conditioned_pair_geometry_encoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Conditioned Relative Orientations",
+        "kind": "encoder",
+        "mechanisms": [
+          "relative_orientation",
+          "quaternion_encoding",
+          "group_masking"
+        ],
+        "role": "convert each relative conditioned-frame rotation into a quaternion and zero it unless both frames are valid in the same conditioning group",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional _encode_orientations call and V1PairFeatureNet._encode_orientations"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_geometry_projector",
+        "parent_ref": "modules.conditioned_pair_geometry_encoder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Descriptor Projection + Mask",
+        "kind": "encoder",
+        "mechanisms": [
+          "concatenation",
+          "linear_projection",
+          "group_masking"
+        ],
+        "role": "concatenate 65 distance bins, four relative-orientation values, and two pair-validity indicators into 71 features, project them to 128 pair channels, and zero pairs outside the same conditioning group",
+        "scale": "pair",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.__init__ linear_cond_template and V1PairFeatureNet.forward template-based encoding on conditional structure"
             }
           ]
         }
@@ -4905,6 +5093,88 @@ export const manifest = {
             }
           ]
         }
+      },
+      {
+        "id": "conditioned_token_frames",
+        "scale": "token",
+        "semantic_role": "local frames reconstructed from known conditioning coordinates rather than the current noisy diffusion state",
+        "shape": "B x N x (3 x 3 + 3)",
+        "glyph": "frames",
+        "carries": [
+          "conditioned token translation",
+          "conditioned local rotation when a valid left-center-right frame is available"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_conditional_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_pair_mask",
+        "scale": "pair",
+        "semantic_role": "binary validity over ordered token pairs selected by conditioning-group and frame availability",
+        "shape": "B x N x N",
+        "glyph": "pair",
+        "carries": [
+          "same-conditioning-group membership",
+          "optional valid-frame membership for both endpoints"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional pair masks"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_distance_bins",
+        "scale": "pair",
+        "semantic_role": "nearest-bin one-hot encoding of distances between conditioned token-frame translations",
+        "shape": "B x N x N x 65",
+        "glyph": "pair",
+        "carries": [
+          "one of 65 conditioned-distance bins for every ordered token pair"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional _encode_positions call and V1PairFeatureNet._encode_positions"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_relative_orientations",
+        "scale": "pair",
+        "semantic_role": "relative quaternion between conditioned endpoint frames, retained only where both frames are valid in the same conditioning group",
+        "shape": "B x N x N x 4",
+        "glyph": "pair",
+        "carries": [
+          "four quaternion components for each valid conditioned frame pair"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional _encode_orientations call and V1PairFeatureNet._encode_orientations"
+            }
+          ]
+        }
       }
     ],
     "valueSites": [
@@ -5604,6 +5874,86 @@ export const manifest = {
             }
           ]
         }
+      },
+      {
+        "id": "conditioned_group_pair_mask",
+        "representation_ref": "representations.conditioned_pair_mask",
+        "scope_ref": "modules.conditioned_pair_geometry_encoder",
+        "role": "same_group_conditioned_pair_mask",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward cond_struct_group_pair_mask"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_group_frame_pair_mask",
+        "representation_ref": "representations.conditioned_pair_mask",
+        "scope_ref": "modules.conditioned_pair_geometry_encoder",
+        "role": "same_group_valid_frame_pair_mask",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward cond_struct_group_frame_pair_mask"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditional_structure_frames",
+        "representation_ref": "representations.conditioned_token_frames",
+        "scope_ref": "modules.conditioned_pair_geometry_encoder",
+        "role": "known_conditioning_frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_conditional_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_distance_bin_features",
+        "representation_ref": "representations.conditioned_distance_bins",
+        "scope_ref": "modules.conditioned_pair_geometry_encoder",
+        "role": "conditioned_pair_distance_descriptor",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional _encode_positions call"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_orientation_features",
+        "representation_ref": "representations.conditioned_relative_orientations",
+        "scope_ref": "modules.conditioned_pair_geometry_encoder",
+        "role": "conditioned_pair_orientation_descriptor",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional _encode_orientations call"
+            }
+          ]
+        }
       }
     ],
     "valueSiteInterfaces": {
@@ -6215,10 +6565,84 @@ export const manifest = {
           "relations.conditioned_pair_features_enter_assembler"
         ],
         "producerRefs": [
-          "modules.conditioned_pair_geometry_encoder"
+          "modules.conditioned_geometry_projector"
         ],
         "consumerRefs": [
           "modules.pair_feature_assembler"
+        ]
+      },
+      "conditioned_group_pair_mask": {
+        "incomingRelationRefs": [
+          "relations.conditioned_pair_mask_builder_produces_group_mask"
+        ],
+        "outgoingRelationRefs": [
+          "relations.conditioned_group_pair_mask_enters_projector"
+        ],
+        "producerRefs": [
+          "modules.conditioned_pair_mask_builder"
+        ],
+        "consumerRefs": [
+          "modules.conditioned_geometry_projector"
+        ]
+      },
+      "conditioned_group_frame_pair_mask": {
+        "incomingRelationRefs": [
+          "relations.conditioned_pair_mask_builder_produces_frame_pair_mask"
+        ],
+        "outgoingRelationRefs": [
+          "relations.conditioned_frame_pair_mask_gates_orientations",
+          "relations.conditioned_frame_pair_mask_enters_projector"
+        ],
+        "producerRefs": [
+          "modules.conditioned_pair_mask_builder"
+        ],
+        "consumerRefs": [
+          "modules.conditioned_orientation_encoder",
+          "modules.conditioned_geometry_projector"
+        ]
+      },
+      "conditional_structure_frames": {
+        "incomingRelationRefs": [
+          "relations.conditional_frame_builder_produces_frames"
+        ],
+        "outgoingRelationRefs": [
+          "relations.conditional_frames_enter_distance_binner",
+          "relations.conditional_frames_enter_orientation_encoder"
+        ],
+        "producerRefs": [
+          "modules.conditional_structure_frame_builder"
+        ],
+        "consumerRefs": [
+          "modules.conditioned_distance_binner",
+          "modules.conditioned_orientation_encoder"
+        ]
+      },
+      "conditioned_distance_bin_features": {
+        "incomingRelationRefs": [
+          "relations.conditioned_distance_binner_produces_bins"
+        ],
+        "outgoingRelationRefs": [
+          "relations.conditioned_distance_bins_enter_projector"
+        ],
+        "producerRefs": [
+          "modules.conditioned_distance_binner"
+        ],
+        "consumerRefs": [
+          "modules.conditioned_geometry_projector"
+        ]
+      },
+      "conditioned_orientation_features": {
+        "incomingRelationRefs": [
+          "relations.conditioned_orientation_encoder_produces_quaternions"
+        ],
+        "outgoingRelationRefs": [
+          "relations.conditioned_orientations_enter_projector"
+        ],
+        "producerRefs": [
+          "modules.conditioned_orientation_encoder"
+        ],
+        "consumerRefs": [
+          "modules.conditioned_geometry_projector"
         ]
       }
     },
@@ -9386,13 +9810,13 @@ export const manifest = {
       },
       {
         "id": "conditioned_pair_encoder_produces_pair_features",
-        "from": "modules.conditioned_pair_geometry_encoder",
+        "from": "modules.conditioned_geometry_projector",
         "to": "value_sites.conditioned_pair_features",
         "kind": "data_flow",
         "carries": [
           "representations.pair_features"
         ],
-        "operation": "project_conditioned_distance_orientation_features",
+        "operation": "concatenate_project_and_mask_conditioned_geometry",
         "evidence": {
           "status": "confirmed_from_code",
           "refs": [
@@ -9460,6 +9884,286 @@ export const manifest = {
               "source_ref": "genie3_pair_feature_code",
               "role": "implementation_evidence",
               "locator": "V1PairFeatureNet.forward relpos_embedder call"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_encoder_routes_fields_to_pair_masks",
+        "from": "modules.conditioned_pair_geometry_encoder",
+        "to": "modules.conditioned_pair_mask_builder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "provide_conditioning_groups_and_validity_masks",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional pair masks"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_encoder_routes_fields_to_frame_builder",
+        "from": "modules.conditioned_pair_geometry_encoder",
+        "to": "modules.conditional_structure_frame_builder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "provide_known_coordinates_frame_indices_and_masks",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_conditional_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_pair_mask_builder_produces_group_mask",
+        "from": "modules.conditioned_pair_mask_builder",
+        "to": "value_sites.conditioned_group_pair_mask",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_pair_mask"
+        ],
+        "operation": "build_same_group_pair_mask",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward cond_struct_group_pair_mask"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_pair_mask_builder_produces_frame_pair_mask",
+        "from": "modules.conditioned_pair_mask_builder",
+        "to": "value_sites.conditioned_group_frame_pair_mask",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_pair_mask"
+        ],
+        "operation": "intersect_group_and_frame_validity",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward cond_struct_group_frame_pair_mask"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditional_frame_builder_produces_frames",
+        "from": "modules.conditional_structure_frame_builder",
+        "to": "value_sites.conditional_structure_frames",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_token_frames"
+        ],
+        "operation": "reconstruct_conditioned_frenet_frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_geometry_code",
+              "role": "implementation_evidence",
+              "locator": "compute_conditional_structure_frames"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditional_frames_enter_distance_binner",
+        "from": "value_sites.conditional_structure_frames",
+        "to": "modules.conditioned_distance_binner",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_token_frames"
+        ],
+        "operation": "read_conditioned_translations",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward coords equals cond_fi.trans"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_distance_binner_produces_bins",
+        "from": "modules.conditioned_distance_binner",
+        "to": "value_sites.conditioned_distance_bin_features",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_distance_bins"
+        ],
+        "operation": "nearest_distance_bin_one_hot",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet._encode_positions"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditional_frames_enter_orientation_encoder",
+        "from": "value_sites.conditional_structure_frames",
+        "to": "modules.conditioned_orientation_encoder",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_token_frames"
+        ],
+        "operation": "compute_relative_conditioned_rotations",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward rots equals cond_fi.rots and V1PairFeatureNet._encode_orientations"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_frame_pair_mask_gates_orientations",
+        "from": "value_sites.conditioned_group_frame_pair_mask",
+        "to": "modules.conditioned_orientation_encoder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.conditioned_pair_mask"
+        ],
+        "operation": "zero_invalid_relative_orientations",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditioned orientation multiplication"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_orientation_encoder_produces_quaternions",
+        "from": "modules.conditioned_orientation_encoder",
+        "to": "value_sites.conditioned_orientation_features",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_relative_orientations"
+        ],
+        "operation": "encode_relative_rotations_as_quaternions",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet._encode_orientations"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_distance_bins_enter_projector",
+        "from": "value_sites.conditioned_distance_bin_features",
+        "to": "modules.conditioned_geometry_projector",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_distance_bins"
+        ],
+        "operation": "concatenate_distance_descriptor",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional torch.cat"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_orientations_enter_projector",
+        "from": "value_sites.conditioned_orientation_features",
+        "to": "modules.conditioned_geometry_projector",
+        "kind": "data_flow",
+        "carries": [
+          "representations.conditioned_relative_orientations"
+        ],
+        "operation": "concatenate_orientation_descriptor",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward conditional torch.cat"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_group_pair_mask_enters_projector",
+        "from": "value_sites.conditioned_group_pair_mask",
+        "to": "modules.conditioned_geometry_projector",
+        "kind": "conditioning",
+        "carries": [
+          "representations.conditioned_pair_mask"
+        ],
+        "operation": "append_group_indicator_and_mask_projected_pairs",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward cond_struct_group_pair_mask concatenation and final multiplication"
+            }
+          ]
+        }
+      },
+      {
+        "id": "conditioned_frame_pair_mask_enters_projector",
+        "from": "value_sites.conditioned_group_frame_pair_mask",
+        "to": "modules.conditioned_geometry_projector",
+        "kind": "conditioning",
+        "carries": [
+          "representations.conditioned_pair_mask"
+        ],
+        "operation": "append_frame_validity_indicator",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_pair_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1PairFeatureNet.forward cond_struct_group_frame_pair_mask concatenation"
             }
           ]
         }
@@ -16307,7 +17011,12 @@ export const manifest = {
         "classifications": {
           "modules.binder_target_feature_assembler": "collapsed:modules.feature_builder",
           "modules.binder_tokens": "collapsed:modules.feature_builder",
+          "modules.conditional_structure_frame_builder": "excluded",
+          "modules.conditioned_distance_binner": "excluded",
+          "modules.conditioned_geometry_projector": "excluded",
+          "modules.conditioned_orientation_encoder": "excluded",
           "modules.conditioned_pair_geometry_encoder": "excluded",
+          "modules.conditioned_pair_mask_builder": "excluded",
           "modules.coordinate_initializer": "collapsed:modules.diffusion_sampler",
           "modules.ddim_update": "collapsed:modules.diffusion_sampler",
           "modules.diffusion_sampler": "visible",
@@ -16349,6 +17058,11 @@ export const manifest = {
           "modules.unconditional_frame_indices": "collapsed:modules.feature_builder",
           "modules.unconditional_placeholder_initializer": "collapsed:modules.feature_builder",
           "modules.unconditional_token_layout": "collapsed:modules.feature_builder",
+          "value_sites.conditional_structure_frames": "excluded",
+          "value_sites.conditioned_distance_bin_features": "excluded",
+          "value_sites.conditioned_group_frame_pair_mask": "excluded",
+          "value_sites.conditioned_group_pair_mask": "excluded",
+          "value_sites.conditioned_orientation_features": "excluded",
           "value_sites.conditioned_pair_features": "excluded",
           "value_sites.coordinate_prediction": "collapsed:modules.diffusion_sampler",
           "value_sites.current_coordinates": "collapsed:modules.diffusion_sampler",
@@ -16938,7 +17652,12 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.conditional_structure_frame_builder": "excluded",
+          "modules.conditioned_distance_binner": "excluded",
+          "modules.conditioned_geometry_projector": "excluded",
+          "modules.conditioned_orientation_encoder": "excluded",
           "modules.conditioned_pair_geometry_encoder": "excluded",
+          "modules.conditioned_pair_mask_builder": "excluded",
           "modules.coordinate_initializer": "visible",
           "modules.ddim_update": "collapsed:modules.reverse_diffusion_step",
           "modules.endpoint_pair_constructor": "excluded",
@@ -16964,6 +17683,11 @@ export const manifest = {
           "modules.structure_transition": "collapsed:modules.reverse_diffusion_step",
           "modules.timestep_controller": "collapsed:modules.reverse_diffusion_step",
           "modules.triangle_multiplication_stack": "collapsed:modules.reverse_diffusion_step",
+          "value_sites.conditional_structure_frames": "excluded",
+          "value_sites.conditioned_distance_bin_features": "excluded",
+          "value_sites.conditioned_group_frame_pair_mask": "excluded",
+          "value_sites.conditioned_group_pair_mask": "excluded",
+          "value_sites.conditioned_orientation_features": "excluded",
           "value_sites.conditioned_pair_features": "excluded",
           "value_sites.coordinate_prediction": "collapsed:modules.reverse_diffusion_step",
           "value_sites.current_coordinates": "visible",
@@ -17598,7 +18322,12 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.conditional_structure_frame_builder": "excluded",
+          "modules.conditioned_distance_binner": "excluded",
+          "modules.conditioned_geometry_projector": "excluded",
+          "modules.conditioned_orientation_encoder": "excluded",
           "modules.conditioned_pair_geometry_encoder": "excluded",
+          "modules.conditioned_pair_mask_builder": "excluded",
           "modules.ddim_update": "collapsed:modules.directional_ddim_sampler_math",
           "modules.denoiser": "visible",
           "modules.directional_ddim_sampler_math": "visible",
@@ -17623,6 +18352,11 @@ export const manifest = {
           "modules.structure_transition": "collapsed:modules.denoiser",
           "modules.timestep_controller": "excluded",
           "modules.triangle_multiplication_stack": "collapsed:modules.denoiser",
+          "value_sites.conditional_structure_frames": "excluded",
+          "value_sites.conditioned_distance_bin_features": "excluded",
+          "value_sites.conditioned_group_frame_pair_mask": "excluded",
+          "value_sites.conditioned_group_pair_mask": "excluded",
+          "value_sites.conditioned_orientation_features": "excluded",
           "value_sites.conditioned_pair_features": "excluded",
           "value_sites.coordinate_prediction": "elided",
           "value_sites.current_coordinates": "excluded",
@@ -18795,7 +19529,12 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.conditional_structure_frame_builder": "collapsed:modules.pair_feature_embedder",
+          "modules.conditioned_distance_binner": "collapsed:modules.pair_feature_embedder",
+          "modules.conditioned_geometry_projector": "collapsed:modules.pair_feature_embedder",
+          "modules.conditioned_orientation_encoder": "collapsed:modules.pair_feature_embedder",
           "modules.conditioned_pair_geometry_encoder": "collapsed:modules.pair_feature_embedder",
+          "modules.conditioned_pair_mask_builder": "collapsed:modules.pair_feature_embedder",
           "modules.endpoint_pair_constructor": "collapsed:modules.pair_feature_embedder",
           "modules.frame_update": "collapsed:modules.structure_decoder",
           "modules.frenet_frame_builder": "excluded",
@@ -18818,6 +19557,11 @@ export const manifest = {
           "modules.structure_decoder": "visible",
           "modules.structure_transition": "collapsed:modules.structure_decoder",
           "modules.triangle_multiplication_stack": "collapsed:modules.latent_transformer",
+          "value_sites.conditional_structure_frames": "collapsed:modules.pair_feature_embedder",
+          "value_sites.conditioned_distance_bin_features": "collapsed:modules.pair_feature_embedder",
+          "value_sites.conditioned_group_frame_pair_mask": "collapsed:modules.pair_feature_embedder",
+          "value_sites.conditioned_group_pair_mask": "collapsed:modules.pair_feature_embedder",
+          "value_sites.conditioned_orientation_features": "collapsed:modules.pair_feature_embedder",
           "value_sites.conditioned_pair_features": "collapsed:modules.pair_feature_embedder",
           "value_sites.coordinate_prediction": "visible",
           "value_sites.current_frames": "visible",
@@ -29499,7 +30243,8 @@ export const manifest = {
             "prominence": "primary",
             "treatment": "block",
             "col": 2,
-            "row": 4
+            "row": 4,
+            "board_ref": "conditioned_pair_geometry_encoder"
           },
           {
             "id": "module_relative_position_embedder",
@@ -30058,12 +30803,22 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.conditional_structure_frame_builder": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "modules.conditioned_distance_binner": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "modules.conditioned_geometry_projector": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "modules.conditioned_orientation_encoder": "collapsed:modules.conditioned_pair_geometry_encoder",
           "modules.conditioned_pair_geometry_encoder": "visible",
+          "modules.conditioned_pair_mask_builder": "collapsed:modules.conditioned_pair_geometry_encoder",
           "modules.endpoint_pair_constructor": "visible",
           "modules.noisy_frame_pair_encoder": "visible",
           "modules.pair_feature_assembler": "visible",
           "modules.pair_feature_embedder": "elided",
           "modules.relative_position_embedder": "visible",
+          "value_sites.conditional_structure_frames": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "value_sites.conditioned_distance_bin_features": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "value_sites.conditioned_group_frame_pair_mask": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "value_sites.conditioned_group_pair_mask": "collapsed:modules.conditioned_pair_geometry_encoder",
+          "value_sites.conditioned_orientation_features": "collapsed:modules.conditioned_pair_geometry_encoder",
           "value_sites.conditioned_pair_features": "elided",
           "value_sites.current_frames": "visible",
           "value_sites.endpoint_pair_activations": "elided",
@@ -30072,6 +30827,537 @@ export const manifest = {
           "value_sites.initial_single_features": "visible",
           "value_sites.noisy_frame_pair_features": "elided",
           "value_sites.relative_position_pair_features": "elided"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "conditioned_pair_geometry_encoder",
+        "title": "Conditioned Pair Geometry",
+        "summary": "Known task coordinates become conditional frames; only endpoints in the same conditioning group contribute 65-bin distances, valid relative-frame quaternions, and two mask indicators before a 71-to-128 projection.",
+        "subject_ref": "modules.conditioned_pair_geometry_encoder",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 8,
+          "rows": 5,
+          "column_sizing": "content"
+        },
+        "nodes": [
+          {
+            "id": "module_pair_feature_embedder",
+            "ref": "modules.pair_feature_embedder",
+            "label": "conditioned fields from pair embedder",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 1,
+            "row": 3
+          },
+          {
+            "id": "module_conditioned_pair_geometry_encoder",
+            "ref": "modules.conditioned_pair_geometry_encoder",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 3
+          },
+          {
+            "id": "module_conditioned_pair_mask_builder",
+            "ref": "modules.conditioned_pair_mask_builder",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 3,
+            "row": 1
+          },
+          {
+            "id": "module_conditional_structure_frame_builder",
+            "ref": "modules.conditional_structure_frame_builder",
+            "prominence": "primary",
+            "treatment": "block",
+            "row": 4,
+            "col": 3
+          },
+          {
+            "id": "value_conditioned_group_pair_mask",
+            "ref": "value_sites.conditioned_group_pair_mask",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 4,
+            "row": 1
+          },
+          {
+            "id": "value_conditioned_group_frame_pair_mask",
+            "ref": "value_sites.conditioned_group_frame_pair_mask",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 4,
+            "row": 2
+          },
+          {
+            "id": "value_conditional_structure_frames",
+            "ref": "value_sites.conditional_structure_frames",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 4,
+            "row": 4
+          },
+          {
+            "id": "module_conditioned_distance_binner",
+            "ref": "modules.conditioned_distance_binner",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 5,
+            "row": 3
+          },
+          {
+            "id": "module_conditioned_orientation_encoder",
+            "ref": "modules.conditioned_orientation_encoder",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 5,
+            "row": 5
+          },
+          {
+            "id": "value_conditioned_distance_bin_features",
+            "ref": "value_sites.conditioned_distance_bin_features",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 3
+          },
+          {
+            "id": "value_conditioned_orientation_features",
+            "ref": "value_sites.conditioned_orientation_features",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 6,
+            "row": 5
+          },
+          {
+            "id": "module_conditioned_geometry_projector",
+            "ref": "modules.conditioned_geometry_projector",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 7,
+            "row": 3
+          },
+          {
+            "id": "value_conditioned_pair_features",
+            "ref": "value_sites.conditioned_pair_features",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 8,
+            "row": 3
+          }
+        ],
+        "parent": "pair_feature_embedder",
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_35bbe098b88a",
+            "from": "module_conditional_structure_frame_builder",
+            "to": "value_conditional_structure_frames",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditional_frame_builder_produces_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditional_frame_builder_produces_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_de9d5c1badbd",
+            "from": "module_conditioned_distance_binner",
+            "to": "value_conditioned_distance_bin_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_distance_binner_produces_bins"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_distance_binner_produces_bins"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_distance_bins"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_a4f199da145f",
+            "from": "module_conditioned_geometry_projector",
+            "to": "value_conditioned_pair_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_pair_encoder_produces_pair_features"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_pair_encoder_produces_pair_features"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.pair_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_a098fb7bdf9e",
+            "from": "module_conditioned_orientation_encoder",
+            "to": "value_conditioned_orientation_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_orientation_encoder_produces_quaternions"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_orientation_encoder_produces_quaternions"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_relative_orientations"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_57374d47b247",
+            "from": "module_conditioned_pair_geometry_encoder",
+            "to": "module_conditional_structure_frame_builder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.conditioned_encoder_routes_fields_to_frame_builder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_encoder_routes_fields_to_frame_builder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_4d8722f330aa",
+            "from": "module_conditioned_pair_geometry_encoder",
+            "to": "module_conditioned_pair_mask_builder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.conditioned_encoder_routes_fields_to_pair_masks"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_encoder_routes_fields_to_pair_masks"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_b8f85d059390",
+            "from": "module_conditioned_pair_mask_builder",
+            "to": "value_conditioned_group_frame_pair_mask",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_pair_mask_builder_produces_frame_pair_mask"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_pair_mask_builder_produces_frame_pair_mask"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_pair_mask"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_508afa38c0d6",
+            "from": "module_conditioned_pair_mask_builder",
+            "to": "value_conditioned_group_pair_mask",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_pair_mask_builder_produces_group_mask"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_pair_mask_builder_produces_group_mask"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_pair_mask"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_7726d8963249",
+            "from": "module_pair_feature_embedder",
+            "to": "module_conditioned_pair_geometry_encoder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_conditioned_pair_encoder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_conditioned_pair_encoder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_358478eff8b6",
+            "from": "value_conditional_structure_frames",
+            "to": "module_conditioned_distance_binner",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditional_frames_enter_distance_binner"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditional_frames_enter_distance_binner"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_7379b91d19b8",
+            "from": "value_conditional_structure_frames",
+            "to": "module_conditioned_orientation_encoder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditional_frames_enter_orientation_encoder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditional_frames_enter_orientation_encoder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_token_frames"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_a859427acb25",
+            "from": "value_conditioned_distance_bin_features",
+            "to": "module_conditioned_geometry_projector",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_distance_bins_enter_projector"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_distance_bins_enter_projector"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_distance_bins"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_c8d678d3070a",
+            "from": "value_conditioned_group_frame_pair_mask",
+            "to": "module_conditioned_geometry_projector",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.conditioned_frame_pair_mask_enters_projector"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_frame_pair_mask_enters_projector"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_pair_mask"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_81e2b486c2e0",
+            "from": "value_conditioned_group_frame_pair_mask",
+            "to": "module_conditioned_orientation_encoder",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.conditioned_frame_pair_mask_gates_orientations"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_frame_pair_mask_gates_orientations"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_pair_mask"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_ada5cf397970",
+            "from": "value_conditioned_group_pair_mask",
+            "to": "module_conditioned_geometry_projector",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.conditioned_group_pair_mask_enters_projector"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_group_pair_mask_enters_projector"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_pair_mask"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_198c38547a75",
+            "from": "value_conditioned_orientation_features",
+            "to": "module_conditioned_geometry_projector",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.conditioned_orientations_enter_projector"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.conditioned_orientations_enter_projector"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.conditioned_relative_orientations"
+            ],
+            "presentation": {
+            }
+          }
+        ],
+        "classifications": {
+          "modules.conditional_structure_frame_builder": "visible",
+          "modules.conditioned_distance_binner": "visible",
+          "modules.conditioned_geometry_projector": "visible",
+          "modules.conditioned_orientation_encoder": "visible",
+          "modules.conditioned_pair_geometry_encoder": "visible",
+          "modules.conditioned_pair_mask_builder": "visible",
+          "modules.pair_feature_embedder": "visible",
+          "value_sites.conditional_structure_frames": "visible",
+          "value_sites.conditioned_distance_bin_features": "visible",
+          "value_sites.conditioned_group_frame_pair_mask": "visible",
+          "value_sites.conditioned_group_pair_mask": "visible",
+          "value_sites.conditioned_orientation_features": "visible",
+          "value_sites.conditioned_pair_features": "visible"
         },
         "projectionMode": "derived"
       }

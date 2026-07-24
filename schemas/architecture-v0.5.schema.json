@@ -103,6 +103,15 @@
       "type": "string",
       "minLength": 1
     },
+    "equation": {
+      "type": "object",
+      "required": ["text", "tex"],
+      "properties": {
+        "text": { "$ref": "#/$defs/nonEmptyString" },
+        "tex": { "$ref": "#/$defs/nonEmptyString" }
+      },
+      "additionalProperties": false
+    },
     "moduleRef": {
       "type": "string",
       "pattern": "^modules\\.[a-z][a-z0-9_]*$"
@@ -479,6 +488,7 @@
           "items": { "$ref": "#/$defs/id" }
         },
         "role": { "$ref": "#/$defs/nonEmptyString" },
+        "equation": { "$ref": "#/$defs/equation" },
         "scale": { "$ref": "#/$defs/id" },
         "repeats": {
           "oneOf": [

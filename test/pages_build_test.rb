@@ -74,6 +74,16 @@ class PagesBuildTest < Minitest::Test
     end
   end
 
+  def test_published_entry_points_initialize_microsoft_clarity
+    PagesBuild.build!(output: @output, validate: false, source_sets: @source_sets)
+
+    %w[index.html renderer/architecture/index.html].each do |path|
+      html = File.read(File.join(@output, path))
+      assert_equal 1, html.scan("https://www.clarity.ms/tag/").length, path
+      assert_includes html, '"xrj736g7b7"', path
+    end
+  end
+
   def test_builder_refuses_to_replace_an_unowned_directory
     FileUtils.mkdir_p(@output)
     note = File.join(@output, "keep-me.txt")

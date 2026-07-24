@@ -62,8 +62,8 @@ export const comparisonIndex = {
       "architectures/genie2.yaml": "dc70626daca21c212b372e601a3a064ee1a1ea01e226b955b21e00e4c308bdb0",
       "views/genie2-semantic-zoom.view.yaml": "e5ed5c07d6c8bc3215aa09b1e2ca261c2861a1dc19bdf8c3968d69c23e28b0d2",
       "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5",
-      "architectures/genie3.yaml": "19cbf29d593acad3a8a93ac275de668b1b5f8187605d039fc2922267f461a37d",
-      "views/genie3-semantic-zoom.view.yaml": "11cc5437e51ad87c6af03242817f6d6bfc4a143c0507fbd9499f03e26b8d432e",
+      "architectures/genie3.yaml": "e1681f7d81c9887505a3b13decf0d773842f8cf8d4c26e41c01371e16dfa8900",
+      "views/genie3-semantic-zoom.view.yaml": "9f6e321145753993bd3604cdea84b2a9d42a924b7be6a3ec835050f61f49ac88",
       "standard_blocks/structure-transition.yaml": "2708baf8035a8e77ab3e3da3bf2f067225757a813743efb90c72ac0f0c77b723",
       "standard_blocks/single-to-pair-endpoint-update.yaml": "d8ff8b5a5a9faa2d0af710afcc20d7094b1a9107238b402a9dc5f290642e7606",
       "standard_blocks/pair-transition.yaml": "67972606f8b0da22bce83da0c93d37075755df487fe100865ab7fc98e5941bd1"
