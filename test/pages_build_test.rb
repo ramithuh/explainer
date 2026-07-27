@@ -40,6 +40,9 @@ class PagesBuildTest < Minitest::Test
     refute output_files.any? { |path| path.include?(PagesBuild::OUTPUT_MARKER_SUFFIX) }
     assert File.file?(File.join(@output, "index.html"))
     assert File.file?(File.join(@output, "renderer/architecture/index.html"))
+    assert File.file?(File.join(@output, "visualizers/atom14/index.html"))
+    assert File.file?(File.join(@output, "visualizers/atom14/atom14-data.js"))
+    assert File.file?(File.join(@output, "visualizers/atom14/og.png"))
     assert File.file?(File.join(@output, "server/index.js"))
     @source_sets.each do |id|
       assert File.file?(File.join(@output, "renderer/architecture/manifest-#{id}.js")), id
@@ -78,7 +81,7 @@ class PagesBuildTest < Minitest::Test
   def test_published_entry_points_initialize_microsoft_clarity
     PagesBuild.build!(output: @output, validate: false, source_sets: @source_sets)
 
-    %w[index.html renderer/architecture/index.html].each do |path|
+    %w[index.html renderer/architecture/index.html visualizers/atom14/index.html].each do |path|
       html = File.read(File.join(@output, path))
       assert_equal 1, html.scan("https://www.clarity.ms/tag/").length, path
       assert_includes html, '"xrj736g7b7"', path

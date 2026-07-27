@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore AlphaFold's Atom14 heavy-atom encoding across all 20 standard amino acids."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Atom14 atlas" />
+    <meta
+      property="og:description"
+      content="Compare AlphaFold's 14 heavy-atom coordinate slots across all 20 standard amino acids."
+    />
+    <meta property="og:image" content="/visualizers/atom14/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Atom14 atlas" />
+    <meta
+      name="twitter:description"
+      content="20 residues · 14 slots · one compact coordinate representation."
+    />
+    <meta name="twitter:image" content="/visualizers/atom14/og.png" />
+    <title>Atom14 atlas · Architecture Explainers</title>
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "xrj736g7b7");
+    </script>
+    <script src="../../theme-init.js"></script>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="stylesheet" href="./atom14.css" />
+  </head>
+  <body class="atom14-page">
+    <main class="atom14-shell">
+      <nav class="atom14-nav" aria-label="Page">
+        <a class="story-home-link" href="../../">← All explainers</a>
+        <label class="theme-switcher-label" for="atom14ThemeSwitcher">
+          <span>Appearance</span>
+          <select id="atom14ThemeSwitcher" class="theme-switcher"></select>
+        </label>
+      </nav>
+
+      <header class="atom14-hero">
+        <div class="atom14-hero-copy">
+          <p class="eyebrow">Residue reference · AlphaFold 2</p>
+          <h1>Atom14 atlas</h1>
+          <p class="atom14-lede">
+            Residues have different numbers of heavy atoms. Atom14 gives every
+            residue the same 14 coordinate slots, then masks the unused ones.
+          </p>
+        </div>
+        <dl class="atom14-summary" aria-label="Atom14 summary">
+          <div>
+            <dt>20</dt>
+            <dd>standard residues</dd>
+          </div>
+          <div>
+            <dt>14</dt>
+            <dd>coordinate slots</dd>
+          </div>
+          <div>
+            <dt>0–3</dt>
+            <dd>shared backbone</dd>
+          </div>
+        </dl>
+      </header>
+
+      <section class="atom14-primer" aria-labelledby="primerHeading">
+        <div class="atom14-primer-copy">
+          <p class="eyebrow">How to read it</p>
+          <h2 id="primerHeading">One rectangular tensor, residue-specific meaning</h2>
+          <p>
+            Every chart uses the same numbered rail. Hover, focus, or tap an atom
+            in the structure to find its slot—and do the reverse from the rail.
+          </p>
+        </div>
+        <div class="atom14-primer-rail" aria-label="Atom14 slot anatomy">
+          <div class="primer-group is-backbone">
+            <span class="primer-label">Shared backbone</span>
+            <span class="primer-range">0&nbsp; N</span>
+            <span class="primer-range">1&nbsp; CA</span>
+            <span class="primer-range">2&nbsp; C</span>
+            <span class="primer-range">3&nbsp; O</span>
+          </div>
+          <div class="primer-arrow" aria-hidden="true">→</div>
+          <div class="primer-group is-sidechain">
+            <span class="primer-label">Residue-specific</span>
+            <span class="primer-range">4–13&nbsp; side chain / padding</span>
+          </div>
+        </div>
+        <div class="atom14-shape" aria-label="Tensor shape">
+          <code>[residue, 14, 3]</code>
+          <span>coordinates</span>
+          <strong>+</strong>
+          <code>[residue, 14]</code>
+          <span>existence mask</span>
+        </div>
+      </section>
+
+      <section class="atom14-atlas" aria-labelledby="atlasHeading">
+        <div class="atom14-section-heading">
+          <div>
+            <p class="eyebrow">All residues</p>
+            <h2 id="atlasHeading">Compare the slot layouts</h2>
+          </div>
+          <label class="atom14-search" for="residueSearch">
+            <span>Find a residue or atom</span>
+            <input
+              id="residueSearch"
+              type="search"
+              inputmode="search"
+              placeholder="Try Trp, W, or NH2"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+
+        <div class="atom14-toolbar">
+          <div id="categoryFilters" class="atom14-filters" aria-label="Filter by side-chain family"></div>
+          <p id="resultCount" class="atom14-result-count" aria-live="polite"></p>
+        </div>
+
+        <div id="residueGrid" class="atom14-grid" aria-live="polite"></div>
+        <p id="residueEmpty" class="atom14-empty" hidden>
+          No residue or atom matches that search.
+        </p>
+      </section>
+
+      <aside class="atom14-notes" aria-labelledby="notesHeading">
+        <div>
+          <p class="eyebrow">Important distinction</p>
+          <h2 id="notesHeading">A slot is not a universal atom type</h2>
+        </div>
+        <p>
+          Slots 0–3 are stable across residues. Later slots are compact and
+          context-dependent: slot 5 is <code>CG</code> in many residues,
+          <code>OG</code> in serine, <code>SG</code> in cysteine, and padding in
+          glycine and alanine. Unknown residues use fourteen padded slots.
+        </p>
+      </aside>
+
+      <footer class="atom14-footer">
+        <p>
+          Heavy atoms only. Connectivity is schematic; hydrogens, protonation,
+          formal charge, bond order, and resonance are intentionally omitted.
+        </p>
+        <a id="atom14SourceLink" href="#" target="_blank" rel="noreferrer">
+          Inspect the revision-pinned Atom14 definition ↗
+        </a>
+      </footer>
+
+      <noscript>
+        <p class="atom14-empty">
+          JavaScript is required to render the residue charts.
+        </p>
+      </noscript>
+    </main>
+    <script type="module" src="./atom14.js"></script>
+  </body>
+</html>

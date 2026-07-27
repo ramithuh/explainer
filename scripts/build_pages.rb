@@ -48,6 +48,14 @@ module PagesBuild
     renderer/architecture/workspace-selection.mjs
   ].freeze
 
+  VISUALIZER_ASSETS = %w[
+    visualizers/atom14/index.html
+    visualizers/atom14/atom14.css
+    visualizers/atom14/atom14.js
+    visualizers/atom14/atom14-data.js
+    visualizers/atom14/og.png
+  ].freeze
+
   GENERATED_ASSETS = {
     "_headers" => <<~HEADERS,
       /*
@@ -133,7 +141,7 @@ module PagesBuild
   def public_files(selected_source_set_ids = source_set_ids)
     (
       ROOT_ASSETS + RENDERER_ASSETS + compiled_assets(selected_source_set_ids) +
-      reference_panel_assets(selected_source_set_ids)
+      VISUALIZER_ASSETS + reference_panel_assets(selected_source_set_ids)
     ).uniq.sort
   end
 
@@ -147,11 +155,14 @@ module PagesBuild
     FileUtils.rm_rf(stage)
     FileUtils.mkdir_p(stage)
 
-    (ROOT_ASSETS + RENDERER_ASSETS).uniq.each { |path| copy_public_file(path, stage) }
+    (ROOT_ASSETS + RENDERER_ASSETS + VISUALIZER_ASSETS).uniq.each do |path|
+      copy_public_file(path, stage)
+    end
     reference_panel_assets(selected_source_set_ids).each { |path| copy_public_file(path, stage) }
     GENERATED_ASSETS.each { |path, content| write_generated_file(path, content, stage) }
     compile_manifests!(selected_source_set_ids, stage, filtered: filtered)
     verify_sources!(selected_source_set_ids) if validate
+    verify_atom14_data! if validate
     check_compiled_manifests!(selected_source_set_ids, stage, filtered: filtered) if validate
     version_browser_dependencies!(stage, public_build_id(stage))
 
@@ -192,6 +203,10 @@ module PagesBuild
       puts report.to_text
       raise Error, "architecture verification failed for #{id}" unless report.status == "passed"
     end
+  end
+
+  def verify_atom14_data!
+    run!(RbConfig.ruby, "visualizers/atom14/build-data.rb", "--check")
   end
 
   def run!(*command)
