@@ -429,6 +429,24 @@ sources:
     path: src/genie3/generation/model/structure_net.py
     url: https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py
 
+  - id: genie3_backbone_update_code
+    kind: code
+    title: Genie 3 six-parameter backbone frame update
+    organization: AQLaboratory
+    repository: aqlaboratory/genie3
+    revision: d77ae5ac04212ff1e8b29b585859a3244c614804
+    path: src/genie3/generation/model/module/backbone_update.py
+    url: https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py
+
+  - id: genie3_affine_utils_code
+    kind: code
+    title: Genie 3 rigid-transform parameterization and composition utilities
+    organization: AQLaboratory
+    repository: aqlaboratory/genie3
+    revision: d77ae5ac04212ff1e8b29b585859a3244c614804
+    path: src/genie3/generation/utils/affine_utils.py
+    url: https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py
+
   - id: genie3_ipa_code
     kind: code
     title: Genie 3 full and reduced invariant point attention modules

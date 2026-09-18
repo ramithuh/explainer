@@ -3,11 +3,11 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.5.0",
     "inputDigests": {
-      "references/bibliography.yaml": "82f709e900c8a4856e4b834e7d3d7269313b9e4aa08f6bea91d75c33ef974bdd",
-      "architectures/genie2.yaml": "dc70626daca21c212b372e601a3a064ee1a1ea01e226b955b21e00e4c308bdb0",
-      "views/genie2-semantic-zoom.view.yaml": "e5ed5c07d6c8bc3215aa09b1e2ca261c2861a1dc19bdf8c3968d69c23e28b0d2",
+      "references/bibliography.yaml": "d1357b03ba69c1360b917bc8ddf01387ddc7b14307b81ed29ba993a026ecdfc5",
+      "architectures/genie2.yaml": "725930376f10394d23a45af76260d053a152d6353fe883c032f78a564eb31dcf",
+      "views/genie2-semantic-zoom.view.yaml": "2d9e2702ceee42eb2ff262ae8a83958c2e75bf0878ad46b001b41c1c37e6fde0",
       "pseudocode/genie2.yaml": "b78ca953f8ebed98a688501d7485e3b2e79fb50b2e9434d876012c1ee4289bd0",
-      "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5"
+      "standard_blocks/invariant-point-attention.yaml": "aaa9ed976785eec2efb33c745afa06f35576358e8b758741dfde9d3d55c49fb6"
     }
   },
   "architecture": {
@@ -526,12 +526,12 @@ export const manifest = {
         "decomposition": {
           "status": "complete"
         },
-        "label": "SE(3)-Invariant Feature Encoder",
+        "label": "Scalar/Pair Feature Encoder",
         "kind": "encoder",
         "mechanisms": [
-          "invariant_geometry"
+          "scalar_pair_feature_encoding"
         ],
-        "role": "construct and refine residue and residue-pair states from indices, noisy-frame geometry, timestep, and optional motif constraints",
+        "role": "construct and refine residue and residue-pair states from indices, timestep, noisy C-alpha distances, Genie2's direct frame-product orientation descriptor, and optional motif constraints",
         "scale": "mixed",
         "evidence": {
           "status": "confirmed_from_code",
@@ -623,7 +623,7 @@ export const manifest = {
         },
         "label": "Pair-Feature Network",
         "kind": "encoder",
-        "role": "combine the single-feature outer sum, relative positions, noisy-frame distances and orientations, and masked motif distances into 128-dimensional pair features",
+        "role": "combine the single-feature outer sum, relative positions, noisy C-alpha distance bins, direct frame-product orientation quaternions, and masked motif distances into 128-dimensional pair features",
         "scale": "pair",
         "evidence": {
           "status": "confirmed_from_code",
@@ -1409,7 +1409,8 @@ export const manifest = {
             "instanceFactRef": "block_instances.structure_ipa.steps.combine_and_mask_logits",
             "label": "Combine logits and apply mask",
             "operation": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "inputs": [
               "values.scalar_logits",
               "values.point_logits",
@@ -1428,8 +1429,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.combined_logits",
                 "occurrences": [
                   {
-                    "start": 0,
-                    "end": 15
+                    "start": 31,
+                    "end": 46
                   }
                 ]
               },
@@ -1441,8 +1442,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.scalar_logits",
                 "occurrences": [
                   {
-                    "start": 29,
-                    "end": 42
+                    "start": 49,
+                    "end": 62
                   }
                 ]
               },
@@ -1454,8 +1455,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.point_logits",
                 "occurrences": [
                   {
-                    "start": 45,
-                    "end": 57
+                    "start": 65,
+                    "end": 77
                   }
                 ]
               },
@@ -1467,8 +1468,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.pair_bias",
                 "occurrences": [
                   {
-                    "start": 60,
-                    "end": 69
+                    "start": 80,
+                    "end": 89
                   }
                 ]
               },
@@ -1480,8 +1481,12 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.ports.mask",
                 "occurrences": [
                   {
-                    "start": 71,
-                    "end": 75
+                    "start": 18,
+                    "end": 22
+                  },
+                  {
+                    "start": 24,
+                    "end": 28
                   }
                 ]
               }
@@ -1981,12 +1986,13 @@ export const manifest = {
       {
         "id": "pair_features",
         "scale": "pair",
-        "semantic_role": "SE(3)-invariant residue-pair latent state",
+        "semantic_role": "residue-pair latent state containing scalar pair features plus a noisy-frame orientation descriptor",
         "shape": "B x N x N x 128",
         "carries": [
           "single-feature outer sum",
           "relative sequence position and chain identity",
-          "noisy-frame distances and orientations",
+          "noisy C-alpha distance bins",
+          "direct frame-product quaternion descriptor from PairFeatureNet._encode_orientations",
           "masked motif distances"
         ],
         "evidence": {
@@ -4227,7 +4233,7 @@ export const manifest = {
     "claims": [
       {
         "id": "motif_geometry_is_intra_group",
-        "statement": "For multi-motif inputs, fixed_structure_mask exposes distances within each motif group while leaving relative positions and orientations between groups unspecified.",
+        "statement": "For multi-motif inputs, fixed_structure_mask exposes motif C-alpha distances within each motif group; the motif-template path does not provide inter-group distances or motif-frame orientation features.",
         "scope": {
           "module_ref": "modules.pair_feature_net"
         },
@@ -4819,6 +4825,28 @@ export const manifest = {
         "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py"
       },
       {
+        "id": "genie3_backbone_update_code",
+        "kind": "code",
+        "title": "Genie 3 six-parameter backbone frame update",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/module/backbone_update.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py"
+      },
+      {
+        "id": "genie3_affine_utils_code",
+        "kind": "code",
+        "title": "Genie 3 rigid-transform parameterization and composition utilities",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/affine_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py"
+      },
+      {
         "id": "genie3_ipa_code",
         "kind": "code",
         "title": "Genie 3 full and reduced invariant point attention modules",
@@ -5006,7 +5034,8 @@ export const manifest = {
         },
         {
           "id": "combine_and_mask_logits",
-          "text": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+          "text": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+          "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
           "operation": "ipa_logit_composition"
         },
         {
@@ -5179,7 +5208,7 @@ export const manifest = {
             "data_flow"
           ],
           "glyph": "frames",
-          "notation": "T",
+          "notation": "T=(R,t)",
           "shape_contract": {
             "kind": "frames",
             "axes": [
@@ -6034,7 +6063,9 @@ export const manifest = {
           "outputs": [
             "values.combined_logits"
           ],
-          "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+          "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+          "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
+          "role": "form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax",
           "code_bindings": [
             {
               "lexeme": "combined_logits",
@@ -7034,7 +7065,7 @@ export const manifest = {
         "exclude": [
           {
             "ref": "modules.single_feature_net",
-            "reason": "The task overview carries the feature bundle into the sampler once; its sequence-conditioning use is expanded on the denoiser and invariant-encoder boards."
+            "reason": "The task overview carries the feature bundle into the sampler once; its sequence-conditioning use is expanded on the denoiser and feature-encoder boards."
           },
           {
             "ref": "modules.pair_feature_net",
@@ -7508,7 +7539,7 @@ export const manifest = {
         "exclude": [
           {
             "ref": "modules.pair_feature_net",
-            "reason": "The sampling-loop board represents all learned uses of x_t through one denoiser wire; noisy pair geometry is expanded on the invariant-encoder board."
+            "reason": "The sampling-loop board represents all learned uses of x_t through one denoiser wire; noisy pair geometry is expanded on the feature-encoder board."
           },
           {
             "ref": "modules.invariant_point_attention",
@@ -8244,7 +8275,7 @@ export const manifest = {
       {
         "id": "denoiser_forward",
         "title": "Genie 2 Denoiser Forward Pass",
-        "summary": "The denoiser receives T(x_t), which packages noisy C-alpha translations with Frenet rotations derived from x_t. It encodes invariant geometry, updates frames equivariantly, and reads their translation displacement as predicted noise.",
+        "summary": "The denoiser receives T(x_t), which packages noisy C-alpha translations with Frenet-style frames derived from x_t. It builds scalar/pair features, updates frames through the structure decoder, and reads their translation displacement as predicted noise.",
         "parent": "sampling_loop",
         "subject_ref": "modules.denoiser",
         "expansion_depth": 1,
@@ -8355,7 +8386,7 @@ export const manifest = {
             "label": "layout + motif sequence",
             "tone": "conditioning",
             "connection": {
-              "title": "Feature bundle to invariant encoder",
+              "title": "Feature bundle to feature encoder",
               "role": "sequence-side conditioning",
               "inside": "Residue and chain indices, timestep-independent masks, and fixed motif identities are projected into the per-residue state."
             }
@@ -8390,11 +8421,11 @@ export const manifest = {
             "match": {
               "relation_ref": "relations.current_frames_enter_pair_feature_net"
             },
-            "label": "distances + orientations",
+            "label": "distances + frame-product q",
             "connection": {
-              "title": "Noisy geometry into invariant encoding",
+              "title": "Noisy geometry into pair encoding",
               "role": "current-structure observation",
-              "inside": "Pairwise distances and relative frame orientations describe x_t without fixing a global pose."
+              "inside": "Pairwise distance bins and Genie2's direct frame-product quaternion descriptor are projected into pair features."
             }
           },
           {
@@ -8541,11 +8572,11 @@ export const manifest = {
               "representations.residue_frames"
             ],
             "presentation": {
-              "label": "distances + orientations",
+              "label": "distances + frame-product q",
               "connection": {
-                "title": "Noisy geometry into invariant encoding",
+                "title": "Noisy geometry into pair encoding",
                 "role": "current-structure observation",
-                "inside": "Pairwise distances and relative frame orientations describe x_t without fixing a global pose."
+                "inside": "Pairwise distance bins and Genie2's direct frame-product quaternion descriptor are projected into pair features."
               }
             }
           },
@@ -8693,7 +8724,7 @@ export const manifest = {
               "label": "layout + motif sequence",
               "tone": "conditioning",
               "connection": {
-                "title": "Feature bundle to invariant encoder",
+                "title": "Feature bundle to feature encoder",
                 "role": "sequence-side conditioning",
                 "inside": "Residue and chain indices, timestep-independent masks, and fixed motif identities are projected into the per-residue state."
               }
@@ -8910,7 +8941,7 @@ export const manifest = {
       },
       {
         "id": "invariant_feature_encoder",
-        "title": "SE(3)-Invariant Feature Encoder",
+        "title": "Scalar/Pair Feature Encoder",
         "summary": "The encoder first forms a residue state, expands it into a pair state enriched with current and motif geometry, then applies five active Evoformer-style pair-refinement layers.",
         "parent": "denoiser_forward",
         "subject_ref": "modules.invariant_feature_encoder",
@@ -9025,11 +9056,11 @@ export const manifest = {
           },
           {
             "ref": "modules.invariant_point_attention",
-            "reason": "The invariant encoder board stops at the single and refined-pair outputs; IPA is expanded on the sibling structure-decoder board."
+            "reason": "The feature-encoder board stops at the single and refined-pair outputs; IPA is expanded on the sibling structure-decoder board."
           },
           {
             "ref": "modules.ipa_residual_norm",
-            "reason": "The invariant encoder board stops before the structure layer's IPA residual wrapper."
+            "reason": "The feature-encoder board stops before the structure layer's IPA residual wrapper."
           }
         ],
         "edge_overrides": [
@@ -9086,8 +9117,8 @@ export const manifest = {
             "label": "noisy d_ij + q_ij",
             "connection": {
               "title": "Current geometry",
-              "role": "invariant frame template",
-              "inside": "Binned C-alpha distances and relative orientation quaternions encode the noisy structure without a global-coordinate dependence."
+              "role": "current-frame pair descriptor",
+              "inside": "Binned C-alpha distances and direct frame-product quaternions encode the current noisy structure; this is not the standard invariant relative rotation R_i^T R_j."
             }
           },
           {
@@ -9163,8 +9194,8 @@ export const manifest = {
               "label": "noisy d_ij + q_ij",
               "connection": {
                 "title": "Current geometry",
-                "role": "invariant frame template",
-                "inside": "Binned C-alpha distances and relative orientation quaternions encode the noisy structure without a global-coordinate dependence."
+                "role": "current-frame pair descriptor",
+                "inside": "Binned C-alpha distances and direct frame-product quaternions encode the current noisy structure; this is not the standard invariant relative rotation R_i^T R_j."
               }
             }
           },
@@ -10549,7 +10580,7 @@ export const manifest = {
             "scale": "residue",
             "glyph": "frames",
             "flow_family": "frame",
-            "notation": "T",
+            "notation": "T=(R,t)",
             "port_ref": "ports.frames"
           },
           {
@@ -11191,6 +11222,7 @@ export const manifest = {
           {
             "id": "combine_and_mask_logits",
             "label": "Combine logits and apply mask",
+            "role": "form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax",
             "col": 6,
             "row": 4,
             "prominence": "primary",
@@ -11203,7 +11235,8 @@ export const manifest = {
             "kind": "operation",
             "scale": "operation",
             "detail": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "operation": "ipa_logit_composition"
           },
           {
@@ -11881,7 +11914,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -11902,7 +11935,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -11923,7 +11956,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -11948,7 +11981,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -11969,7 +12002,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step output",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -12869,7 +12902,8 @@ export const manifest = {
             "instanceFactRef": "block_instances.structure_ipa.steps.combine_and_mask_logits",
             "label": "Combine logits and apply mask",
             "operation": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "inputs": [
               "values.scalar_logits",
               "values.point_logits",
@@ -12888,8 +12922,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.combined_logits",
                 "occurrences": [
                   {
-                    "start": 0,
-                    "end": 15
+                    "start": 31,
+                    "end": 46
                   }
                 ]
               },
@@ -12901,8 +12935,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.scalar_logits",
                 "occurrences": [
                   {
-                    "start": 29,
-                    "end": 42
+                    "start": 49,
+                    "end": 62
                   }
                 ]
               },
@@ -12914,8 +12948,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.point_logits",
                 "occurrences": [
                   {
-                    "start": 45,
-                    "end": 57
+                    "start": 65,
+                    "end": 77
                   }
                 ]
               },
@@ -12927,8 +12961,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.pair_bias",
                 "occurrences": [
                   {
-                    "start": 60,
-                    "end": 69
+                    "start": 80,
+                    "end": 89
                   }
                 ]
               },
@@ -12940,8 +12974,12 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.ports.mask",
                 "occurrences": [
                   {
-                    "start": 71,
-                    "end": 75
+                    "start": 18,
+                    "end": 22
+                  },
+                  {
+                    "start": 24,
+                    "end": 28
                   }
                 ]
               }

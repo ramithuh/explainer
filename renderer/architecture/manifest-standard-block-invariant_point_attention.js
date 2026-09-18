@@ -3,8 +3,8 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.5.0",
     "inputDigests": {
-      "references/bibliography.yaml": "82f709e900c8a4856e4b834e7d3d7269313b9e4aa08f6bea91d75c33ef974bdd",
-      "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5"
+      "references/bibliography.yaml": "d1357b03ba69c1360b917bc8ddf01387ddc7b14307b81ed29ba993a026ecdfc5",
+      "standard_blocks/invariant-point-attention.yaml": "aaa9ed976785eec2efb33c745afa06f35576358e8b758741dfde9d3d55c49fb6"
     }
   },
   "architecture": {
@@ -581,6 +581,28 @@ export const manifest = {
         "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py"
       },
       {
+        "id": "genie3_backbone_update_code",
+        "kind": "code",
+        "title": "Genie 3 six-parameter backbone frame update",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/module/backbone_update.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py"
+      },
+      {
+        "id": "genie3_affine_utils_code",
+        "kind": "code",
+        "title": "Genie 3 rigid-transform parameterization and composition utilities",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/affine_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py"
+      },
+      {
         "id": "genie3_ipa_code",
         "kind": "code",
         "title": "Genie 3 full and reduced invariant point attention modules",
@@ -768,7 +790,8 @@ export const manifest = {
         },
         {
           "id": "combine_and_mask_logits",
-          "text": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+          "text": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+          "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
           "operation": "ipa_logit_composition"
         },
         {
@@ -941,7 +964,7 @@ export const manifest = {
             "data_flow"
           ],
           "glyph": "frames",
-          "notation": "T",
+          "notation": "T=(R,t)",
           "shape_contract": {
             "kind": "frames",
             "axes": [
@@ -1796,7 +1819,9 @@ export const manifest = {
           "outputs": [
             "values.combined_logits"
           ],
-          "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+          "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+          "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
+          "role": "form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax",
           "code_bindings": [
             {
               "lexeme": "combined_logits",
@@ -2458,7 +2483,7 @@ export const manifest = {
             "scale": "item",
             "glyph": "frames",
             "flow_family": "frame",
-            "notation": "T",
+            "notation": "T=(R,t)",
             "port_ref": "ports.frames"
           },
           {
@@ -3078,6 +3103,7 @@ export const manifest = {
           {
             "id": "combine_and_mask_logits",
             "label": "Combine logits and apply mask",
+            "role": "form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax",
             "col": 6,
             "row": 4,
             "prominence": "primary",
@@ -3088,7 +3114,8 @@ export const manifest = {
             "kind": "operation",
             "scale": "operation",
             "detail": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "operation": "ipa_logit_composition"
           },
           {
@@ -3706,7 +3733,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -3725,7 +3752,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -3744,7 +3771,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -3763,7 +3790,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -3782,7 +3809,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step output",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -4554,7 +4581,8 @@ export const manifest = {
             "templateFactRef": "standard_blocks.invariant_point_attention.steps.combine_and_mask_logits",
             "label": "Combine logits and apply mask",
             "operation": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "inputs": [
               "values.scalar_logits",
               "values.point_logits",
@@ -4572,8 +4600,8 @@ export const manifest = {
                 "templateFactRef": "standard_blocks.invariant_point_attention.values.combined_logits",
                 "occurrences": [
                   {
-                    "start": 0,
-                    "end": 15
+                    "start": 31,
+                    "end": 46
                   }
                 ]
               },
@@ -4584,8 +4612,8 @@ export const manifest = {
                 "templateFactRef": "standard_blocks.invariant_point_attention.values.scalar_logits",
                 "occurrences": [
                   {
-                    "start": 29,
-                    "end": 42
+                    "start": 49,
+                    "end": 62
                   }
                 ]
               },
@@ -4596,8 +4624,8 @@ export const manifest = {
                 "templateFactRef": "standard_blocks.invariant_point_attention.values.point_logits",
                 "occurrences": [
                   {
-                    "start": 45,
-                    "end": 57
+                    "start": 65,
+                    "end": 77
                   }
                 ]
               },
@@ -4608,8 +4636,8 @@ export const manifest = {
                 "templateFactRef": "standard_blocks.invariant_point_attention.values.pair_bias",
                 "occurrences": [
                   {
-                    "start": 60,
-                    "end": 69
+                    "start": 80,
+                    "end": 89
                   }
                 ]
               },
@@ -4620,8 +4648,12 @@ export const manifest = {
                 "templateFactRef": "standard_blocks.invariant_point_attention.ports.mask",
                 "occurrences": [
                   {
-                    "start": 71,
-                    "end": 75
+                    "start": 18,
+                    "end": 22
+                  },
+                  {
+                    "start": 24,
+                    "end": 28
                   }
                 ]
               }

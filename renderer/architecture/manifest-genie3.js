@@ -3,12 +3,12 @@ export const manifest = {
   "build": {
     "generator": "architecture-manifest-builder-v0.5.0",
     "inputDigests": {
-      "references/bibliography.yaml": "82f709e900c8a4856e4b834e7d3d7269313b9e4aa08f6bea91d75c33ef974bdd",
-      "architectures/genie3.yaml": "e1681f7d81c9887505a3b13decf0d773842f8cf8d4c26e41c01371e16dfa8900",
-      "views/genie3-semantic-zoom.view.yaml": "9f6e321145753993bd3604cdea84b2a9d42a924b7be6a3ec835050f61f49ac88",
+      "references/bibliography.yaml": "d1357b03ba69c1360b917bc8ddf01387ddc7b14307b81ed29ba993a026ecdfc5",
+      "architectures/genie3.yaml": "a4f4ba63889e5a1395c313a88cea43b49b2cde31c1cac493796f82bbfee00c7f",
+      "views/genie3-semantic-zoom.view.yaml": "98612efa24a027c3ba8e22992e36d9564e60e8319d3b348a0c751082350d95f0",
       "pseudocode/genie3.yaml": "822369fcf368f6fc2cf07c70a810d408a122d4cc1bad4f33ef2fbbf6b848d09c",
       "standard_blocks/pair-biased-attention.yaml": "3c6be1ec47623fa320eb6eace772216f41014d4bf14765b8ff52b1602cf26fb7",
-      "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5",
+      "standard_blocks/invariant-point-attention.yaml": "aaa9ed976785eec2efb33c745afa06f35576358e8b758741dfde9d3d55c49fb6",
       "standard_blocks/structure-transition.yaml": "2708baf8035a8e77ab3e3da3bf2f067225757a813743efb90c72ac0f0c77b723",
       "standard_blocks/single-to-pair-endpoint-update.yaml": "d8ff8b5a5a9faa2d0af710afcc20d7094b1a9107238b402a9dc5f290642e7606",
       "standard_blocks/pair-transition.yaml": "67972606f8b0da22bce83da0c93d37075755df487fe100865ab7fc98e5941bd1"
@@ -214,8 +214,61 @@ export const manifest = {
           ]
         },
         "modules.single_feature_embedder": {
-          "status": "leaf",
+          "status": "complete",
           "depth": 4,
+          "immediateModuleCount": 6,
+          "immediateModuleRefs": [
+            "modules.token_index_sinusoid_embedder",
+            "modules.residue_index_sinusoid_embedder",
+            "modules.chain_sinusoid_embedder",
+            "modules.timestep_sinusoid_embedder",
+            "modules.single_feature_input_concatenator",
+            "modules.single_feature_linear_projection"
+          ]
+        },
+        "modules.token_index_sinusoid_embedder": {
+          "status": "leaf",
+          "depth": 5,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.residue_index_sinusoid_embedder": {
+          "status": "leaf",
+          "depth": 5,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.chain_sinusoid_embedder": {
+          "status": "leaf",
+          "depth": 5,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.timestep_sinusoid_embedder": {
+          "status": "leaf",
+          "depth": 5,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.single_feature_input_concatenator": {
+          "status": "leaf",
+          "depth": 5,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.single_feature_linear_projection": {
+          "status": "leaf",
+          "depth": 5,
           "immediateModuleCount": 0,
           "immediateModuleRefs": [
 
@@ -347,11 +400,13 @@ export const manifest = {
           ]
         },
         "modules.frame_update": {
-          "status": "leaf",
+          "status": "complete",
           "depth": 5,
-          "immediateModuleCount": 0,
+          "immediateModuleCount": 3,
           "immediateModuleRefs": [
-
+            "modules.rigid_parameter_projection",
+            "modules.rigid_increment_parameterization",
+            "modules.rigid_frame_composition"
           ]
         },
         "modules.task_source_router": {
@@ -573,14 +628,38 @@ export const manifest = {
           "immediateModuleRefs": [
 
           ]
+        },
+        "modules.rigid_parameter_projection": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.rigid_increment_parameterization": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
+        },
+        "modules.rigid_frame_composition": {
+          "status": "leaf",
+          "depth": 6,
+          "immediateModuleCount": 0,
+          "immediateModuleRefs": [
+
+          ]
         }
       },
       "summary": {
-        "scopeCount": 55,
-        "expandedScopeCount": 13,
-        "completeExpandedScopeCount": 13,
+        "scopeCount": 64,
+        "expandedScopeCount": 15,
+        "completeExpandedScopeCount": 15,
         "partialScopeCount": 0,
-        "leafFrontierCount": 42,
+        "leafFrontierCount": 49,
         "opaqueFrontierCount": 0,
         "partialFrontierCount": 0,
         "maximumAuthoredDepth": 6
@@ -925,7 +1004,7 @@ export const manifest = {
         "id": "single_feature_embedder",
         "parent_ref": "modules.denoiser",
         "decomposition": {
-          "status": "leaf"
+          "status": "complete"
         },
         "label": "Single-Feature Embedder",
         "kind": "encoder",
@@ -938,6 +1017,182 @@ export const manifest = {
               "source_ref": "genie3_single_feature_code",
               "role": "implementation_evidence",
               "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "token_index_sinusoid_embedder",
+        "parent_ref": "modules.single_feature_embedder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Token-Index Sinusoid",
+        "kind": "encoder",
+        "mechanisms": [
+          "sinusoidal_embedding"
+        ],
+        "role": "sinusoidally encode token_index into a 256-channel per-token positional code",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward token_index_emb and residue_index_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_pos_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "residue_index_sinusoid_embedder",
+        "parent_ref": "modules.single_feature_embedder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Residue-Index Sinusoid",
+        "kind": "encoder",
+        "mechanisms": [
+          "sinusoidal_embedding"
+        ],
+        "role": "sinusoidally encode residue_index into a second 256-channel per-token positional code",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward token_index_emb and residue_index_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_pos_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "chain_sinusoid_embedder",
+        "parent_ref": "modules.single_feature_embedder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Chain-ID Sinusoid",
+        "kind": "encoder",
+        "mechanisms": [
+          "sinusoidal_embedding"
+        ],
+        "role": "sinusoidally encode asym_id into a 64-channel per-token chain code",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward chain_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_chain_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_sinusoid_embedder",
+        "parent_ref": "modules.single_feature_embedder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Timestep Sinusoid",
+        "kind": "encoder",
+        "mechanisms": [
+          "sinusoidal_embedding",
+          "token_broadcast"
+        ],
+        "role": "repeat the sample timestep across token positions and sinusoidally encode it into a 512-channel per-token code",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward timestep_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_timestep_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_feature_input_concatenator",
+        "parent_ref": "modules.single_feature_embedder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Per-Token Concatenation",
+        "kind": "operator",
+        "mechanisms": [
+          "concatenation"
+        ],
+        "role": "concatenate the four sinusoidal embeddings with known residue identity, atom type, atom element, atomization, validity, and conditioning-mask fields",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward torch.cat inputs"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_s_input"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_feature_linear_projection",
+        "parent_ref": "modules.single_feature_embedder",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Linear Projection",
+        "kind": "encoder",
+        "mechanisms": [
+          "linear_projection",
+          "masking"
+        ],
+        "role": "project each 1158-channel concatenated token vector to 384 single-feature channels and zero padded token rows",
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.__init__ linear and V1SingleFeatureNet.forward final mask"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_s_input and c_s"
             }
           ]
         }
@@ -1314,14 +1569,14 @@ export const manifest = {
         "id": "frame_update",
         "parent_ref": "modules.structure_decoder",
         "decomposition": {
-          "status": "leaf"
+          "status": "complete"
         },
         "label": "Token Frame Update",
         "kind": "operator",
         "mechanisms": [
           "rigid_transform"
         ],
-        "role": "regress and compose a six-parameter rigid increment for every valid token frame",
+        "role": "project each transitioned token state to three rotation parameters and a local translation, convert them to a rigid increment, and compose that increment into the current token frame",
         "scale": "token",
         "evidence": {
           "status": "confirmed_from_code",
@@ -1999,6 +2254,97 @@ export const manifest = {
               "source_ref": "genie3_pair_feature_code",
               "role": "implementation_evidence",
               "locator": "V1PairFeatureNet.__init__ linear_cond_template and V1PairFeatureNet.forward template-based encoding on conditional structure"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_parameter_projection",
+        "parent_ref": "modules.frame_update",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Project Six Update Parameters",
+        "kind": "encoder",
+        "mechanisms": [
+          "linear_projection"
+        ],
+        "role": "linearly project each 384-channel transitioned single state to three rotation parameters and three local translation components",
+        "equation": {
+          "text": "p_i = W_update s_i + b_update = [u_i, v_i]",
+          "tex": "p_i=W_{\\mathrm{upd}}s_i+b_{\\mathrm{upd}}=\\left[u_i\\mathbin\\Vert v_i\\right]\\in\\mathbb{R}^{6}"
+        },
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.__init__ linear and BackboneUpdate.forward params split"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_increment_parameterization",
+        "parent_ref": "modules.frame_update",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Build Local Rigid Increment",
+        "kind": "operator",
+        "mechanisms": [
+          "quaternion_normalization",
+          "rigid_transform"
+        ],
+        "role": "prepend a fixed scalar one to the three learned rotation parameters, normalize the resulting quaternion, convert it to a rotation matrix, and pair it with the learned local translation",
+        "equation": {
+          "text": "q_i = [1, u_i] / sqrt(1 + ||u_i||^2); delta_T_i = (R(q_i), v_i)",
+          "tex": "\\begin{aligned}q_i&=\\frac{(1,u_i)}{\\sqrt{1+\\lVert u_i\\rVert^2}},\\\\ \\Delta T_i&=\\left(R(q_i),v_i\\right)\\end{aligned}"
+        },
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward quaternion normalization, quat_to_rot call, and T construction"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_frame_composition",
+        "parent_ref": "modules.frame_update",
+        "decomposition": {
+          "status": "leaf"
+        },
+        "label": "Compose Into Current Frame",
+        "kind": "operator",
+        "mechanisms": [
+          "rigid_transform",
+          "frame_composition"
+        ],
+        "role": "right-compose the learned local rigid increment with the current token frame so its translation update is expressed through the current rotation",
+        "equation": {
+          "text": "T_i^(l+1) = T_i^l compose delta_T_i; R' = R delta_R; t' = t + R delta_t",
+          "tex": "\\begin{aligned}T_i^{(\\ell+1)}&=T_i^{(\\ell)}\\circ\\Delta T_i,\\\\ R_i^{(\\ell+1)}&=R_i^{(\\ell)}\\Delta R_i,\\\\ t_i^{(\\ell+1)}&=t_i^{(\\ell)}+R_i^{(\\ell)}\\Delta t_i\\end{aligned}"
+        },
+        "scale": "token",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "caller_evidence",
+              "locator": "StructureLayer.forward fi.compose(self.bb_update(si))"
+            },
+            {
+              "source_ref": "genie3_affine_utils_code",
+              "role": "implementation_evidence",
+              "locator": "T.compose"
             }
           ]
         }
@@ -3810,7 +4156,8 @@ export const manifest = {
             "instanceFactRef": "block_instances.structure_ipa.steps.combine_and_mask_logits",
             "label": "Combine logits and apply mask",
             "operation": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "inputs": [
               "values.scalar_logits",
               "values.point_logits",
@@ -3829,8 +4176,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.combined_logits",
                 "occurrences": [
                   {
-                    "start": 0,
-                    "end": 15
+                    "start": 31,
+                    "end": 46
                   }
                 ]
               },
@@ -3842,8 +4189,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.scalar_logits",
                 "occurrences": [
                   {
-                    "start": 29,
-                    "end": 42
+                    "start": 49,
+                    "end": 62
                   }
                 ]
               },
@@ -3855,8 +4202,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.point_logits",
                 "occurrences": [
                   {
-                    "start": 45,
-                    "end": 57
+                    "start": 65,
+                    "end": 77
                   }
                 ]
               },
@@ -3868,8 +4215,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.pair_bias",
                 "occurrences": [
                   {
-                    "start": 60,
-                    "end": 69
+                    "start": 80,
+                    "end": 89
                   }
                 ]
               },
@@ -3881,8 +4228,12 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.ports.mask",
                 "occurrences": [
                   {
-                    "start": 71,
-                    "end": 75
+                    "start": 18,
+                    "end": 22
+                  },
+                  {
+                    "start": 24,
+                    "end": 28
                   }
                 ]
               }
@@ -4921,6 +5272,105 @@ export const manifest = {
         }
       },
       {
+        "id": "single_positional_embeddings",
+        "scale": "token",
+        "semantic_role": "sinusoidal per-token positional embedding used by the single-feature embedder",
+        "shape": "B x N x 256",
+        "carries": [
+          "sinusoidal token_index or residue_index code",
+          "one embedding row per active atom-token slot"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward token_index_emb and residue_index_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_pos_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_chain_embeddings",
+        "scale": "token",
+        "semantic_role": "sinusoidal per-token chain/asym_id embedding used by the single-feature embedder",
+        "shape": "B x N x 64",
+        "carries": [
+          "sinusoidal asym_id code repeated for every token on that chain"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward chain_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_chain_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_timestep_embeddings",
+        "scale": "token",
+        "semantic_role": "sample timestep repeated over tokens and sinusoidally encoded for single-feature construction",
+        "shape": "B x N x 512",
+        "carries": [
+          "one repeated diffusion timestep embedding per token in the sample"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward timestep_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_timestep_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_concat_features",
+        "scale": "token",
+        "semantic_role": "concatenated per-token input vector before the final single-feature projection",
+        "shape": "B x N x 1158",
+        "carries": [
+          "token_index and residue_index sinusoidal embeddings",
+          "chain and timestep sinusoidal embeddings",
+          "known residue identity, atom type, atom element, atomization flag, validity masks, and task-conditioning masks"
+        ],
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward torch.cat inputs"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_s_input"
+            }
+          ]
+        }
+      },
+      {
         "id": "coordinate_noise",
         "scale": "token",
         "semantic_role": "predicted or sampled coordinate noise",
@@ -5175,6 +5625,53 @@ export const manifest = {
             }
           ]
         }
+      },
+      {
+        "id": "rigid_update_parameters",
+        "scale": "token",
+        "semantic_role": "learned six-parameter local update for one token frame",
+        "shape": "B x N x 6",
+        "carries": [
+          "three unconstrained quaternion-vector parameters",
+          "three local-frame translation components"
+        ],
+        "glyph": "single",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.__init__ and BackboneUpdate.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_frame_increment",
+        "scale": "token",
+        "semantic_role": "normalized local SE(3) increment predicted for every token",
+        "shape": "B x N x (3 x 3 + 3)",
+        "carries": [
+          "rotation matrix derived from a normalized quaternion",
+          "local-frame translation update"
+        ],
+        "glyph": "frames",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward"
+            },
+            {
+              "source_ref": "genie3_affine_utils_code",
+              "role": "implementation_evidence",
+              "locator": "quat_to_rot"
+            }
+          ]
+        }
       }
     ],
     "valueSites": [
@@ -5312,6 +5809,111 @@ export const manifest = {
               "source_ref": "genie3_ddim_code",
               "role": "implementation_evidence",
               "locator": "DDIMSampler._step"
+            }
+          ]
+        }
+      },
+      {
+        "id": "token_index_embedding",
+        "representation_ref": "representations.single_positional_embeddings",
+        "scope_ref": "modules.single_feature_embedder",
+        "role": "token_index_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward token_index_emb and residue_index_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_pos_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "residue_index_embedding",
+        "representation_ref": "representations.single_positional_embeddings",
+        "scope_ref": "modules.single_feature_embedder",
+        "role": "residue_index_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward token_index_emb and residue_index_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_pos_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "chain_embedding",
+        "representation_ref": "representations.single_chain_embeddings",
+        "scope_ref": "modules.single_feature_embedder",
+        "role": "chain_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward chain_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_chain_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_embedding",
+        "representation_ref": "representations.single_timestep_embeddings",
+        "scope_ref": "modules.single_feature_embedder",
+        "role": "repeated_timestep_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward timestep_emb"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_timestep_emb"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_concat_features",
+        "representation_ref": "representations.single_embedder_concat_features",
+        "scope_ref": "modules.single_feature_embedder",
+        "role": "pre_linear_single_feature_input",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward torch.cat inputs"
+            },
+            {
+              "source_ref": "genie3_config_code",
+              "role": "configuration_evidence",
+              "locator": "config.single_feature_net c_s_input"
             }
           ]
         }
@@ -5954,6 +6556,38 @@ export const manifest = {
             }
           ]
         }
+      },
+      {
+        "id": "rigid_update_parameters",
+        "representation_ref": "representations.rigid_update_parameters",
+        "scope_ref": "modules.frame_update",
+        "role": "projected_rotation_and_translation_parameters",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward params"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_frame_increment",
+        "representation_ref": "representations.rigid_frame_increment",
+        "scope_ref": "modules.frame_update",
+        "role": "local_frame_increment_before_composition",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward return value"
+            }
+          ]
+        }
       }
     ],
     "valueSiteInterfaces": {
@@ -6069,8 +6703,78 @@ export const manifest = {
           "modules.timestep_controller"
         ],
         "consumerRefs": [
-          "modules.single_feature_embedder",
+          "modules.timestep_sinusoid_embedder",
           "modules.ddim_update"
+        ]
+      },
+      "token_index_embedding": {
+        "incomingRelationRefs": [
+          "relations.token_index_sinusoid_produces_embedding"
+        ],
+        "outgoingRelationRefs": [
+          "relations.token_index_embedding_enters_single_concat"
+        ],
+        "producerRefs": [
+          "modules.token_index_sinusoid_embedder"
+        ],
+        "consumerRefs": [
+          "modules.single_feature_input_concatenator"
+        ]
+      },
+      "residue_index_embedding": {
+        "incomingRelationRefs": [
+          "relations.residue_index_sinusoid_produces_embedding"
+        ],
+        "outgoingRelationRefs": [
+          "relations.residue_index_embedding_enters_single_concat"
+        ],
+        "producerRefs": [
+          "modules.residue_index_sinusoid_embedder"
+        ],
+        "consumerRefs": [
+          "modules.single_feature_input_concatenator"
+        ]
+      },
+      "chain_embedding": {
+        "incomingRelationRefs": [
+          "relations.chain_sinusoid_produces_embedding"
+        ],
+        "outgoingRelationRefs": [
+          "relations.chain_embedding_enters_single_concat"
+        ],
+        "producerRefs": [
+          "modules.chain_sinusoid_embedder"
+        ],
+        "consumerRefs": [
+          "modules.single_feature_input_concatenator"
+        ]
+      },
+      "timestep_embedding": {
+        "incomingRelationRefs": [
+          "relations.timestep_sinusoid_produces_embedding"
+        ],
+        "outgoingRelationRefs": [
+          "relations.timestep_embedding_enters_single_concat"
+        ],
+        "producerRefs": [
+          "modules.timestep_sinusoid_embedder"
+        ],
+        "consumerRefs": [
+          "modules.single_feature_input_concatenator"
+        ]
+      },
+      "single_embedder_concat_features": {
+        "incomingRelationRefs": [
+          "relations.single_concat_produces_projector_input"
+        ],
+        "outgoingRelationRefs": [
+          "relations.single_concat_input_enters_linear_projection"
+        ],
+        "producerRefs": [
+          "modules.single_feature_input_concatenator"
+        ],
+        "consumerRefs": [
+          "modules.single_feature_linear_projection"
         ]
       },
       "coordinate_prediction": {
@@ -6172,7 +6876,7 @@ export const manifest = {
           "relations.initial_single_features_enter_global_adapter"
         ],
         "producerRefs": [
-          "modules.single_feature_embedder"
+          "modules.single_feature_linear_projection"
         ],
         "consumerRefs": [
           "modules.endpoint_pair_constructor",
@@ -6382,7 +7086,7 @@ export const manifest = {
         ],
         "consumerRefs": [
           "modules.invariant_point_attention",
-          "modules.frame_update"
+          "modules.rigid_frame_composition"
         ]
       },
       "ipa_delta": {
@@ -6425,7 +7129,7 @@ export const manifest = {
           "modules.structure_transition"
         ],
         "consumerRefs": [
-          "modules.frame_update",
+          "modules.rigid_parameter_projection",
           "value_sites.decoder_single_state"
         ]
       },
@@ -6438,7 +7142,7 @@ export const manifest = {
           "relations.updated_frames_become_decoder_output_frames"
         ],
         "producerRefs": [
-          "modules.frame_update"
+          "modules.rigid_frame_composition"
         ],
         "consumerRefs": [
           "value_sites.decoder_frames",
@@ -6643,6 +7347,34 @@ export const manifest = {
         ],
         "consumerRefs": [
           "modules.conditioned_geometry_projector"
+        ]
+      },
+      "rigid_update_parameters": {
+        "incomingRelationRefs": [
+          "relations.rigid_parameter_projection_produces_update_parameters"
+        ],
+        "outgoingRelationRefs": [
+          "relations.rigid_update_parameters_enter_parameterization"
+        ],
+        "producerRefs": [
+          "modules.rigid_parameter_projection"
+        ],
+        "consumerRefs": [
+          "modules.rigid_increment_parameterization"
+        ]
+      },
+      "rigid_frame_increment": {
+        "incomingRelationRefs": [
+          "relations.rigid_parameterization_produces_frame_increment"
+        ],
+        "outgoingRelationRefs": [
+          "relations.rigid_frame_increment_enters_composition"
+        ],
+        "producerRefs": [
+          "modules.rigid_increment_parameterization"
+        ],
+        "consumerRefs": [
+          "modules.rigid_frame_composition"
         ]
       }
     },
@@ -7861,7 +8593,7 @@ export const manifest = {
       {
         "id": "timestep_conditions_single_embedder",
         "from": "value_sites.timestep",
-        "to": "modules.single_feature_embedder",
+        "to": "modules.timestep_sinusoid_embedder",
         "kind": "conditioning",
         "carries": [
           "representations.timestep"
@@ -7879,14 +8611,294 @@ export const manifest = {
         }
       },
       {
-        "id": "single_embedder_produces_initial_single_features",
+        "id": "single_embedder_routes_token_index_field",
         "from": "modules.single_feature_embedder",
+        "to": "modules.token_index_sinusoid_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "select_token_index_for_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_routes_residue_index_field",
+        "from": "modules.single_feature_embedder",
+        "to": "modules.residue_index_sinusoid_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "select_residue_index_for_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_routes_chain_field",
+        "from": "modules.single_feature_embedder",
+        "to": "modules.chain_sinusoid_embedder",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "select_asym_id_for_sinusoidal_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_routes_raw_token_fields",
+        "from": "modules.single_feature_embedder",
+        "to": "modules.single_feature_input_concatenator",
+        "kind": "conditioning",
+        "carries": [
+          "representations.feature_bundle"
+        ],
+        "operation": "select_restype_atom_mask_and_task_fields",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "token_index_sinusoid_produces_embedding",
+        "from": "modules.token_index_sinusoid_embedder",
+        "to": "value_sites.token_index_embedding",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_positional_embeddings"
+        ],
+        "operation": "encode_token_index",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "residue_index_sinusoid_produces_embedding",
+        "from": "modules.residue_index_sinusoid_embedder",
+        "to": "value_sites.residue_index_embedding",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_positional_embeddings"
+        ],
+        "operation": "encode_residue_index",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "chain_sinusoid_produces_embedding",
+        "from": "modules.chain_sinusoid_embedder",
+        "to": "value_sites.chain_embedding",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_chain_embeddings"
+        ],
+        "operation": "encode_asym_id",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_sinusoid_produces_embedding",
+        "from": "modules.timestep_sinusoid_embedder",
+        "to": "value_sites.timestep_embedding",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_timestep_embeddings"
+        ],
+        "operation": "repeat_and_encode_timestep",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "token_index_embedding_enters_single_concat",
+        "from": "value_sites.token_index_embedding",
+        "to": "modules.single_feature_input_concatenator",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_positional_embeddings"
+        ],
+        "operation": "concatenate_token_index_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "residue_index_embedding_enters_single_concat",
+        "from": "value_sites.residue_index_embedding",
+        "to": "modules.single_feature_input_concatenator",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_positional_embeddings"
+        ],
+        "operation": "concatenate_residue_index_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "chain_embedding_enters_single_concat",
+        "from": "value_sites.chain_embedding",
+        "to": "modules.single_feature_input_concatenator",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_chain_embeddings"
+        ],
+        "operation": "concatenate_chain_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "timestep_embedding_enters_single_concat",
+        "from": "value_sites.timestep_embedding",
+        "to": "modules.single_feature_input_concatenator",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_timestep_embeddings"
+        ],
+        "operation": "concatenate_timestep_embedding",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_concat_produces_projector_input",
+        "from": "modules.single_feature_input_concatenator",
+        "to": "value_sites.single_embedder_concat_features",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_embedder_concat_features"
+        ],
+        "operation": "concatenate_single_feature_inputs",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_concat_input_enters_linear_projection",
+        "from": "value_sites.single_embedder_concat_features",
+        "to": "modules.single_feature_linear_projection",
+        "kind": "data_flow",
+        "carries": [
+          "representations.single_embedder_concat_features"
+        ],
+        "operation": "project_single_feature_input",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_single_feature_code",
+              "role": "implementation_evidence",
+              "locator": "V1SingleFeatureNet.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "single_embedder_produces_initial_single_features",
+        "from": "modules.single_feature_linear_projection",
         "to": "value_sites.initial_single_features",
         "kind": "data_flow",
         "carries": [
           "representations.single_features"
         ],
-        "operation": "concatenate_and_project",
+        "operation": "emit_masked_single_features",
         "evidence": {
           "status": "confirmed_from_code",
           "refs": [
@@ -8731,7 +9743,7 @@ export const manifest = {
       {
         "id": "transition_state_enters_frame_update",
         "from": "value_sites.single_after_transition",
-        "to": "modules.frame_update",
+        "to": "modules.rigid_parameter_projection",
         "kind": "data_flow",
         "carries": [
           "representations.single_features"
@@ -8751,7 +9763,7 @@ export const manifest = {
       {
         "id": "decoder_frames_enter_frame_update",
         "from": "value_sites.decoder_frames",
-        "to": "modules.frame_update",
+        "to": "modules.rigid_frame_composition",
         "kind": "state_update",
         "carries": [
           "representations.token_frames"
@@ -8770,7 +9782,7 @@ export const manifest = {
       },
       {
         "id": "frame_update_produces_updated_frames",
-        "from": "modules.frame_update",
+        "from": "modules.rigid_frame_composition",
         "to": "value_sites.updated_frames",
         "kind": "state_update",
         "carries": [
@@ -10167,6 +11179,86 @@ export const manifest = {
             }
           ]
         }
+      },
+      {
+        "id": "rigid_parameter_projection_produces_update_parameters",
+        "from": "modules.rigid_parameter_projection",
+        "to": "value_sites.rigid_update_parameters",
+        "kind": "data_flow",
+        "carries": [
+          "representations.rigid_update_parameters"
+        ],
+        "operation": "project_six_frame_update_parameters",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward params"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_update_parameters_enter_parameterization",
+        "from": "value_sites.rigid_update_parameters",
+        "to": "modules.rigid_increment_parameterization",
+        "kind": "data_flow",
+        "carries": [
+          "representations.rigid_update_parameters"
+        ],
+        "operation": "split_rotation_and_translation_parameters",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward quats and trans split"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_parameterization_produces_frame_increment",
+        "from": "modules.rigid_increment_parameterization",
+        "to": "value_sites.rigid_frame_increment",
+        "kind": "data_flow",
+        "carries": [
+          "representations.rigid_frame_increment"
+        ],
+        "operation": "normalize_quaternion_and_build_rigid_increment",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_backbone_update_code",
+              "role": "implementation_evidence",
+              "locator": "BackboneUpdate.forward"
+            }
+          ]
+        }
+      },
+      {
+        "id": "rigid_frame_increment_enters_composition",
+        "from": "value_sites.rigid_frame_increment",
+        "to": "modules.rigid_frame_composition",
+        "kind": "data_flow",
+        "carries": [
+          "representations.rigid_frame_increment"
+        ],
+        "operation": "provide_local_rigid_increment",
+        "evidence": {
+          "status": "confirmed_from_code",
+          "refs": [
+            {
+              "source_ref": "genie3_structure_code",
+              "role": "caller_evidence",
+              "locator": "StructureLayer.forward fi.compose(self.bb_update(si))"
+            }
+          ]
+        }
       }
     ],
     "claims": [
@@ -10800,6 +11892,28 @@ export const manifest = {
         "path": "src/genie3/generation/model/structure_net.py",
         "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py",
         "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/structure_net.py"
+      },
+      {
+        "id": "genie3_backbone_update_code",
+        "kind": "code",
+        "title": "Genie 3 six-parameter backbone frame update",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/model/module/backbone_update.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/model/module/backbone_update.py"
+      },
+      {
+        "id": "genie3_affine_utils_code",
+        "kind": "code",
+        "title": "Genie 3 rigid-transform parameterization and composition utilities",
+        "organization": "AQLaboratory",
+        "repository": "aqlaboratory/genie3",
+        "revision": "d77ae5ac04212ff1e8b29b585859a3244c614804",
+        "path": "src/genie3/generation/utils/affine_utils.py",
+        "url": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py",
+        "href": "https://github.com/aqlaboratory/genie3/blob/d77ae5ac04212ff1e8b29b585859a3244c614804/src/genie3/generation/utils/affine_utils.py"
       },
       {
         "id": "genie3_ipa_code",
@@ -11668,7 +12782,8 @@ export const manifest = {
         },
         {
           "id": "combine_and_mask_logits",
-          "text": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+          "text": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+          "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
           "operation": "ipa_logit_composition"
         },
         {
@@ -11841,7 +12956,7 @@ export const manifest = {
             "data_flow"
           ],
           "glyph": "frames",
-          "notation": "T",
+          "notation": "T=(R,t)",
           "shape_contract": {
             "kind": "frames",
             "axes": [
@@ -12696,7 +13811,9 @@ export const manifest = {
           "outputs": [
             "values.combined_logits"
           ],
-          "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+          "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+          "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
+          "role": "form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax",
           "code_bindings": [
             {
               "lexeme": "combined_logits",
@@ -17011,6 +18128,7 @@ export const manifest = {
         "classifications": {
           "modules.binder_target_feature_assembler": "collapsed:modules.feature_builder",
           "modules.binder_tokens": "collapsed:modules.feature_builder",
+          "modules.chain_sinusoid_embedder": "excluded",
           "modules.conditional_structure_frame_builder": "excluded",
           "modules.conditioned_distance_binner": "excluded",
           "modules.conditioned_geometry_projector": "excluded",
@@ -17023,7 +18141,6 @@ export const manifest = {
           "modules.endpoint_pair_constructor": "excluded",
           "modules.feature_batch_assembler": "collapsed:modules.feature_builder",
           "modules.feature_builder": "visible",
-          "modules.frame_update": "collapsed:modules.diffusion_sampler",
           "modules.frenet_frame_builder": "excluded",
           "modules.global_token_adapter": "collapsed:modules.diffusion_sampler",
           "modules.invariant_point_attention": "excluded",
@@ -17043,9 +18160,15 @@ export const manifest = {
           "modules.pair_transition": "collapsed:modules.diffusion_sampler",
           "modules.pdb_exporter": "visible",
           "modules.relative_position_embedder": "excluded",
+          "modules.residue_index_sinusoid_embedder": "excluded",
+          "modules.rigid_frame_composition": "collapsed:modules.diffusion_sampler",
+          "modules.rigid_increment_parameterization": "collapsed:modules.diffusion_sampler",
+          "modules.rigid_parameter_projection": "collapsed:modules.diffusion_sampler",
           "modules.sequence_head": "collapsed:modules.diffusion_sampler",
           "modules.sequence_sampler": "excluded",
           "modules.single_feature_embedder": "excluded",
+          "modules.single_feature_input_concatenator": "excluded",
+          "modules.single_feature_linear_projection": "excluded",
           "modules.single_to_pair_update": "collapsed:modules.diffusion_sampler",
           "modules.structure_transition": "collapsed:modules.diffusion_sampler",
           "modules.target_conditioned_tokens": "collapsed:modules.feature_builder",
@@ -17053,11 +18176,14 @@ export const manifest = {
           "modules.target_problem_parser": "collapsed:modules.feature_builder",
           "modules.task_source_router": "collapsed:modules.feature_builder",
           "modules.timestep_controller": "collapsed:modules.diffusion_sampler",
+          "modules.timestep_sinusoid_embedder": "excluded",
+          "modules.token_index_sinusoid_embedder": "excluded",
           "modules.triangle_multiplication_stack": "collapsed:modules.diffusion_sampler",
           "modules.unconditional_featurizer": "collapsed:modules.feature_builder",
           "modules.unconditional_frame_indices": "collapsed:modules.feature_builder",
           "modules.unconditional_placeholder_initializer": "collapsed:modules.feature_builder",
           "modules.unconditional_token_layout": "collapsed:modules.feature_builder",
+          "value_sites.chain_embedding": "excluded",
           "value_sites.conditional_structure_frames": "excluded",
           "value_sites.conditioned_distance_bin_features": "excluded",
           "value_sites.conditioned_group_frame_pair_mask": "excluded",
@@ -17090,6 +18216,9 @@ export const manifest = {
           "value_sites.refined_pair_features": "collapsed:modules.diffusion_sampler",
           "value_sites.refined_single_features": "collapsed:modules.diffusion_sampler",
           "value_sites.relative_position_pair_features": "excluded",
+          "value_sites.residue_index_embedding": "excluded",
+          "value_sites.rigid_frame_increment": "collapsed:modules.diffusion_sampler",
+          "value_sites.rigid_update_parameters": "collapsed:modules.diffusion_sampler",
           "value_sites.sampler_step_coordinates": "collapsed:modules.diffusion_sampler",
           "value_sites.sequence_logits": "collapsed:modules.diffusion_sampler",
           "value_sites.single_after_attention_residual_norm": "collapsed:modules.diffusion_sampler",
@@ -17097,9 +18226,12 @@ export const manifest = {
           "value_sites.single_after_pair_attention": "collapsed:modules.diffusion_sampler",
           "value_sites.single_after_transition": "collapsed:modules.diffusion_sampler",
           "value_sites.single_attention_delta": "collapsed:modules.diffusion_sampler",
+          "value_sites.single_embedder_concat_features": "excluded",
           "value_sites.single_with_global_tokens": "collapsed:modules.diffusion_sampler",
           "value_sites.step_coordinates": "collapsed:modules.diffusion_sampler",
           "value_sites.timestep": "collapsed:modules.diffusion_sampler",
+          "value_sites.timestep_embedding": "excluded",
+          "value_sites.token_index_embedding": "excluded",
           "value_sites.token_structure_frame_mask": "collapsed:modules.diffusion_sampler",
           "value_sites.updated_frames": "collapsed:modules.diffusion_sampler"
         },
@@ -17652,6 +18784,7 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.chain_sinusoid_embedder": "excluded",
           "modules.conditional_structure_frame_builder": "excluded",
           "modules.conditioned_distance_binner": "excluded",
           "modules.conditioned_geometry_projector": "excluded",
@@ -17675,14 +18808,23 @@ export const manifest = {
           "modules.pair_feature_embedder": "excluded",
           "modules.pair_transition": "collapsed:modules.reverse_diffusion_step",
           "modules.relative_position_embedder": "excluded",
+          "modules.residue_index_sinusoid_embedder": "excluded",
           "modules.reverse_diffusion_step": "visible",
+          "modules.rigid_frame_composition": "excluded",
+          "modules.rigid_increment_parameterization": "excluded",
+          "modules.rigid_parameter_projection": "excluded",
           "modules.sequence_head": "collapsed:modules.reverse_diffusion_step",
           "modules.sequence_sampler": "visible",
           "modules.single_feature_embedder": "excluded",
+          "modules.single_feature_input_concatenator": "excluded",
+          "modules.single_feature_linear_projection": "excluded",
           "modules.single_to_pair_update": "collapsed:modules.reverse_diffusion_step",
           "modules.structure_transition": "collapsed:modules.reverse_diffusion_step",
           "modules.timestep_controller": "collapsed:modules.reverse_diffusion_step",
+          "modules.timestep_sinusoid_embedder": "excluded",
+          "modules.token_index_sinusoid_embedder": "excluded",
           "modules.triangle_multiplication_stack": "collapsed:modules.reverse_diffusion_step",
+          "value_sites.chain_embedding": "excluded",
           "value_sites.conditional_structure_frames": "excluded",
           "value_sites.conditioned_distance_bin_features": "excluded",
           "value_sites.conditioned_group_frame_pair_mask": "excluded",
@@ -17713,6 +18855,9 @@ export const manifest = {
           "value_sites.refined_pair_features": "collapsed:modules.reverse_diffusion_step",
           "value_sites.refined_single_features": "collapsed:modules.reverse_diffusion_step",
           "value_sites.relative_position_pair_features": "excluded",
+          "value_sites.residue_index_embedding": "excluded",
+          "value_sites.rigid_frame_increment": "excluded",
+          "value_sites.rigid_update_parameters": "excluded",
           "value_sites.sampler_step_coordinates": "collapsed:modules.reverse_diffusion_step",
           "value_sites.sequence_logits": "excluded",
           "value_sites.single_after_attention_residual_norm": "collapsed:modules.reverse_diffusion_step",
@@ -17720,9 +18865,12 @@ export const manifest = {
           "value_sites.single_after_pair_attention": "collapsed:modules.reverse_diffusion_step",
           "value_sites.single_after_transition": "collapsed:modules.reverse_diffusion_step",
           "value_sites.single_attention_delta": "collapsed:modules.reverse_diffusion_step",
+          "value_sites.single_embedder_concat_features": "excluded",
           "value_sites.single_with_global_tokens": "collapsed:modules.reverse_diffusion_step",
           "value_sites.step_coordinates": "collapsed:modules.reverse_diffusion_step",
           "value_sites.timestep": "collapsed:modules.reverse_diffusion_step",
+          "value_sites.timestep_embedding": "excluded",
+          "value_sites.token_index_embedding": "excluded",
           "value_sites.token_structure_frame_mask": "collapsed:modules.reverse_diffusion_step",
           "value_sites.updated_frames": "collapsed:modules.reverse_diffusion_step"
         },
@@ -18322,6 +19470,7 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.chain_sinusoid_embedder": "collapsed:modules.denoiser",
           "modules.conditional_structure_frame_builder": "excluded",
           "modules.conditioned_distance_binner": "excluded",
           "modules.conditioned_geometry_projector": "excluded",
@@ -18346,12 +19495,21 @@ export const manifest = {
           "modules.pair_feature_embedder": "excluded",
           "modules.pair_transition": "collapsed:modules.denoiser",
           "modules.relative_position_embedder": "excluded",
+          "modules.residue_index_sinusoid_embedder": "collapsed:modules.denoiser",
+          "modules.rigid_frame_composition": "excluded",
+          "modules.rigid_increment_parameterization": "excluded",
+          "modules.rigid_parameter_projection": "excluded",
           "modules.sequence_head": "collapsed:modules.denoiser",
           "modules.single_feature_embedder": "collapsed:modules.denoiser",
+          "modules.single_feature_input_concatenator": "collapsed:modules.denoiser",
+          "modules.single_feature_linear_projection": "collapsed:modules.denoiser",
           "modules.single_to_pair_update": "collapsed:modules.denoiser",
           "modules.structure_transition": "collapsed:modules.denoiser",
           "modules.timestep_controller": "excluded",
+          "modules.timestep_sinusoid_embedder": "collapsed:modules.denoiser",
+          "modules.token_index_sinusoid_embedder": "collapsed:modules.denoiser",
           "modules.triangle_multiplication_stack": "collapsed:modules.denoiser",
+          "value_sites.chain_embedding": "collapsed:modules.denoiser",
           "value_sites.conditional_structure_frames": "excluded",
           "value_sites.conditioned_distance_bin_features": "excluded",
           "value_sites.conditioned_group_frame_pair_mask": "excluded",
@@ -18379,6 +19537,9 @@ export const manifest = {
           "value_sites.refined_pair_features": "collapsed:modules.denoiser",
           "value_sites.refined_single_features": "collapsed:modules.denoiser",
           "value_sites.relative_position_pair_features": "excluded",
+          "value_sites.residue_index_embedding": "collapsed:modules.denoiser",
+          "value_sites.rigid_frame_increment": "excluded",
+          "value_sites.rigid_update_parameters": "excluded",
           "value_sites.sampler_step_coordinates": "collapsed:modules.directional_ddim_sampler_math",
           "value_sites.sequence_logits": "excluded",
           "value_sites.single_after_attention_residual_norm": "collapsed:modules.denoiser",
@@ -18386,9 +19547,12 @@ export const manifest = {
           "value_sites.single_after_pair_attention": "collapsed:modules.denoiser",
           "value_sites.single_after_transition": "collapsed:modules.denoiser",
           "value_sites.single_attention_delta": "collapsed:modules.denoiser",
+          "value_sites.single_embedder_concat_features": "collapsed:modules.denoiser",
           "value_sites.single_with_global_tokens": "collapsed:modules.denoiser",
           "value_sites.step_coordinates": "visible",
           "value_sites.timestep": "visible",
+          "value_sites.timestep_embedding": "collapsed:modules.denoiser",
+          "value_sites.token_index_embedding": "collapsed:modules.denoiser",
           "value_sites.token_structure_frame_mask": "collapsed:modules.denoiser",
           "value_sites.updated_frames": "collapsed:modules.denoiser"
         },
@@ -18886,7 +20050,8 @@ export const manifest = {
             "prominence": "primary",
             "treatment": "block",
             "col": 2,
-            "row": 2
+            "row": 2,
+            "board_ref": "single_feature_embedder"
           },
           {
             "id": "pair_feature_embedder",
@@ -19477,7 +20642,7 @@ export const manifest = {
             "id": "projection_a8946ce7c53f",
             "from": "timestep",
             "to": "single_feature_embedder",
-            "projection": "direct",
+            "projection": "boundary",
             "origin": "canonical",
             "kind": "conditioning",
             "relation_path": [
@@ -19529,6 +20694,7 @@ export const manifest = {
           }
         ],
         "classifications": {
+          "modules.chain_sinusoid_embedder": "collapsed:modules.single_feature_embedder",
           "modules.conditional_structure_frame_builder": "collapsed:modules.pair_feature_embedder",
           "modules.conditioned_distance_binner": "collapsed:modules.pair_feature_embedder",
           "modules.conditioned_geometry_projector": "collapsed:modules.pair_feature_embedder",
@@ -19536,7 +20702,6 @@ export const manifest = {
           "modules.conditioned_pair_geometry_encoder": "collapsed:modules.pair_feature_embedder",
           "modules.conditioned_pair_mask_builder": "collapsed:modules.pair_feature_embedder",
           "modules.endpoint_pair_constructor": "collapsed:modules.pair_feature_embedder",
-          "modules.frame_update": "collapsed:modules.structure_decoder",
           "modules.frenet_frame_builder": "excluded",
           "modules.global_token_adapter": "collapsed:modules.latent_transformer",
           "modules.invariant_point_attention": "collapsed:modules.structure_decoder",
@@ -19551,12 +20716,21 @@ export const manifest = {
           "modules.pair_feature_embedder": "visible",
           "modules.pair_transition": "collapsed:modules.latent_transformer",
           "modules.relative_position_embedder": "collapsed:modules.pair_feature_embedder",
+          "modules.residue_index_sinusoid_embedder": "collapsed:modules.single_feature_embedder",
+          "modules.rigid_frame_composition": "collapsed:modules.structure_decoder",
+          "modules.rigid_increment_parameterization": "collapsed:modules.structure_decoder",
+          "modules.rigid_parameter_projection": "collapsed:modules.structure_decoder",
           "modules.sequence_head": "visible",
           "modules.single_feature_embedder": "visible",
+          "modules.single_feature_input_concatenator": "collapsed:modules.single_feature_embedder",
+          "modules.single_feature_linear_projection": "collapsed:modules.single_feature_embedder",
           "modules.single_to_pair_update": "collapsed:modules.latent_transformer",
           "modules.structure_decoder": "visible",
           "modules.structure_transition": "collapsed:modules.structure_decoder",
+          "modules.timestep_sinusoid_embedder": "collapsed:modules.single_feature_embedder",
+          "modules.token_index_sinusoid_embedder": "collapsed:modules.single_feature_embedder",
           "modules.triangle_multiplication_stack": "collapsed:modules.latent_transformer",
+          "value_sites.chain_embedding": "collapsed:modules.single_feature_embedder",
           "value_sites.conditional_structure_frames": "collapsed:modules.pair_feature_embedder",
           "value_sites.conditioned_distance_bin_features": "collapsed:modules.pair_feature_embedder",
           "value_sites.conditioned_group_frame_pair_mask": "collapsed:modules.pair_feature_embedder",
@@ -19581,16 +20755,819 @@ export const manifest = {
           "value_sites.refined_pair_features": "visible",
           "value_sites.refined_single_features": "visible",
           "value_sites.relative_position_pair_features": "collapsed:modules.pair_feature_embedder",
+          "value_sites.residue_index_embedding": "collapsed:modules.single_feature_embedder",
+          "value_sites.rigid_frame_increment": "collapsed:modules.structure_decoder",
+          "value_sites.rigid_update_parameters": "collapsed:modules.structure_decoder",
           "value_sites.sequence_logits": "visible",
           "value_sites.single_after_attention_residual_norm": "collapsed:modules.latent_transformer",
           "value_sites.single_after_ipa": "collapsed:modules.structure_decoder",
           "value_sites.single_after_pair_attention": "collapsed:modules.latent_transformer",
           "value_sites.single_after_transition": "collapsed:modules.structure_decoder",
           "value_sites.single_attention_delta": "collapsed:modules.latent_transformer",
+          "value_sites.single_embedder_concat_features": "collapsed:modules.single_feature_embedder",
           "value_sites.single_with_global_tokens": "collapsed:modules.latent_transformer",
           "value_sites.timestep": "visible",
+          "value_sites.timestep_embedding": "collapsed:modules.single_feature_embedder",
+          "value_sites.token_index_embedding": "collapsed:modules.single_feature_embedder",
           "value_sites.token_structure_frame_mask": "collapsed:modules.structure_decoder",
           "value_sites.updated_frames": "collapsed:modules.structure_decoder"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "single_feature_embedder",
+        "title": "Single-Feature Embedder",
+        "summary": "Token index, residue index, chain id, and the current timestep are sinusoidally encoded per token. Those four codes are concatenated with atom identity, sequence, validity, and task-conditioning fields, then one linear layer emits the B by N by 384 single state.",
+        "parent": "denoiser_forward",
+        "subject_ref": "modules.single_feature_embedder",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 7,
+          "rows": 5,
+          "column_sizing": "content",
+          "row_sizing": "content",
+          "col_gap": 34,
+          "row_gap": 24
+        },
+        "nodes": [
+          {
+            "id": "value_feature_bundle",
+            "ref": "value_sites.feature_bundle",
+            "label": "feature dictionary",
+            "notation": "features",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "glyph": "dictionary",
+            "col": 1,
+            "row": 3
+          },
+          {
+            "id": "value_timestep",
+            "ref": "value_sites.timestep",
+            "label": "timestep",
+            "notation": "t",
+            "prominence": "context",
+            "treatment": "chip",
+            "density": "micro",
+            "glyph": "scalar",
+            "col": 1,
+            "row": 5
+          },
+          {
+            "id": "module_token_index_sinusoid",
+            "ref": "modules.token_index_sinusoid_embedder",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 1
+          },
+          {
+            "id": "module_residue_index_sinusoid",
+            "ref": "modules.residue_index_sinusoid_embedder",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 2
+          },
+          {
+            "id": "module_chain_sinusoid",
+            "ref": "modules.chain_sinusoid_embedder",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 3
+          },
+          {
+            "id": "module_timestep_sinusoid",
+            "ref": "modules.timestep_sinusoid_embedder",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 2,
+            "row": 5
+          },
+          {
+            "id": "value_token_index_embedding",
+            "ref": "value_sites.token_index_embedding",
+            "label": "token-index code",
+            "notation": "PE(token_i)",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 3,
+            "row": 1
+          },
+          {
+            "id": "value_residue_index_embedding",
+            "ref": "value_sites.residue_index_embedding",
+            "label": "residue-index code",
+            "notation": "PE(res_i)",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 3,
+            "row": 2
+          },
+          {
+            "id": "value_chain_embedding",
+            "ref": "value_sites.chain_embedding",
+            "label": "chain-id code",
+            "notation": "PE(chain_i)",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 3,
+            "row": 3
+          },
+          {
+            "id": "value_timestep_embedding",
+            "ref": "value_sites.timestep_embedding",
+            "label": "timestep code",
+            "notation": "PE(t)_i",
+            "prominence": "context",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 3,
+            "row": 5
+          },
+          {
+            "id": "module_single_feature_input_concatenator",
+            "ref": "modules.single_feature_input_concatenator",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 4,
+            "row": 3
+          },
+          {
+            "id": "value_single_embedder_concat_features",
+            "ref": "value_sites.single_embedder_concat_features",
+            "label": "concat input",
+            "notation": "h_in",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 5,
+            "row": 3
+          },
+          {
+            "id": "module_single_feature_linear_projection",
+            "ref": "modules.single_feature_linear_projection",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 6,
+            "row": 3
+          },
+          {
+            "id": "value_initial_single_features",
+            "ref": "value_sites.initial_single_features",
+            "label": "initial singles",
+            "notation": "s0",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 7,
+            "row": 3
+          }
+        ],
+        "elide": [
+          {
+            "ref": "modules.single_feature_embedder"
+          }
+        ],
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_path": [
+                "relations.feature_bundle_conditions_single_embedder",
+                "relations.single_embedder_routes_token_index_field"
+              ]
+            },
+            "label": "token_index",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Token position",
+              "role": "per-token order code",
+              "inside": "The active atom-token index is sinusoidally embedded as a 256-channel code."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.feature_bundle_conditions_single_embedder",
+                "relations.single_embedder_routes_residue_index_field"
+              ]
+            },
+            "label": "residue_index",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Residue position",
+              "role": "residue-level order code",
+              "inside": "The source residue index is separately sinusoidally embedded, so atomized side-chain tokens can share residue context while retaining their own token positions."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.feature_bundle_conditions_single_embedder",
+                "relations.single_embedder_routes_chain_field"
+              ]
+            },
+            "label": "asym_id",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Chain identity",
+              "role": "chain context",
+              "inside": "The asymmetric-chain id is sinusoidally encoded as a per-token chain code."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.timestep_conditions_single_embedder"
+            },
+            "label": "repeat t over N",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Timestep conditioning",
+              "role": "noise-level code",
+              "inside": "The sample timestep is repeated across all token slots and then sinusoidally encoded into a per-token 512-channel code."
+            }
+          },
+          {
+            "match": {
+              "relation_path": [
+                "relations.feature_bundle_conditions_single_embedder",
+                "relations.single_embedder_routes_raw_token_fields"
+              ]
+            },
+            "label": "restype + atom + masks",
+            "tone": "conditioning",
+            "connection": {
+              "title": "Raw token/task fields",
+              "role": "non-sinusoidal feature inputs",
+              "inside": "Known residue identity, atom type, atom element, atomization, validity, and conditioning-mask fields are concatenated directly."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.token_index_sinusoid_produces_embedding"
+            },
+            "label": "B × N × 256",
+            "connection": {
+              "title": "Token-index embedding",
+              "role": "positional code",
+              "inside": "One sinusoidal vector is produced for each active token slot."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.residue_index_sinusoid_produces_embedding"
+            },
+            "label": "B × N × 256",
+            "connection": {
+              "title": "Residue-index embedding",
+              "role": "residue context code",
+              "inside": "One sinusoidal vector is produced from each token's source residue index."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.chain_sinusoid_produces_embedding"
+            },
+            "label": "B × N × 64",
+            "connection": {
+              "title": "Chain embedding",
+              "role": "chain code",
+              "inside": "The chain id is converted to a compact sinusoidal channel block."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.timestep_sinusoid_produces_embedding"
+            },
+            "label": "B × N × 512",
+            "connection": {
+              "title": "Timestep embedding",
+              "role": "repeated noise-level code",
+              "inside": "Every token in the sample receives the same timestep code for this denoiser call."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.single_concat_produces_projector_input"
+            },
+            "label": "B × N × 1158",
+            "connection": {
+              "title": "Concatenated single input",
+              "role": "pre-linear feature vector",
+              "inside": "The four sinusoidal codes and raw token/task fields form the configured 1158-channel input vector."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.single_embedder_produces_initial_single_features"
+            },
+            "label": "Linear 1158→384",
+            "connection": {
+              "title": "Initial single state",
+              "role": "latent-model input",
+              "inside": "A bias-free linear layer projects each token vector to 384 channels and the token mask zeros padded rows."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_b4108eb13696",
+            "from": "module_chain_sinusoid",
+            "to": "value_chain_embedding",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.chain_sinusoid_produces_embedding"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.chain_sinusoid_produces_embedding"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_chain_embeddings"
+            ],
+            "presentation": {
+              "label": "B × N × 64",
+              "connection": {
+                "title": "Chain embedding",
+                "role": "chain code",
+                "inside": "The chain id is converted to a compact sinusoidal channel block."
+              }
+            }
+          },
+          {
+            "id": "projection_ad29c8764664",
+            "from": "module_residue_index_sinusoid",
+            "to": "value_residue_index_embedding",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.residue_index_sinusoid_produces_embedding"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.residue_index_sinusoid_produces_embedding"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_positional_embeddings"
+            ],
+            "presentation": {
+              "label": "B × N × 256",
+              "connection": {
+                "title": "Residue-index embedding",
+                "role": "residue context code",
+                "inside": "One sinusoidal vector is produced from each token's source residue index."
+              }
+            }
+          },
+          {
+            "id": "projection_1e7bf9086db1",
+            "from": "module_single_feature_input_concatenator",
+            "to": "value_single_embedder_concat_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_concat_produces_projector_input"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_concat_produces_projector_input"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_embedder_concat_features"
+            ],
+            "presentation": {
+              "label": "B × N × 1158",
+              "connection": {
+                "title": "Concatenated single input",
+                "role": "pre-linear feature vector",
+                "inside": "The four sinusoidal codes and raw token/task fields form the configured 1158-channel input vector."
+              }
+            }
+          },
+          {
+            "id": "projection_978ddd5f7557",
+            "from": "module_single_feature_linear_projection",
+            "to": "value_initial_single_features",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_embedder_produces_initial_single_features"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_embedder_produces_initial_single_features"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+              "label": "Linear 1158→384",
+              "connection": {
+                "title": "Initial single state",
+                "role": "latent-model input",
+                "inside": "A bias-free linear layer projects each token vector to 384 channels and the token mask zeros padded rows."
+              }
+            }
+          },
+          {
+            "id": "projection_557963f027b2",
+            "from": "module_timestep_sinusoid",
+            "to": "value_timestep_embedding",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.timestep_sinusoid_produces_embedding"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.timestep_sinusoid_produces_embedding"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_timestep_embeddings"
+            ],
+            "presentation": {
+              "label": "B × N × 512",
+              "connection": {
+                "title": "Timestep embedding",
+                "role": "repeated noise-level code",
+                "inside": "Every token in the sample receives the same timestep code for this denoiser call."
+              }
+            }
+          },
+          {
+            "id": "projection_3ecdd13835b7",
+            "from": "module_token_index_sinusoid",
+            "to": "value_token_index_embedding",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.token_index_sinusoid_produces_embedding"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.token_index_sinusoid_produces_embedding"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_positional_embeddings"
+            ],
+            "presentation": {
+              "label": "B × N × 256",
+              "connection": {
+                "title": "Token-index embedding",
+                "role": "positional code",
+                "inside": "One sinusoidal vector is produced for each active token slot."
+              }
+            }
+          },
+          {
+            "id": "projection_5239973a8daa",
+            "from": "value_chain_embedding",
+            "to": "module_single_feature_input_concatenator",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.chain_embedding_enters_single_concat"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.chain_embedding_enters_single_concat"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_chain_embeddings"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_e227c41e87b8",
+            "from": "value_feature_bundle",
+            "to": "module_chain_sinusoid",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_single_embedder",
+              "relations.single_embedder_routes_chain_field"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_single_embedder"
+              },
+              {
+                "relation_ref": "relations.single_embedder_routes_chain_field"
+              }
+            ],
+            "hidden_refs": [
+              "modules.single_feature_embedder"
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "asym_id",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Chain identity",
+                "role": "chain context",
+                "inside": "The asymmetric-chain id is sinusoidally encoded as a per-token chain code."
+              }
+            }
+          },
+          {
+            "id": "projection_69e879437b0f",
+            "from": "value_feature_bundle",
+            "to": "module_residue_index_sinusoid",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_single_embedder",
+              "relations.single_embedder_routes_residue_index_field"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_single_embedder"
+              },
+              {
+                "relation_ref": "relations.single_embedder_routes_residue_index_field"
+              }
+            ],
+            "hidden_refs": [
+              "modules.single_feature_embedder"
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "residue_index",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Residue position",
+                "role": "residue-level order code",
+                "inside": "The source residue index is separately sinusoidally embedded, so atomized side-chain tokens can share residue context while retaining their own token positions."
+              }
+            }
+          },
+          {
+            "id": "projection_63f6e6a13396",
+            "from": "value_feature_bundle",
+            "to": "module_single_feature_input_concatenator",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_single_embedder",
+              "relations.single_embedder_routes_raw_token_fields"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_single_embedder"
+              },
+              {
+                "relation_ref": "relations.single_embedder_routes_raw_token_fields"
+              }
+            ],
+            "hidden_refs": [
+              "modules.single_feature_embedder"
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "restype + atom + masks",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Raw token/task fields",
+                "role": "non-sinusoidal feature inputs",
+                "inside": "Known residue identity, atom type, atom element, atomization, validity, and conditioning-mask fields are concatenated directly."
+              }
+            }
+          },
+          {
+            "id": "projection_cdbe5d36cc30",
+            "from": "value_feature_bundle",
+            "to": "module_token_index_sinusoid",
+            "projection": "contracted",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.feature_bundle_conditions_single_embedder",
+              "relations.single_embedder_routes_token_index_field"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.feature_bundle_conditions_single_embedder"
+              },
+              {
+                "relation_ref": "relations.single_embedder_routes_token_index_field"
+              }
+            ],
+            "hidden_refs": [
+              "modules.single_feature_embedder"
+            ],
+            "carries": [
+              "representations.feature_bundle"
+            ],
+            "presentation": {
+              "label": "token_index",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Token position",
+                "role": "per-token order code",
+                "inside": "The active atom-token index is sinusoidally embedded as a 256-channel code."
+              }
+            }
+          },
+          {
+            "id": "projection_08866c147086",
+            "from": "value_residue_index_embedding",
+            "to": "module_single_feature_input_concatenator",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.residue_index_embedding_enters_single_concat"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.residue_index_embedding_enters_single_concat"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_positional_embeddings"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_879e81f98339",
+            "from": "value_single_embedder_concat_features",
+            "to": "module_single_feature_linear_projection",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.single_concat_input_enters_linear_projection"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.single_concat_input_enters_linear_projection"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_embedder_concat_features"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_9bb0311c2e74",
+            "from": "value_timestep",
+            "to": "module_timestep_sinusoid",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "conditioning",
+            "relation_path": [
+              "relations.timestep_conditions_single_embedder"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.timestep_conditions_single_embedder"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.timestep"
+            ],
+            "presentation": {
+              "label": "repeat t over N",
+              "tone": "conditioning",
+              "connection": {
+                "title": "Timestep conditioning",
+                "role": "noise-level code",
+                "inside": "The sample timestep is repeated across all token slots and then sinusoidally encoded into a per-token 512-channel code."
+              }
+            }
+          },
+          {
+            "id": "projection_d5a138c0ac13",
+            "from": "value_timestep_embedding",
+            "to": "module_single_feature_input_concatenator",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.timestep_embedding_enters_single_concat"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.timestep_embedding_enters_single_concat"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_timestep_embeddings"
+            ],
+            "presentation": {
+            }
+          },
+          {
+            "id": "projection_e63f636b267e",
+            "from": "value_token_index_embedding",
+            "to": "module_single_feature_input_concatenator",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.token_index_embedding_enters_single_concat"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.token_index_embedding_enters_single_concat"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_positional_embeddings"
+            ],
+            "presentation": {
+            }
+          }
+        ],
+        "classifications": {
+          "modules.chain_sinusoid_embedder": "visible",
+          "modules.residue_index_sinusoid_embedder": "visible",
+          "modules.single_feature_embedder": "elided",
+          "modules.single_feature_input_concatenator": "visible",
+          "modules.single_feature_linear_projection": "visible",
+          "modules.timestep_sinusoid_embedder": "visible",
+          "modules.token_index_sinusoid_embedder": "visible",
+          "value_sites.chain_embedding": "visible",
+          "value_sites.feature_bundle": "visible",
+          "value_sites.initial_single_features": "visible",
+          "value_sites.residue_index_embedding": "visible",
+          "value_sites.single_embedder_concat_features": "visible",
+          "value_sites.timestep": "visible",
+          "value_sites.timestep_embedding": "visible",
+          "value_sites.token_index_embedding": "visible"
         },
         "projectionMode": "derived"
       },
@@ -20709,7 +22686,8 @@ export const manifest = {
             "treatment": "compact",
             "density": "compact",
             "col": 8,
-            "row": 4
+            "row": 4,
+            "board_ref": "genie3_frame_update_internals"
           },
           {
             "id": "updated_frames",
@@ -20868,7 +22846,7 @@ export const manifest = {
             "id": "projection_c27a6988ec3f",
             "from": "decoder_frames",
             "to": "frame_update",
-            "projection": "direct",
+            "projection": "boundary",
             "origin": "canonical",
             "kind": "state_update",
             "relation_path": [
@@ -21010,7 +22988,7 @@ export const manifest = {
             "id": "projection_c98036bbf37b",
             "from": "frame_update",
             "to": "updated_frames",
-            "projection": "direct",
+            "projection": "boundary",
             "origin": "canonical",
             "kind": "state_update",
             "relation_path": [
@@ -21197,7 +23175,7 @@ export const manifest = {
             "id": "projection_776d95717f8f",
             "from": "single_after_transition",
             "to": "frame_update",
-            "projection": "direct",
+            "projection": "boundary",
             "origin": "canonical",
             "kind": "data_flow",
             "relation_path": [
@@ -21343,6 +23321,9 @@ export const manifest = {
           "modules.frame_update": "visible",
           "modules.invariant_point_attention": "visible",
           "modules.ipa_residual_norm": "visible",
+          "modules.rigid_frame_composition": "collapsed:modules.frame_update",
+          "modules.rigid_increment_parameterization": "collapsed:modules.frame_update",
+          "modules.rigid_parameter_projection": "collapsed:modules.frame_update",
           "modules.structure_transition": "visible",
           "value_sites.current_frames": "excluded",
           "value_sites.decoder_frames": "visible",
@@ -21352,6 +23333,8 @@ export const manifest = {
           "value_sites.ipa_delta": "visible",
           "value_sites.refined_pair_features": "visible",
           "value_sites.refined_single_features": "excluded",
+          "value_sites.rigid_frame_increment": "collapsed:modules.frame_update",
+          "value_sites.rigid_update_parameters": "collapsed:modules.frame_update",
           "value_sites.single_after_ipa": "visible",
           "value_sites.single_after_transition": "visible",
           "value_sites.token_structure_frame_mask": "visible",
@@ -22707,7 +24690,7 @@ export const manifest = {
             "scale": "token",
             "glyph": "frames",
             "flow_family": "frame",
-            "notation": "T",
+            "notation": "T=(R,t)",
             "port_ref": "ports.frames"
           },
           {
@@ -23349,6 +25332,7 @@ export const manifest = {
           {
             "id": "combine_and_mask_logits",
             "label": "Combine logits and apply mask",
+            "role": "form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax",
             "col": 6,
             "row": 4,
             "prominence": "primary",
@@ -23361,7 +25345,8 @@ export const manifest = {
             "kind": "operation",
             "scale": "operation",
             "detail": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "operation": "ipa_logit_composition"
           },
           {
@@ -24039,7 +26024,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -24060,7 +26045,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -24081,7 +26066,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -24106,7 +26091,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step input",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -24127,7 +26112,7 @@ export const manifest = {
             "connection": {
               "title": "Combine logits and apply mask",
               "role": "reusable step output",
-              "inside": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+              "inside": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
             }
           },
           {
@@ -25027,7 +27012,8 @@ export const manifest = {
             "instanceFactRef": "block_instances.structure_ipa.steps.combine_and_mask_logits",
             "label": "Combine logits and apply mask",
             "operation": "ipa_logit_composition",
-            "code": "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)",
+            "code": "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)",
+            "tex": "\\begin{aligned}M_{ij}&=m_i m_j,\\\\ \\widetilde a_{hij}&=a^{\\mathrm{scalar}}_{hij}+a^{\\mathrm{point}}_{hij}+b_{hij}+C\\!\\left(M_{ij}-1\\right),\\quad C\\gg0\\end{aligned}",
             "inputs": [
               "values.scalar_logits",
               "values.point_logits",
@@ -25046,8 +27032,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.combined_logits",
                 "occurrences": [
                   {
-                    "start": 0,
-                    "end": 15
+                    "start": 31,
+                    "end": 46
                   }
                 ]
               },
@@ -25059,8 +27045,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.scalar_logits",
                 "occurrences": [
                   {
-                    "start": 29,
-                    "end": 42
+                    "start": 49,
+                    "end": 62
                   }
                 ]
               },
@@ -25072,8 +27058,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.point_logits",
                 "occurrences": [
                   {
-                    "start": 45,
-                    "end": 57
+                    "start": 65,
+                    "end": 77
                   }
                 ]
               },
@@ -25085,8 +27071,8 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.values.pair_bias",
                 "occurrences": [
                   {
-                    "start": 60,
-                    "end": 69
+                    "start": 80,
+                    "end": 89
                   }
                 ]
               },
@@ -25098,8 +27084,12 @@ export const manifest = {
                 "instanceFactRef": "block_instances.structure_ipa.ports.mask",
                 "occurrences": [
                   {
-                    "start": 71,
-                    "end": 75
+                    "start": 18,
+                    "end": 22
+                  },
+                  {
+                    "start": 24,
+                    "end": 28
                   }
                 ]
               }
@@ -31358,6 +33348,393 @@ export const manifest = {
           "value_sites.conditioned_group_pair_mask": "visible",
           "value_sites.conditioned_orientation_features": "visible",
           "value_sites.conditioned_pair_features": "visible"
+        },
+        "projectionMode": "derived"
+      },
+      {
+        "id": "genie3_frame_update_internals",
+        "title": "Genie 3 Token Frame Update Internals",
+        "summary": "Each transitioned token state is projected to three rotation parameters and a local translation. The rotation parameters become a normalized quaternion, and the resulting local rigid increment is right-composed into the current token frame.",
+        "subject_ref": "modules.frame_update",
+        "expansion_depth": 1,
+        "grid": {
+          "columns": 7,
+          "rows": 2,
+          "column_sizing": "content"
+        },
+        "nodes": [
+          {
+            "id": "value_decoder_frames",
+            "ref": "value_sites.decoder_frames",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 1,
+            "row": 1
+          },
+          {
+            "id": "value_single_after_transition",
+            "ref": "value_sites.single_after_transition",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 1,
+            "row": 2
+          },
+          {
+            "id": "module_rigid_parameter_projection",
+            "ref": "modules.rigid_parameter_projection",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 2,
+            "row": 1
+          },
+          {
+            "id": "value_rigid_update_parameters",
+            "ref": "value_sites.rigid_update_parameters",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 3,
+            "row": 1
+          },
+          {
+            "id": "module_rigid_increment_parameterization",
+            "ref": "modules.rigid_increment_parameterization",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 4,
+            "row": 1
+          },
+          {
+            "id": "value_rigid_frame_increment",
+            "ref": "value_sites.rigid_frame_increment",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 5,
+            "row": 1
+          },
+          {
+            "id": "module_rigid_frame_composition",
+            "ref": "modules.rigid_frame_composition",
+            "prominence": "primary",
+            "treatment": "block",
+            "col": 6,
+            "row": 1
+          },
+          {
+            "id": "value_updated_frames",
+            "ref": "value_sites.updated_frames",
+            "prominence": "secondary",
+            "treatment": "compact",
+            "density": "compact",
+            "col": 7,
+            "row": 1
+          }
+        ],
+        "parent": "structure_decoder",
+        "edge_overrides": [
+          {
+            "match": {
+              "relation_ref": "relations.transition_state_enters_frame_update"
+            },
+            "label": "B × N × 384",
+            "connection": {
+              "title": "Transitioned single state",
+              "role": "per-token update source",
+              "inside": "Each token's final structure-transition state independently supplies the features from which its local rigid motion is regressed."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.rigid_parameter_projection_produces_update_parameters"
+            },
+            "label": "B × N × 6",
+            "connection": {
+              "title": "Six learned parameters",
+              "role": "compact rigid-update parameterization",
+              "inside": "A learned 384-to-6 linear map emits three unconstrained rotation-vector components followed by three local translation components."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.rigid_update_parameters_enter_parameterization"
+            },
+            "label": "split u_i | v_i",
+            "connection": {
+              "title": "Rotation and translation split",
+              "role": "parameter interpretation",
+              "inside": "The first three values parameterize the quaternion vector part; the final three are used directly as the increment's local translation."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.rigid_parameterization_produces_frame_increment"
+            },
+            "label": "ΔT_i",
+            "connection": {
+              "title": "Local rigid increment",
+              "role": "normalized SE(3) update",
+              "inside": "Prepending one and normalizing yields a unit quaternion whose rotation matrix is paired with the predicted local translation."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.decoder_frames_enter_frame_update"
+            },
+            "label": "current T_i",
+            "connection": {
+              "title": "Current decoder frame",
+              "role": "composition base",
+              "inside": "The current token rotation and translation define the coordinate frame in which the learned increment is applied."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.rigid_frame_increment_enters_composition"
+            },
+            "label": "local ΔT_i",
+            "connection": {
+              "title": "Predicted local motion",
+              "role": "right-composed update",
+              "inside": "The increment is not interpreted as an absolute global frame; it is composed on the right of the current token frame."
+            }
+          },
+          {
+            "match": {
+              "relation_ref": "relations.frame_update_produces_updated_frames"
+            },
+            "label": "T_i ∘ ΔT_i",
+            "connection": {
+              "title": "Updated token frame",
+              "role": "next structure-layer frame state",
+              "inside": "Rotation matrices multiply, while the local translation is rotated by the current frame and then added to its current translation."
+            }
+          }
+        ],
+        "projection_mode": "derived",
+        "edges": [
+          {
+            "id": "projection_266e849caa3b",
+            "from": "module_rigid_frame_composition",
+            "to": "value_updated_frames",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.frame_update_produces_updated_frames"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.frame_update_produces_updated_frames"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+              "label": "T_i ∘ ΔT_i",
+              "connection": {
+                "title": "Updated token frame",
+                "role": "next structure-layer frame state",
+                "inside": "Rotation matrices multiply, while the local translation is rotated by the current frame and then added to its current translation."
+              }
+            }
+          },
+          {
+            "id": "projection_caeab0e3cb3f",
+            "from": "module_rigid_increment_parameterization",
+            "to": "value_rigid_frame_increment",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.rigid_parameterization_produces_frame_increment"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.rigid_parameterization_produces_frame_increment"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.rigid_frame_increment"
+            ],
+            "presentation": {
+              "label": "ΔT_i",
+              "connection": {
+                "title": "Local rigid increment",
+                "role": "normalized SE(3) update",
+                "inside": "Prepending one and normalizing yields a unit quaternion whose rotation matrix is paired with the predicted local translation."
+              }
+            }
+          },
+          {
+            "id": "projection_53aefd76f1d1",
+            "from": "module_rigid_parameter_projection",
+            "to": "value_rigid_update_parameters",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.rigid_parameter_projection_produces_update_parameters"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.rigid_parameter_projection_produces_update_parameters"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.rigid_update_parameters"
+            ],
+            "presentation": {
+              "label": "B × N × 6",
+              "connection": {
+                "title": "Six learned parameters",
+                "role": "compact rigid-update parameterization",
+                "inside": "A learned 384-to-6 linear map emits three unconstrained rotation-vector components followed by three local translation components."
+              }
+            }
+          },
+          {
+            "id": "projection_695bbab94fa4",
+            "from": "value_decoder_frames",
+            "to": "module_rigid_frame_composition",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "state_update",
+            "relation_path": [
+              "relations.decoder_frames_enter_frame_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.decoder_frames_enter_frame_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.token_frames"
+            ],
+            "presentation": {
+              "label": "current T_i",
+              "connection": {
+                "title": "Current decoder frame",
+                "role": "composition base",
+                "inside": "The current token rotation and translation define the coordinate frame in which the learned increment is applied."
+              }
+            }
+          },
+          {
+            "id": "projection_0054bdfca484",
+            "from": "value_rigid_frame_increment",
+            "to": "module_rigid_frame_composition",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.rigid_frame_increment_enters_composition"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.rigid_frame_increment_enters_composition"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.rigid_frame_increment"
+            ],
+            "presentation": {
+              "label": "local ΔT_i",
+              "connection": {
+                "title": "Predicted local motion",
+                "role": "right-composed update",
+                "inside": "The increment is not interpreted as an absolute global frame; it is composed on the right of the current token frame."
+              }
+            }
+          },
+          {
+            "id": "projection_1b499d9704d6",
+            "from": "value_rigid_update_parameters",
+            "to": "module_rigid_increment_parameterization",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.rigid_update_parameters_enter_parameterization"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.rigid_update_parameters_enter_parameterization"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.rigid_update_parameters"
+            ],
+            "presentation": {
+              "label": "split u_i | v_i",
+              "connection": {
+                "title": "Rotation and translation split",
+                "role": "parameter interpretation",
+                "inside": "The first three values parameterize the quaternion vector part; the final three are used directly as the increment's local translation."
+              }
+            }
+          },
+          {
+            "id": "projection_8d70c65c7978",
+            "from": "value_single_after_transition",
+            "to": "module_rigid_parameter_projection",
+            "projection": "direct",
+            "origin": "canonical",
+            "kind": "data_flow",
+            "relation_path": [
+              "relations.transition_state_enters_frame_update"
+            ],
+            "provenance_hops": [
+              {
+                "relation_ref": "relations.transition_state_enters_frame_update"
+              }
+            ],
+            "hidden_refs": [
+
+            ],
+            "carries": [
+              "representations.single_features"
+            ],
+            "presentation": {
+              "label": "B × N × 384",
+              "connection": {
+                "title": "Transitioned single state",
+                "role": "per-token update source",
+                "inside": "Each token's final structure-transition state independently supplies the features from which its local rigid motion is regressed."
+              }
+            }
+          }
+        ],
+        "classifications": {
+          "modules.rigid_frame_composition": "visible",
+          "modules.rigid_increment_parameterization": "visible",
+          "modules.rigid_parameter_projection": "visible",
+          "value_sites.decoder_frames": "visible",
+          "value_sites.rigid_frame_increment": "visible",
+          "value_sites.rigid_update_parameters": "visible",
+          "value_sites.single_after_transition": "visible",
+          "value_sites.updated_frames": "visible"
         },
         "projectionMode": "derived"
       }

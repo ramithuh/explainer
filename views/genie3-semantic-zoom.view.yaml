@@ -654,6 +654,7 @@ boards:
       treatment: block
       col: 2
       row: 2
+      board_ref: single_feature_embedder
     - id: pair_feature_embedder
       ref: modules.pair_feature_embedder
       prominence: primary
@@ -779,6 +780,228 @@ boards:
         title: Optional sequence logits
         role: auxiliary model output
         inside: A parallel MLP maps mature single features to categorical amino-acid scores.
+
+  - id: single_feature_embedder
+    title: Single-Feature Embedder
+    summary: Token index, residue index, chain id, and the current timestep are sinusoidally encoded per token. Those four codes are concatenated with atom identity, sequence, validity, and task-conditioning fields, then one linear layer emits the B by N by 384 single state.
+    parent: denoiser_forward
+    subject_ref: modules.single_feature_embedder
+    expansion_depth: 1
+    grid:
+      columns: 7
+      rows: 5
+      column_sizing: content
+      row_sizing: content
+      col_gap: 34
+      row_gap: 24
+    nodes:
+    - id: value_feature_bundle
+      ref: value_sites.feature_bundle
+      label: feature dictionary
+      notation: features
+      prominence: secondary
+      treatment: compact
+      density: compact
+      glyph: dictionary
+      col: 1
+      row: 3
+    - id: value_timestep
+      ref: value_sites.timestep
+      label: timestep
+      notation: t
+      prominence: context
+      treatment: chip
+      density: micro
+      glyph: scalar
+      col: 1
+      row: 5
+    - id: module_token_index_sinusoid
+      ref: modules.token_index_sinusoid_embedder
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 2
+      row: 1
+    - id: module_residue_index_sinusoid
+      ref: modules.residue_index_sinusoid_embedder
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 2
+      row: 2
+    - id: module_chain_sinusoid
+      ref: modules.chain_sinusoid_embedder
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 2
+      row: 3
+    - id: module_timestep_sinusoid
+      ref: modules.timestep_sinusoid_embedder
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 2
+      row: 5
+    - id: value_token_index_embedding
+      ref: value_sites.token_index_embedding
+      label: token-index code
+      notation: PE(token_i)
+      prominence: context
+      treatment: compact
+      density: compact
+      col: 3
+      row: 1
+    - id: value_residue_index_embedding
+      ref: value_sites.residue_index_embedding
+      label: residue-index code
+      notation: PE(res_i)
+      prominence: context
+      treatment: compact
+      density: compact
+      col: 3
+      row: 2
+    - id: value_chain_embedding
+      ref: value_sites.chain_embedding
+      label: chain-id code
+      notation: PE(chain_i)
+      prominence: context
+      treatment: compact
+      density: compact
+      col: 3
+      row: 3
+    - id: value_timestep_embedding
+      ref: value_sites.timestep_embedding
+      label: timestep code
+      notation: PE(t)_i
+      prominence: context
+      treatment: compact
+      density: compact
+      col: 3
+      row: 5
+    - id: module_single_feature_input_concatenator
+      ref: modules.single_feature_input_concatenator
+      prominence: primary
+      treatment: block
+      col: 4
+      row: 3
+    - id: value_single_embedder_concat_features
+      ref: value_sites.single_embedder_concat_features
+      label: concat input
+      notation: h_in
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 5
+      row: 3
+    - id: module_single_feature_linear_projection
+      ref: modules.single_feature_linear_projection
+      prominence: primary
+      treatment: block
+      col: 6
+      row: 3
+    - id: value_initial_single_features
+      ref: value_sites.initial_single_features
+      label: initial singles
+      notation: s0
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 7
+      row: 3
+    elide:
+    - ref: modules.single_feature_embedder
+    edge_overrides:
+    - match:
+        relation_path:
+        - relations.feature_bundle_conditions_single_embedder
+        - relations.single_embedder_routes_token_index_field
+      label: token_index
+      tone: conditioning
+      connection:
+        title: Token position
+        role: per-token order code
+        inside: The active atom-token index is sinusoidally embedded as a 256-channel code.
+    - match:
+        relation_path:
+        - relations.feature_bundle_conditions_single_embedder
+        - relations.single_embedder_routes_residue_index_field
+      label: residue_index
+      tone: conditioning
+      connection:
+        title: Residue position
+        role: residue-level order code
+        inside: The source residue index is separately sinusoidally embedded, so atomized side-chain tokens can share residue context while retaining their own token positions.
+    - match:
+        relation_path:
+        - relations.feature_bundle_conditions_single_embedder
+        - relations.single_embedder_routes_chain_field
+      label: asym_id
+      tone: conditioning
+      connection:
+        title: Chain identity
+        role: chain context
+        inside: The asymmetric-chain id is sinusoidally encoded as a per-token chain code.
+    - match:
+        relation_ref: relations.timestep_conditions_single_embedder
+      label: repeat t over N
+      tone: conditioning
+      connection:
+        title: Timestep conditioning
+        role: noise-level code
+        inside: The sample timestep is repeated across all token slots and then sinusoidally encoded into a per-token 512-channel code.
+    - match:
+        relation_path:
+        - relations.feature_bundle_conditions_single_embedder
+        - relations.single_embedder_routes_raw_token_fields
+      label: restype + atom + masks
+      tone: conditioning
+      connection:
+        title: Raw token/task fields
+        role: non-sinusoidal feature inputs
+        inside: Known residue identity, atom type, atom element, atomization, validity, and conditioning-mask fields are concatenated directly.
+    - match:
+        relation_ref: relations.token_index_sinusoid_produces_embedding
+      label: B × N × 256
+      connection:
+        title: Token-index embedding
+        role: positional code
+        inside: One sinusoidal vector is produced for each active token slot.
+    - match:
+        relation_ref: relations.residue_index_sinusoid_produces_embedding
+      label: B × N × 256
+      connection:
+        title: Residue-index embedding
+        role: residue context code
+        inside: One sinusoidal vector is produced from each token's source residue index.
+    - match:
+        relation_ref: relations.chain_sinusoid_produces_embedding
+      label: B × N × 64
+      connection:
+        title: Chain embedding
+        role: chain code
+        inside: The chain id is converted to a compact sinusoidal channel block.
+    - match:
+        relation_ref: relations.timestep_sinusoid_produces_embedding
+      label: B × N × 512
+      connection:
+        title: Timestep embedding
+        role: repeated noise-level code
+        inside: Every token in the sample receives the same timestep code for this denoiser call.
+    - match:
+        relation_ref: relations.single_concat_produces_projector_input
+      label: B × N × 1158
+      connection:
+        title: Concatenated single input
+        role: pre-linear feature vector
+        inside: The four sinusoidal codes and raw token/task fields form the configured 1158-channel input vector.
+    - match:
+        relation_ref: relations.single_embedder_produces_initial_single_features
+      label: Linear 1158→384
+      connection:
+        title: Initial single state
+        role: latent-model input
+        inside: A bias-free linear layer projects each token vector to 384 channels and the token mask zeros padded rows.
 
   - id: latent_transformer
     title: Five-Block Bidirectional Latent Transformer
@@ -1164,6 +1387,7 @@ boards:
         density: compact
         col: 8
         row: 4
+        board_ref: genie3_frame_update_internals
       - id: updated_frames
         ref: value_sites.updated_frames
         label: updated token frames
@@ -1898,3 +2122,117 @@ boards:
       col: 8
       row: 3
     parent: pair_feature_embedder
+  - id: genie3_frame_update_internals
+    title: Genie 3 Token Frame Update Internals
+    summary: Each transitioned token state is projected to three rotation parameters and a local translation. The rotation parameters become a normalized quaternion, and the resulting local rigid increment is right-composed into the current token frame.
+    subject_ref: modules.frame_update
+    expansion_depth: 1
+    grid:
+      columns: 7
+      rows: 2
+      column_sizing: content
+    nodes:
+    - id: value_decoder_frames
+      ref: value_sites.decoder_frames
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 1
+      row: 1
+    - id: value_single_after_transition
+      ref: value_sites.single_after_transition
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 1
+      row: 2
+    - id: module_rigid_parameter_projection
+      ref: modules.rigid_parameter_projection
+      prominence: primary
+      treatment: block
+      col: 2
+      row: 1
+    - id: value_rigid_update_parameters
+      ref: value_sites.rigid_update_parameters
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 3
+      row: 1
+    - id: module_rigid_increment_parameterization
+      ref: modules.rigid_increment_parameterization
+      prominence: primary
+      treatment: block
+      col: 4
+      row: 1
+    - id: value_rigid_frame_increment
+      ref: value_sites.rigid_frame_increment
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 5
+      row: 1
+    - id: module_rigid_frame_composition
+      ref: modules.rigid_frame_composition
+      prominence: primary
+      treatment: block
+      col: 6
+      row: 1
+    - id: value_updated_frames
+      ref: value_sites.updated_frames
+      prominence: secondary
+      treatment: compact
+      density: compact
+      col: 7
+      row: 1
+    parent: structure_decoder
+    edge_overrides:
+    - match:
+        relation_ref: relations.transition_state_enters_frame_update
+      label: B × N × 384
+      connection:
+        title: Transitioned single state
+        role: per-token update source
+        inside: Each token's final structure-transition state independently supplies the features from which its local rigid motion is regressed.
+    - match:
+        relation_ref: relations.rigid_parameter_projection_produces_update_parameters
+      label: B × N × 6
+      connection:
+        title: Six learned parameters
+        role: compact rigid-update parameterization
+        inside: A learned 384-to-6 linear map emits three unconstrained rotation-vector components followed by three local translation components.
+    - match:
+        relation_ref: relations.rigid_update_parameters_enter_parameterization
+      label: split u_i | v_i
+      connection:
+        title: Rotation and translation split
+        role: parameter interpretation
+        inside: The first three values parameterize the quaternion vector part; the final three are used directly as the increment's local translation.
+    - match:
+        relation_ref: relations.rigid_parameterization_produces_frame_increment
+      label: ΔT_i
+      connection:
+        title: Local rigid increment
+        role: normalized SE(3) update
+        inside: Prepending one and normalizing yields a unit quaternion whose rotation matrix is paired with the predicted local translation.
+    - match:
+        relation_ref: relations.decoder_frames_enter_frame_update
+      label: current T_i
+      connection:
+        title: Current decoder frame
+        role: composition base
+        inside: The current token rotation and translation define the coordinate frame in which the learned increment is applied.
+    - match:
+        relation_ref: relations.rigid_frame_increment_enters_composition
+      label: local ΔT_i
+      connection:
+        title: Predicted local motion
+        role: right-composed update
+        inside: The increment is not interpreted as an absolute global frame; it is composed on the right of the current token frame.
+    - match:
+        relation_ref: relations.frame_update_produces_updated_frames
+      label: T_i ∘ ΔT_i
+      connection:
+        title: Updated token frame
+        role: next structure-layer frame state
+        inside: Rotation matrices multiply, while the local translation is rotated by the current frame and then added to its current translation.

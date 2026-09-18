@@ -77,7 +77,7 @@ boards:
         row: 2
     exclude:
       - ref: modules.single_feature_net
-        reason: The task overview carries the feature bundle into the sampler once; its sequence-conditioning use is expanded on the denoiser and invariant-encoder boards.
+        reason: The task overview carries the feature bundle into the sampler once; its sequence-conditioning use is expanded on the denoiser and feature-encoder boards.
       - ref: modules.pair_feature_net
         reason: The task overview suppresses the separate internal pair-geometry use so it does not become a duplicate feature-to-sampler wire.
       - ref: modules.invariant_point_attention
@@ -252,7 +252,7 @@ boards:
       - ref: value_sites.current_frames
     exclude:
       - ref: modules.pair_feature_net
-        reason: The sampling-loop board represents all learned uses of x_t through one denoiser wire; noisy pair geometry is expanded on the invariant-encoder board.
+        reason: The sampling-loop board represents all learned uses of x_t through one denoiser wire; noisy pair geometry is expanded on the feature-encoder board.
       - ref: modules.invariant_point_attention
         reason: Frame-point conditioning and residue masking are internal to the structure decoder and are expanded on its child board.
       - ref: modules.ipa_residual_norm
@@ -361,7 +361,7 @@ boards:
 
   - id: denoiser_forward
     title: Genie 2 Denoiser Forward Pass
-    summary: The denoiser receives T(x_t), which packages noisy C-alpha translations with Frenet rotations derived from x_t. It encodes invariant geometry, updates frames equivariantly, and reads their translation displacement as predicted noise.
+    summary: The denoiser receives T(x_t), which packages noisy C-alpha translations with Frenet-style frames derived from x_t. It builds scalar/pair features, updates frames through the structure decoder, and reads their translation displacement as predicted noise.
     parent: sampling_loop
     subject_ref: modules.denoiser
     expansion_depth: 1
@@ -448,7 +448,7 @@ boards:
         label: layout + motif sequence
         tone: conditioning
         connection:
-          title: Feature bundle to invariant encoder
+          title: Feature bundle to feature encoder
           role: sequence-side conditioning
           inside: Residue and chain indices, timestep-independent masks, and fixed motif identities are projected into the per-residue state.
       - match: { relation_ref: relations.feature_bundle_conditions_pair_feature_net }
@@ -468,11 +468,11 @@ boards:
           role: noise-level conditioning
           inside: A sinusoidal timestep code is repeated over residues and concatenated into the single-feature input.
       - match: { relation_ref: relations.current_frames_enter_pair_feature_net }
-        label: distances + orientations
+        label: distances + frame-product q
         connection:
-          title: Noisy geometry into invariant encoding
+          title: Noisy geometry into pair encoding
           role: current-structure observation
-          inside: Pairwise distances and relative frame orientations describe x_t without fixing a global pose.
+          inside: Pairwise distance bins and Genie2's direct frame-product quaternion descriptor are projected into pair features.
       - match: { relation_ref: relations.single_features_enter_ipa }
         label: single state
         connection:
@@ -516,7 +516,7 @@ boards:
           inside: The resulting B by N by 3 field is consumed by the fixed reverse-diffusion equation on the parent board.
 
   - id: invariant_feature_encoder
-    title: SE(3)-Invariant Feature Encoder
+    title: Scalar/Pair Feature Encoder
     summary: The encoder first forms a residue state, expands it into a pair state enriched with current and motif geometry, then applies five active Evoformer-style pair-refinement layers.
     parent: denoiser_forward
     subject_ref: modules.invariant_feature_encoder
@@ -608,9 +608,9 @@ boards:
       - ref: modules.frenet_frame_builder
         reason: Frenet frames enter this child board as an already-derived denoiser input from the sampling board.
       - ref: modules.invariant_point_attention
-        reason: The invariant encoder board stops at the single and refined-pair outputs; IPA is expanded on the sibling structure-decoder board.
+        reason: The feature-encoder board stops at the single and refined-pair outputs; IPA is expanded on the sibling structure-decoder board.
       - ref: modules.ipa_residual_norm
-        reason: The invariant encoder board stops before the structure layer's IPA residual wrapper.
+        reason: The feature-encoder board stops before the structure layer's IPA residual wrapper.
     edge_overrides:
       - match: { relation_ref: relations.feature_bundle_conditions_single_feature_net }
         label: residue/chain + motif AA
@@ -642,8 +642,8 @@ boards:
         label: noisy d_ij + q_ij
         connection:
           title: Current geometry
-          role: invariant frame template
-          inside: Binned C-alpha distances and relative orientation quaternions encode the noisy structure without a global-coordinate dependence.
+          role: current-frame pair descriptor
+          inside: Binned C-alpha distances and direct frame-product quaternions encode the current noisy structure; this is not the standard invariant relative rotation R_i^T R_j.
       - match: { relation_ref: relations.feature_bundle_conditions_pair_feature_net }
         label: relpos + motif d_ij
         tone: conditioning

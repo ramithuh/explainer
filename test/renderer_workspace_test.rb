@@ -146,6 +146,22 @@ class RendererWorkspaceTest < Minitest::Test
     refute_match(/function (?:showNodePeek|showRepPeek|repTooltipHtml|showHoverPanel|hideHoverPanel)\b/, renderer)
   end
 
+  def test_operation_inspector_keeps_authoring_metadata_out_of_the_audience_details
+    renderer = read("renderer/architecture/renderer.js")
+    operation = function_source(renderer, "focusOperation", "clearActiveNodes")
+
+    assert_includes operation, "<h3>Pseudocode</h3>"
+    assert_includes operation, "<h3>Equation</h3>"
+    refute_includes operation, "<dt>scale</dt>"
+    refute_includes operation, "<dt>node</dt>"
+    refute_includes operation, "<dt>template fact</dt>"
+    refute_includes operation, "<dt>instance</dt>"
+
+    question_context = read("renderer/architecture/question-context.mjs")
+    assert_includes question_context, "template_fact_ref:"
+    assert_includes question_context, "block_instance_ref:"
+  end
+
   def test_inspector_has_a_persistent_accessible_collapse_control
     html = read("renderer/architecture/index.html")
     renderer = read("renderer/architecture/renderer.js")

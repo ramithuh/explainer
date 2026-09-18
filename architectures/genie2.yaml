@@ -378,12 +378,13 @@ representations:
           locator: SingleFeatureNet.forward
   - id: pair_features
     scale: pair
-    semantic_role: SE(3)-invariant residue-pair latent state
+    semantic_role: residue-pair latent state containing scalar pair features plus a noisy-frame orientation descriptor
     shape: "B x N x N x 128"
     carries:
       - single-feature outer sum
       - relative sequence position and chain identity
-      - noisy-frame distances and orientations
+      - noisy C-alpha distance bins
+      - direct frame-product quaternion descriptor from PairFeatureNet._encode_orientations
       - masked motif distances
     evidence:
       status: confirmed_from_code
@@ -646,10 +647,10 @@ modules:
     parent_ref: modules.denoiser
     decomposition:
       status: complete
-    label: SE(3)-Invariant Feature Encoder
+    label: Scalar/Pair Feature Encoder
     kind: encoder
-    mechanisms: [invariant_geometry]
-    role: construct and refine residue and residue-pair states from indices, noisy-frame geometry, timestep, and optional motif constraints
+    mechanisms: [scalar_pair_feature_encoding]
+    role: construct and refine residue and residue-pair states from indices, timestep, noisy C-alpha distances, Genie2's direct frame-product orientation descriptor, and optional motif constraints
     scale: mixed
     evidence: *model_module_evidence
   - id: equivariant_structure_decoder
@@ -698,7 +699,7 @@ modules:
       status: leaf
     label: Pair-Feature Network
     kind: encoder
-    role: combine the single-feature outer sum, relative positions, noisy-frame distances and orientations, and masked motif distances into 128-dimensional pair features
+    role: combine the single-feature outer sum, relative positions, noisy C-alpha distance bins, direct frame-product orientation quaternions, and masked motif distances into 128-dimensional pair features
     scale: pair
     evidence:
       status: confirmed_from_code
@@ -1217,7 +1218,7 @@ relations:
     evidence: *export_relation_evidence
 claims:
   - id: motif_geometry_is_intra_group
-    statement: For multi-motif inputs, fixed_structure_mask exposes distances within each motif group while leaving relative positions and orientations between groups unspecified.
+    statement: For multi-motif inputs, fixed_structure_mask exposes motif C-alpha distances within each motif group; the motif-template path does not provide inter-group distances or motif-frame orientation features.
     scope:
       module_ref: modules.pair_feature_net
     evidence:

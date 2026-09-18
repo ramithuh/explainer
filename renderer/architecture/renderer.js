@@ -5811,14 +5811,8 @@ function focusOperation(node) {
   setFocusBody(`
     <div class="focus-section">
       <p>${escapeHtml(node.role || "")}</p>
-      <dl class="focus-dl">
-        <dt>scale</dt><dd>${escapeHtml(node.scale || "operation")}</dd>
-        <dt>node</dt><dd>${escapeHtml(node.id)}</dd>
-        ${node.template_fact_ref ? `<dt>template fact</dt><dd><code>${escapeHtml(node.template_fact_ref)}</code></dd>` : ""}
-        ${node.block_instance_ref ? `<dt>instance</dt><dd><code>${escapeHtml(node.block_instance_ref)}</code></dd>` : ""}
-      </dl>
-      ${node.code ? `<h3>Reusable trace</h3><pre class="standard-block-code"><code>${escapeHtml(node.code)}</code></pre>` : ""}
-      ${node.tex ? `<div class="math-line">\\(${escapeHtml(node.tex)}\\)</div>` : ""}
+      ${node.code ? `<h3>Pseudocode</h3><pre class="standard-block-code"><code>${escapeHtml(node.code)}</code></pre>` : ""}
+      ${node.tex ? `<h3>Equation</h3><div class="math-line">\\(${escapeHtml(node.tex)}\\)</div>` : ""}
     </div>
   `, { selected: true });
 }

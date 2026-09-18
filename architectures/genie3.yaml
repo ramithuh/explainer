@@ -482,6 +482,69 @@ representations:
         - source_ref: genie3_ddim_code
           role: implementation_evidence
           locator: DDIMSampler._step
+  - id: single_positional_embeddings
+    scale: token
+    semantic_role: sinusoidal per-token positional embedding used by the single-feature embedder
+    shape: "B x N x 256"
+    carries:
+      - sinusoidal token_index or residue_index code
+      - one embedding row per active atom-token slot
+    evidence: &single_embedder_input_evidence
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward token_index_emb and residue_index_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_pos_emb
+  - id: single_chain_embeddings
+    scale: token
+    semantic_role: sinusoidal per-token chain/asym_id embedding used by the single-feature embedder
+    shape: "B x N x 64"
+    carries:
+      - sinusoidal asym_id code repeated for every token on that chain
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward chain_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_chain_emb
+  - id: single_timestep_embeddings
+    scale: token
+    semantic_role: sample timestep repeated over tokens and sinusoidally encoded for single-feature construction
+    shape: "B x N x 512"
+    carries:
+      - one repeated diffusion timestep embedding per token in the sample
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward timestep_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_timestep_emb
+  - id: single_embedder_concat_features
+    scale: token
+    semantic_role: concatenated per-token input vector before the final single-feature projection
+    shape: "B x N x 1158"
+    carries:
+      - token_index and residue_index sinusoidal embeddings
+      - chain and timestep sinusoidal embeddings
+      - known residue identity, atom type, atom element, atomization flag, validity masks, and task-conditioning masks
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward torch.cat inputs
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_s_input
   - id: coordinate_noise
     scale: token
     semantic_role: predicted or sampled coordinate noise
@@ -635,6 +698,37 @@ representations:
       - source_ref: genie3_pair_feature_code
         role: implementation_evidence
         locator: V1PairFeatureNet.forward conditional _encode_orientations call and V1PairFeatureNet._encode_orientations
+  - id: rigid_update_parameters
+    scale: token
+    semantic_role: learned six-parameter local update for one token frame
+    shape: B x N x 6
+    carries:
+    - three unconstrained quaternion-vector parameters
+    - three local-frame translation components
+    glyph: single
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.__init__ and BackboneUpdate.forward
+  - id: rigid_frame_increment
+    scale: token
+    semantic_role: normalized local SE(3) increment predicted for every token
+    shape: B x N x (3 x 3 + 3)
+    carries:
+    - rotation matrix derived from a normalized quaternion
+    - local-frame translation update
+    glyph: frames
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward
+      - source_ref: genie3_affine_utils_code
+        role: implementation_evidence
+        locator: quat_to_rot
 value_sites:
   - id: design_request
     representation_ref: representations.design_request
@@ -672,6 +766,55 @@ value_sites:
     scope_ref: modules.reverse_diffusion_step
     role: loop_control
     evidence: *sampler_evidence
+  - id: token_index_embedding
+    representation_ref: representations.single_positional_embeddings
+    scope_ref: modules.single_feature_embedder
+    role: token_index_sinusoidal_embedding
+    evidence: *single_embedder_input_evidence
+  - id: residue_index_embedding
+    representation_ref: representations.single_positional_embeddings
+    scope_ref: modules.single_feature_embedder
+    role: residue_index_sinusoidal_embedding
+    evidence: *single_embedder_input_evidence
+  - id: chain_embedding
+    representation_ref: representations.single_chain_embeddings
+    scope_ref: modules.single_feature_embedder
+    role: chain_sinusoidal_embedding
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward chain_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_chain_emb
+  - id: timestep_embedding
+    representation_ref: representations.single_timestep_embeddings
+    scope_ref: modules.single_feature_embedder
+    role: repeated_timestep_sinusoidal_embedding
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward timestep_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_timestep_emb
+  - id: single_embedder_concat_features
+    representation_ref: representations.single_embedder_concat_features
+    scope_ref: modules.single_feature_embedder
+    role: pre_linear_single_feature_input
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward torch.cat inputs
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_s_input
   - id: coordinate_prediction
     representation_ref: representations.token_coordinates
     scope_ref: modules.denoiser
@@ -933,6 +1076,26 @@ value_sites:
       - source_ref: genie3_pair_feature_code
         role: implementation_evidence
         locator: V1PairFeatureNet.forward conditional _encode_orientations call
+  - id: rigid_update_parameters
+    representation_ref: representations.rigid_update_parameters
+    scope_ref: modules.frame_update
+    role: projected_rotation_and_translation_parameters
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward params
+  - id: rigid_frame_increment
+    representation_ref: representations.rigid_frame_increment
+    scope_ref: modules.frame_update
+    role: local_frame_increment_before_composition
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward return value
 modules:
   - id: feature_builder
     parent_ref: architecture
@@ -1054,12 +1217,98 @@ modules:
     evidence: *sequence_evidence
   - id: single_feature_embedder
     parent_ref: modules.denoiser
-    decomposition: { status: leaf }
+    decomposition: { status: complete }
     label: Single-Feature Embedder
     kind: encoder
     role: project token, residue, chain, atom, timestep, and task-conditioning metadata into 384-dimensional single features
     scale: token
     evidence: *single_evidence
+  - id: token_index_sinusoid_embedder
+    parent_ref: modules.single_feature_embedder
+    decomposition: { status: leaf }
+    label: Token-Index Sinusoid
+    kind: encoder
+    mechanisms: [sinusoidal_embedding]
+    role: sinusoidally encode token_index into a 256-channel per-token positional code
+    scale: token
+    evidence: *single_embedder_input_evidence
+  - id: residue_index_sinusoid_embedder
+    parent_ref: modules.single_feature_embedder
+    decomposition: { status: leaf }
+    label: Residue-Index Sinusoid
+    kind: encoder
+    mechanisms: [sinusoidal_embedding]
+    role: sinusoidally encode residue_index into a second 256-channel per-token positional code
+    scale: token
+    evidence: *single_embedder_input_evidence
+  - id: chain_sinusoid_embedder
+    parent_ref: modules.single_feature_embedder
+    decomposition: { status: leaf }
+    label: Chain-ID Sinusoid
+    kind: encoder
+    mechanisms: [sinusoidal_embedding]
+    role: sinusoidally encode asym_id into a 64-channel per-token chain code
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward chain_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_chain_emb
+  - id: timestep_sinusoid_embedder
+    parent_ref: modules.single_feature_embedder
+    decomposition: { status: leaf }
+    label: Timestep Sinusoid
+    kind: encoder
+    mechanisms: [sinusoidal_embedding, token_broadcast]
+    role: repeat the sample timestep across token positions and sinusoidally encode it into a 512-channel per-token code
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward timestep_emb
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_timestep_emb
+  - id: single_feature_input_concatenator
+    parent_ref: modules.single_feature_embedder
+    decomposition: { status: leaf }
+    label: Per-Token Concatenation
+    kind: operator
+    mechanisms: [concatenation]
+    role: concatenate the four sinusoidal embeddings with known residue identity, atom type, atom element, atomization, validity, and conditioning-mask fields
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.forward torch.cat inputs
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_s_input
+  - id: single_feature_linear_projection
+    parent_ref: modules.single_feature_embedder
+    decomposition: { status: leaf }
+    label: Linear Projection
+    kind: encoder
+    mechanisms: [linear_projection, masking]
+    role: project each 1158-channel concatenated token vector to 384 single-feature channels and zero padded token rows
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+        - source_ref: genie3_single_feature_code
+          role: implementation_evidence
+          locator: V1SingleFeatureNet.__init__ linear and V1SingleFeatureNet.forward final mask
+        - source_ref: genie3_config_code
+          role: configuration_evidence
+          locator: config.single_feature_net c_s_input and c_s
   - id: pair_feature_embedder
     parent_ref: modules.denoiser
     decomposition:
@@ -1217,11 +1466,12 @@ modules:
     evidence: *structure_evidence
   - id: frame_update
     parent_ref: modules.structure_decoder
-    decomposition: { status: leaf }
+    decomposition:
+      status: complete
     label: Token Frame Update
     kind: operator
     mechanisms: [rigid_transform]
-    role: regress and compose a six-parameter rigid increment for every valid token frame
+    role: project each transitioned token state to three rotation parameters and a local translation, convert them to a rigid increment, and compose that increment into the current token frame
     scale: token
     evidence: *structure_evidence
   - id: task_source_router
@@ -1681,6 +1931,68 @@ modules:
       - source_ref: genie3_pair_feature_code
         role: implementation_evidence
         locator: V1PairFeatureNet.__init__ linear_cond_template and V1PairFeatureNet.forward template-based encoding on conditional structure
+  - id: rigid_parameter_projection
+    parent_ref: modules.frame_update
+    decomposition:
+      status: leaf
+    label: Project Six Update Parameters
+    kind: encoder
+    mechanisms:
+    - linear_projection
+    role: linearly project each 384-channel transitioned single state to three rotation parameters and three local translation components
+    equation:
+      text: p_i = W_update s_i + b_update = [u_i, v_i]
+      tex: p_i=W_{\mathrm{upd}}s_i+b_{\mathrm{upd}}=\left[u_i\mathbin\Vert v_i\right]\in\mathbb{R}^{6}
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.__init__ linear and BackboneUpdate.forward params split
+  - id: rigid_increment_parameterization
+    parent_ref: modules.frame_update
+    decomposition:
+      status: leaf
+    label: Build Local Rigid Increment
+    kind: operator
+    mechanisms:
+    - quaternion_normalization
+    - rigid_transform
+    role: prepend a fixed scalar one to the three learned rotation parameters, normalize the resulting quaternion, convert it to a rotation matrix, and pair it with the learned local translation
+    equation:
+      text: q_i = [1, u_i] / sqrt(1 + ||u_i||^2); delta_T_i = (R(q_i), v_i)
+      tex: "\\begin{aligned}q_i&=\\frac{(1,u_i)}{\\sqrt{1+\\lVert u_i\\rVert^2}},\\\\ \\Delta T_i&=\\left(R(q_i),v_i\\right)\\end{aligned}"
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward quaternion normalization, quat_to_rot call, and T construction
+  - id: rigid_frame_composition
+    parent_ref: modules.frame_update
+    decomposition:
+      status: leaf
+    label: Compose Into Current Frame
+    kind: operator
+    mechanisms:
+    - rigid_transform
+    - frame_composition
+    role: right-compose the learned local rigid increment with the current token frame so its translation update is expressed through the current rotation
+    equation:
+      text: T_i^(l+1) = T_i^l compose delta_T_i; R' = R delta_R; t' = t + R delta_t
+      tex: "\\begin{aligned}T_i^{(\\ell+1)}&=T_i^{(\\ell)}\\circ\\Delta T_i,\\\\ R_i^{(\\ell+1)}&=R_i^{(\\ell)}\\Delta R_i,\\\\ t_i^{(\\ell+1)}&=t_i^{(\\ell)}+R_i^{(\\ell)}\\Delta t_i\\end{aligned}"
+    scale: token
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_structure_code
+        role: caller_evidence
+        locator: StructureLayer.forward fi.compose(self.bb_update(si))
+      - source_ref: genie3_affine_utils_code
+        role: implementation_evidence
+        locator: T.compose
 block_instances:
   - id: latent_reduced_pair_attention
     block_ref: standard_blocks/pair-biased-attention.yaml
@@ -1929,17 +2241,115 @@ relations:
           locator: V1SingleFeatureNet.forward
   - id: timestep_conditions_single_embedder
     from: value_sites.timestep
-    to: modules.single_feature_embedder
+    to: modules.timestep_sinusoid_embedder
     kind: conditioning
     carries: [representations.timestep]
     operation: sinusoidal_timestep_embedding
     evidence: *single_relation_evidence
-  - id: single_embedder_produces_initial_single_features
+  - id: single_embedder_routes_token_index_field
     from: modules.single_feature_embedder
+    to: modules.token_index_sinusoid_embedder
+    kind: conditioning
+    carries: [representations.feature_bundle]
+    operation: select_token_index_for_sinusoidal_embedding
+    evidence: *single_relation_evidence
+  - id: single_embedder_routes_residue_index_field
+    from: modules.single_feature_embedder
+    to: modules.residue_index_sinusoid_embedder
+    kind: conditioning
+    carries: [representations.feature_bundle]
+    operation: select_residue_index_for_sinusoidal_embedding
+    evidence: *single_relation_evidence
+  - id: single_embedder_routes_chain_field
+    from: modules.single_feature_embedder
+    to: modules.chain_sinusoid_embedder
+    kind: conditioning
+    carries: [representations.feature_bundle]
+    operation: select_asym_id_for_sinusoidal_embedding
+    evidence: *single_relation_evidence
+  - id: single_embedder_routes_raw_token_fields
+    from: modules.single_feature_embedder
+    to: modules.single_feature_input_concatenator
+    kind: conditioning
+    carries: [representations.feature_bundle]
+    operation: select_restype_atom_mask_and_task_fields
+    evidence: *single_relation_evidence
+  - id: token_index_sinusoid_produces_embedding
+    from: modules.token_index_sinusoid_embedder
+    to: value_sites.token_index_embedding
+    kind: data_flow
+    carries: [representations.single_positional_embeddings]
+    operation: encode_token_index
+    evidence: *single_relation_evidence
+  - id: residue_index_sinusoid_produces_embedding
+    from: modules.residue_index_sinusoid_embedder
+    to: value_sites.residue_index_embedding
+    kind: data_flow
+    carries: [representations.single_positional_embeddings]
+    operation: encode_residue_index
+    evidence: *single_relation_evidence
+  - id: chain_sinusoid_produces_embedding
+    from: modules.chain_sinusoid_embedder
+    to: value_sites.chain_embedding
+    kind: data_flow
+    carries: [representations.single_chain_embeddings]
+    operation: encode_asym_id
+    evidence: *single_relation_evidence
+  - id: timestep_sinusoid_produces_embedding
+    from: modules.timestep_sinusoid_embedder
+    to: value_sites.timestep_embedding
+    kind: data_flow
+    carries: [representations.single_timestep_embeddings]
+    operation: repeat_and_encode_timestep
+    evidence: *single_relation_evidence
+  - id: token_index_embedding_enters_single_concat
+    from: value_sites.token_index_embedding
+    to: modules.single_feature_input_concatenator
+    kind: data_flow
+    carries: [representations.single_positional_embeddings]
+    operation: concatenate_token_index_embedding
+    evidence: *single_relation_evidence
+  - id: residue_index_embedding_enters_single_concat
+    from: value_sites.residue_index_embedding
+    to: modules.single_feature_input_concatenator
+    kind: data_flow
+    carries: [representations.single_positional_embeddings]
+    operation: concatenate_residue_index_embedding
+    evidence: *single_relation_evidence
+  - id: chain_embedding_enters_single_concat
+    from: value_sites.chain_embedding
+    to: modules.single_feature_input_concatenator
+    kind: data_flow
+    carries: [representations.single_chain_embeddings]
+    operation: concatenate_chain_embedding
+    evidence: *single_relation_evidence
+  - id: timestep_embedding_enters_single_concat
+    from: value_sites.timestep_embedding
+    to: modules.single_feature_input_concatenator
+    kind: data_flow
+    carries: [representations.single_timestep_embeddings]
+    operation: concatenate_timestep_embedding
+    evidence: *single_relation_evidence
+  - id: single_concat_produces_projector_input
+    from: modules.single_feature_input_concatenator
+    to: value_sites.single_embedder_concat_features
+    kind: data_flow
+    carries: [representations.single_embedder_concat_features]
+    operation: concatenate_single_feature_inputs
+    evidence: *single_relation_evidence
+  - id: single_concat_input_enters_linear_projection
+    from: value_sites.single_embedder_concat_features
+    to: modules.single_feature_linear_projection
+    kind: data_flow
+    carries: [representations.single_embedder_concat_features]
+    operation: project_single_feature_input
+    evidence: *single_relation_evidence
+  - id: single_embedder_produces_initial_single_features
+    from: modules.single_feature_linear_projection
     to: value_sites.initial_single_features
     kind: data_flow
     carries: [representations.single_features]
-    operation: concatenate_and_project
+    operation: emit_masked_single_features
     evidence: *single_relation_evidence
   - id: initial_single_features_enter_pair_embedder
     from: value_sites.initial_single_features
@@ -2254,20 +2664,20 @@ relations:
     evidence: *structure_relation_evidence
   - id: transition_state_enters_frame_update
     from: value_sites.single_after_transition
-    to: modules.frame_update
+    to: modules.rigid_parameter_projection
     kind: data_flow
     carries: [representations.single_features]
     operation: regress_rigid_increment
     evidence: *structure_relation_evidence
   - id: decoder_frames_enter_frame_update
     from: value_sites.decoder_frames
-    to: modules.frame_update
+    to: modules.rigid_frame_composition
     kind: state_update
     carries: [representations.token_frames]
     operation: compose_rigid_increment
     evidence: *structure_relation_evidence
   - id: frame_update_produces_updated_frames
-    from: modules.frame_update
+    from: modules.rigid_frame_composition
     to: value_sites.updated_frames
     kind: state_update
     carries: [representations.token_frames]
@@ -2994,6 +3404,58 @@ relations:
       - source_ref: genie3_pair_feature_code
         role: implementation_evidence
         locator: V1PairFeatureNet.forward cond_struct_group_frame_pair_mask concatenation
+  - id: rigid_parameter_projection_produces_update_parameters
+    from: modules.rigid_parameter_projection
+    to: value_sites.rigid_update_parameters
+    kind: data_flow
+    carries:
+    - representations.rigid_update_parameters
+    operation: project_six_frame_update_parameters
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward params
+  - id: rigid_update_parameters_enter_parameterization
+    from: value_sites.rigid_update_parameters
+    to: modules.rigid_increment_parameterization
+    kind: data_flow
+    carries:
+    - representations.rigid_update_parameters
+    operation: split_rotation_and_translation_parameters
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward quats and trans split
+  - id: rigid_parameterization_produces_frame_increment
+    from: modules.rigid_increment_parameterization
+    to: value_sites.rigid_frame_increment
+    kind: data_flow
+    carries:
+    - representations.rigid_frame_increment
+    operation: normalize_quaternion_and_build_rigid_increment
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_backbone_update_code
+        role: implementation_evidence
+        locator: BackboneUpdate.forward
+  - id: rigid_frame_increment_enters_composition
+    from: value_sites.rigid_frame_increment
+    to: modules.rigid_frame_composition
+    kind: data_flow
+    carries:
+    - representations.rigid_frame_increment
+    operation: provide_local_rigid_increment
+    evidence:
+      status: confirmed_from_code
+      refs:
+      - source_ref: genie3_structure_code
+        role: caller_evidence
+        locator: StructureLayer.forward fi.compose(self.bb_update(si))
 claims:
   - id: atomization_is_task_dependent
     statement: Genie 3 does not represent every generated residue with atom14 coordinates. Unknown scaffold residues use one C-alpha token, while known motif or interface residues can be expanded into atom14-ordered heavy-atom tokens.

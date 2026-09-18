@@ -53,7 +53,7 @@ ports:
     cardinality: one
     relation_kinds: [conditioning, data_flow]
     glyph: frames
-    notation: T
+    notation: 'T=(R,t)'
     shape_contract:
       kind: frames
       axes:
@@ -339,7 +339,9 @@ steps:
     shape_rule: logit_composition
     inputs: [values.scalar_logits, values.point_logits, values.pair_bias, ports.mask]
     outputs: [values.combined_logits]
-    code: "combined_logits = apply_mask(scalar_logits + point_logits + pair_bias, mask)"
+    code: "pair_mask = outer(mask, mask); combined_logits = scalar_logits + point_logits + pair_bias + large_value * (pair_mask - 1)"
+    tex: '\begin{aligned}M_{ij}&=m_i m_j,\\ \widetilde a_{hij}&=a^{\mathrm{scalar}}_{hij}+a^{\mathrm{point}}_{hij}+b_{hij}+C\!\left(M_{ij}-1\right),\quad C\gg0\end{aligned}'
+    role: form the pair-validity outer product, convert invalid pairs into a large negative logit bias, and add that bias to the scalar, point-distance, and pair terms before softmax
     code_bindings:
       - { lexeme: combined_logits, ref: values.combined_logits, access: write }
       - { lexeme: scalar_logits, ref: values.scalar_logits, access: read }
