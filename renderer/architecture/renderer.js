@@ -82,15 +82,16 @@ import {
   createSemanticBoardResolver,
   semanticCodeSegments,
   semanticEdgeForRefs,
+  semanticProgramTraceForBoard,
   semanticRefsForBinding,
   semanticRefsForStatement,
-  semanticScopeForBoard,
   semanticStatementBindings,
   semanticStatementTextParts,
   semanticTexFallbackParts,
   semanticTexForBinding,
 } from "./semantic-pseudocode.mjs";
 import { pinchViewportBetween } from "./board-surface.mjs";
+import { createMsaPairWorkedExample } from "./msa-pair-example.mjs";
 import {
   adjacentSequenceNode,
   KEYBOARD_ZOOM_STEP,
@@ -903,13 +904,6 @@ function semanticBlockInstanceRef() {
   return direct ? untypedRef(direct, "block_instances") : null;
 }
 
-function semanticProgramContexts() {
-  return Object.values(manifest.pseudocode || {}).map((program) => ({
-    program,
-    symbolsById: new Map((program.symbols || []).map((symbol) => [symbol.id, symbol])),
-  }));
-}
-
 function semanticScopeSubtitle(scope) {
   if (!scope) return null;
   const kind = readableReuse(scope.kind || "scope");
@@ -954,63 +948,15 @@ function semanticTraceForCurrentContext() {
     };
   }
 
-  const contexts = semanticProgramContexts();
-  const candidates = contexts.flatMap(({ program, symbolsById }) => {
-    const activeScope = semanticScopeForBoard({
-      program,
-      board: currentBoard(),
-      rootBoardId: manifest.boards.rootBoard,
-    });
-    return (program.lines || []).map((statement) => ({
-      statement,
-      symbolsById,
-      program,
-      activeScope,
-    }));
+  const { statements, scope } = semanticProgramTraceForBoard({
+    manifest,
+    board: currentBoard(),
   });
-  const scopedCandidates = candidates.filter(({ statement, activeScope }) => {
-    if (!activeScope) return true;
-    const activeRef = activeScope.ref || `scopes.${activeScope.id}`;
-    return (statement.scopeRef || statement.scope_ref) === activeRef;
-  });
-  const activeScopes = scopedCandidates.map(({ activeScope }) => activeScope).filter(Boolean);
-  const scoped = activeScopes.length ? scopedCandidates : [];
-  const boardRefs = new Set([
-    currentBoard().subject_ref || currentBoard().subjectRef,
-    ...visibleNodes(currentBoard()).map(canonicalNodeRef),
-  ].filter(Boolean));
-  const unscopedCandidates = candidates.filter(({ activeScope }) => !activeScope);
-  const boardFactMatches = !scoped.length
-    ? unscopedCandidates.filter(({ statement }) =>
-      semanticRefsForStatement(statement).some((ref) => boardRefs.has(ref)),
-    )
-    : [];
-  const projectedMatches = !scoped.length && !boardFactMatches.length
-    ? unscopedCandidates.filter(({ statement, symbolsById }) => {
-      const refs = [
-        ...semanticRefsForStatement(statement),
-        ...semanticStatementBindings(statement).flatMap((binding) => (
-          semanticRefsForBinding(binding, symbolsById)
-        )),
-      ];
-      const resolved = semanticTraceResolver.resolve(refs);
-      return resolved.nodeIds.length > 0;
-    })
-    : [];
-  const fallback = currentBoard().id === manifest.boards.rootBoard
-    ? candidates
-    : [];
-  const statements = scoped.length
-    ? scoped
-    : boardFactMatches.length
-      ? boardFactMatches
-      : projectedMatches.length
-        ? projectedMatches
-        : fallback;
-  const scope = statements[0]?.activeScope || activeScopes[0] || null;
   return {
     title: scope?.label || statements[0]?.program?.title || "Architecture trace",
-    subtitle: semanticScopeSubtitle(scope) || "Statements visible at this board level",
+    subtitle: semanticScopeSubtitle(scope) || (statements.length
+      ? "Statements visible at this board level"
+      : "No statements mapped to this board"),
     statements,
   };
 }
@@ -2789,9 +2735,24 @@ function renderScaleLanes(board) {
 
 function renderReferencePanels(board) {
   const panels = Array.isArray(board.reference_panels) ? board.reference_panels : [];
+  const workedExamples = Array.isArray(board.worked_examples) ? board.worked_examples : [];
   elements.referencePanelLayer.replaceChildren();
-  elements.referencePanelLayer.hidden = panels.length === 0;
-  elements.canvas.classList.toggle("has-reference-panels", panels.length > 0);
+  elements.referencePanelLayer.hidden = panels.length === 0 && workedExamples.length === 0;
+  elements.canvas.classList.toggle("has-reference-panels", panels.length > 0 || workedExamples.length > 0);
+
+  for (const example of workedExamples) {
+    if (example.kind !== "msa_pair_outer_product") continue;
+    const section = createMsaPairWorkedExample(example);
+    const expand = document.createElement("button");
+    expand.type = "button";
+    expand.className = "worked-example-expand";
+    expand.textContent = "Open full example";
+    expand.setAttribute("aria-label", `Open full worked example: ${example.title}`);
+    expand.addEventListener("click", () => openWorkedExample(example));
+    section.querySelector(".worked-example-title")?.after(expand);
+    appendWorkedExampleCitation(section, example);
+    elements.referencePanelLayer.appendChild(section);
+  }
 
   for (const panel of panels) {
     const figure = document.createElement("figure");
@@ -2854,6 +2815,39 @@ function renderReferencePanels(board) {
     figure.appendChild(license);
     elements.referencePanelLayer.appendChild(figure);
   }
+}
+
+function appendWorkedExampleCitation(section, example) {
+  const source = bibliographySource(example.source_ref);
+  const sourceHref = audienceHref(source?.href || source?.url);
+  const citation = document.createElement(sourceHref ? "a" : "span");
+  citation.className = "worked-example-citation";
+  citation.textContent = [source?.title || example.source_ref, example.locator]
+    .filter(Boolean)
+    .join(" · ");
+  if (sourceHref) {
+    citation.href = sourceHref;
+    citation.target = "_blank";
+    citation.rel = "noreferrer";
+  }
+  section.appendChild(citation);
+}
+
+function openWorkedExample(example) {
+  const dialog = document.createElement("dialog");
+  dialog.className = "worked-example-dialog";
+  dialog.setAttribute("aria-label", `Worked example: ${example.title}`);
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "worked-example-close";
+  close.textContent = "Close example";
+  close.addEventListener("click", () => dialog.close());
+  const section = createMsaPairWorkedExample(example);
+  appendWorkedExampleCitation(section, example);
+  dialog.append(close, section);
+  dialog.addEventListener("close", () => dialog.remove(), { once: true });
+  document.body.appendChild(dialog);
+  dialog.showModal();
 }
 
 const REFERENCE_FIGURE_MIN_SCALE = 1;
