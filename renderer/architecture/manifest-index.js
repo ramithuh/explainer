@@ -18,10 +18,10 @@ export const manifestIndex = [
     "file": "manifest-af2.js"
   },
   {
-    "id": "af3_pairformer",
-    "name": "AlphaFold 3 Pairformer",
+    "id": "alphafold3",
+    "name": "AlphaFold 3",
     "role": "architecture",
-    "file": "manifest-af3_pairformer.js"
+    "file": "manifest-alphafold3.js"
   },
   {
     "id": "genie2",
@@ -45,7 +45,7 @@ export const comparisonIndex = {
     "inputDigests": {
       "comparisons/index.yaml": "54059100527b7b47f0096e90227ce5668a3d2693e0b48c8af971a200feed97e4",
       "comparisons/genie3-reduced-vs-full-ipa.yaml": "402bf54881eeb6b38d20b3049f839fbd1bdbfc35812e17909a7e63d9794dd4ba",
-      "references/bibliography.yaml": "82f709e900c8a4856e4b834e7d3d7269313b9e4aa08f6bea91d75c33ef974bdd",
+      "references/bibliography.yaml": "1f7c08a9305dee24a1a218bac4467d3fbd00abebdde7710609aaa2edd31a0966",
       "architectures/generic-feature-refinement.yaml": "856e34131dc78dd2454df9b0dc3ad3d0adff67c5a7f9dee5809cacf311722d68",
       "views/generic-semantic-zoom.view.yaml": "2212d81c8217db03c68fa7d59f44dc36e55052503d8d503b3386bded040b5714",
       "standard_blocks/pair-biased-attention.yaml": "3c6be1ec47623fa320eb6eace772216f41014d4bf14765b8ff52b1602cf26fb7",
@@ -57,8 +57,10 @@ export const comparisonIndex = {
       "standard_blocks/sinusoidal-timestep-embedding.yaml": "8cb2d467fe967e9a83da657ef85940406be89836de502d24cb7f557152763039",
       "architectures/alphafold2.yaml": "a754a17dc83303c7dff50f6925771b01dc51d237dae382476b8bf87fbead77fe",
       "views/alphafold2-semantic-zoom.view.yaml": "6b317c6d224a7e3b8416839247c0c12d6b9e0cd34d859475f4529a939d51fe8e",
-      "architectures/alphafold3-pairformer.yaml": "0e9baf415f97e87da42420e5fde1916ff0563839695638aea1c159c09d20419d",
-      "views/alphafold3-pairformer-semantic-zoom.view.yaml": "3978a4c18d06c27104497dce4c349e90e65ea95f684ddf878f22c323badc440b",
+      "architectures/alphafold3-pairformer.yaml": "7bf18fd94c48351ce0cdb7e09daf65a25e6c08143bb941ae60e7ce3084e75422",
+      "views/alphafold3-pairformer-semantic-zoom.view.yaml": "642997375536f9107bdb27a831e5b49b02a35ebfc83289f8407f48172aa77e5a",
+      "standard_blocks/attention-pair-bias.yaml": "2bdfb518fbe89761c0ecfee35de45fc78d3580194b627294d2b3387d89b37ecc",
+      "standard_blocks/conditioned-transition-block.yaml": "24f6641f449fcfd60452ce2193c16fa0deec4e9434ba0422f2a4608cabf751f7",
       "architectures/genie2.yaml": "dc70626daca21c212b372e601a3a064ee1a1ea01e226b955b21e00e4c308bdb0",
       "views/genie2-semantic-zoom.view.yaml": "e5ed5c07d6c8bc3215aa09b1e2ca261c2861a1dc19bdf8c3968d69c23e28b0d2",
       "standard_blocks/invariant-point-attention.yaml": "a5c02021172a36135808767943f20309424cc956240bf956ed156d1c380bb7b5",

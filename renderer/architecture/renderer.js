@@ -18,7 +18,7 @@ import {
   shapeDimsLabel,
   tensorGlyphSvg,
 } from "./representation-glyphs.mjs";
-import { equationMarkup, notationMarkup, texMarkup } from "./math-notation.mjs";
+import { equationMarkup, mathProseMarkup, notationMarkup, svgMathLabelParts, texMarkup } from "./math-notation.mjs";
 import {
   PAYLOAD_FLOW_FAMILIES,
   edgeFlowProfile,
@@ -82,15 +82,16 @@ import {
   createSemanticBoardResolver,
   semanticCodeSegments,
   semanticEdgeForRefs,
+  semanticProgramTraceForBoard,
   semanticRefsForBinding,
   semanticRefsForStatement,
-  semanticScopeForBoard,
   semanticStatementBindings,
   semanticStatementTextParts,
   semanticTexFallbackParts,
   semanticTexForBinding,
 } from "./semantic-pseudocode.mjs";
 import { pinchViewportBetween } from "./board-surface.mjs";
+import { createMsaPairWorkedExample } from "./msa-pair-example.mjs";
 import {
   adjacentSequenceNode,
   KEYBOARD_ZOOM_STEP,
@@ -903,13 +904,6 @@ function semanticBlockInstanceRef() {
   return direct ? untypedRef(direct, "block_instances") : null;
 }
 
-function semanticProgramContexts() {
-  return Object.values(manifest.pseudocode || {}).map((program) => ({
-    program,
-    symbolsById: new Map((program.symbols || []).map((symbol) => [symbol.id, symbol])),
-  }));
-}
-
 function semanticScopeSubtitle(scope) {
   if (!scope) return null;
   const kind = readableReuse(scope.kind || "scope");
@@ -954,63 +948,15 @@ function semanticTraceForCurrentContext() {
     };
   }
 
-  const contexts = semanticProgramContexts();
-  const candidates = contexts.flatMap(({ program, symbolsById }) => {
-    const activeScope = semanticScopeForBoard({
-      program,
-      board: currentBoard(),
-      rootBoardId: manifest.boards.rootBoard,
-    });
-    return (program.lines || []).map((statement) => ({
-      statement,
-      symbolsById,
-      program,
-      activeScope,
-    }));
+  const { statements, scope } = semanticProgramTraceForBoard({
+    manifest,
+    board: currentBoard(),
   });
-  const scopedCandidates = candidates.filter(({ statement, activeScope }) => {
-    if (!activeScope) return true;
-    const activeRef = activeScope.ref || `scopes.${activeScope.id}`;
-    return (statement.scopeRef || statement.scope_ref) === activeRef;
-  });
-  const activeScopes = scopedCandidates.map(({ activeScope }) => activeScope).filter(Boolean);
-  const scoped = activeScopes.length ? scopedCandidates : [];
-  const boardRefs = new Set([
-    currentBoard().subject_ref || currentBoard().subjectRef,
-    ...visibleNodes(currentBoard()).map(canonicalNodeRef),
-  ].filter(Boolean));
-  const unscopedCandidates = candidates.filter(({ activeScope }) => !activeScope);
-  const boardFactMatches = !scoped.length
-    ? unscopedCandidates.filter(({ statement }) =>
-      semanticRefsForStatement(statement).some((ref) => boardRefs.has(ref)),
-    )
-    : [];
-  const projectedMatches = !scoped.length && !boardFactMatches.length
-    ? unscopedCandidates.filter(({ statement, symbolsById }) => {
-      const refs = [
-        ...semanticRefsForStatement(statement),
-        ...semanticStatementBindings(statement).flatMap((binding) => (
-          semanticRefsForBinding(binding, symbolsById)
-        )),
-      ];
-      const resolved = semanticTraceResolver.resolve(refs);
-      return resolved.nodeIds.length > 0;
-    })
-    : [];
-  const fallback = currentBoard().id === manifest.boards.rootBoard
-    ? candidates
-    : [];
-  const statements = scoped.length
-    ? scoped
-    : boardFactMatches.length
-      ? boardFactMatches
-      : projectedMatches.length
-        ? projectedMatches
-        : fallback;
-  const scope = statements[0]?.activeScope || activeScopes[0] || null;
   return {
     title: scope?.label || statements[0]?.program?.title || "Architecture trace",
-    subtitle: semanticScopeSubtitle(scope) || "Statements visible at this board level",
+    subtitle: semanticScopeSubtitle(scope) || (statements.length
+      ? "Statements visible at this board level"
+      : "No statements mapped to this board"),
     statements,
   };
 }
@@ -2789,9 +2735,24 @@ function renderScaleLanes(board) {
 
 function renderReferencePanels(board) {
   const panels = Array.isArray(board.reference_panels) ? board.reference_panels : [];
+  const workedExamples = Array.isArray(board.worked_examples) ? board.worked_examples : [];
   elements.referencePanelLayer.replaceChildren();
-  elements.referencePanelLayer.hidden = panels.length === 0;
-  elements.canvas.classList.toggle("has-reference-panels", panels.length > 0);
+  elements.referencePanelLayer.hidden = panels.length === 0 && workedExamples.length === 0;
+  elements.canvas.classList.toggle("has-reference-panels", panels.length > 0 || workedExamples.length > 0);
+
+  for (const example of workedExamples) {
+    if (example.kind !== "msa_pair_outer_product") continue;
+    const section = createMsaPairWorkedExample(example);
+    const expand = document.createElement("button");
+    expand.type = "button";
+    expand.className = "worked-example-expand";
+    expand.textContent = "Open full example";
+    expand.setAttribute("aria-label", `Open full worked example: ${example.title}`);
+    expand.addEventListener("click", () => openWorkedExample(example));
+    section.querySelector(".worked-example-title")?.after(expand);
+    appendWorkedExampleCitation(section, example);
+    elements.referencePanelLayer.appendChild(section);
+  }
 
   for (const panel of panels) {
     const figure = document.createElement("figure");
@@ -2854,6 +2815,39 @@ function renderReferencePanels(board) {
     figure.appendChild(license);
     elements.referencePanelLayer.appendChild(figure);
   }
+}
+
+function appendWorkedExampleCitation(section, example) {
+  const source = bibliographySource(example.source_ref);
+  const sourceHref = audienceHref(source?.href || source?.url);
+  const citation = document.createElement(sourceHref ? "a" : "span");
+  citation.className = "worked-example-citation";
+  citation.textContent = [source?.title || example.source_ref, example.locator]
+    .filter(Boolean)
+    .join(" · ");
+  if (sourceHref) {
+    citation.href = sourceHref;
+    citation.target = "_blank";
+    citation.rel = "noreferrer";
+  }
+  section.appendChild(citation);
+}
+
+function openWorkedExample(example) {
+  const dialog = document.createElement("dialog");
+  dialog.className = "worked-example-dialog";
+  dialog.setAttribute("aria-label", `Worked example: ${example.title}`);
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "worked-example-close";
+  close.textContent = "Close example";
+  close.addEventListener("click", () => dialog.close());
+  const section = createMsaPairWorkedExample(example);
+  appendWorkedExampleCitation(section, example);
+  dialog.append(close, section);
+  dialog.addEventListener("close", () => dialog.remove(), { once: true });
+  document.body.appendChild(dialog);
+  dialog.showModal();
 }
 
 const REFERENCE_FIGURE_MIN_SCALE = 1;
@@ -4058,7 +4052,7 @@ function renderRepresentationNode(node) {
   card.innerHTML = `
     ${symbolHtml}
     ${box(dims ? `<small class="tensor-dims">${dims}</small>` : "")}
-    ${displayMeaning ? `<span class="tensor-meaning">${escapeHtml(displayMeaning)}</span>` : ""}
+    ${displayMeaning ? `<span class="tensor-meaning">${mathProseMarkup(displayMeaning)}</span>` : ""}
   `;
   attachQuestionMenuHandlers(card, { kind: "node", node });
   const pointerHighlightKey = `pointer:representation:${node.id}`;
@@ -4160,7 +4154,7 @@ function repFocusHtml(node, rep) {
   const carries = rep?.carries || [];
   return `
     <div class="focus-section">
-      <p>${escapeHtml(node.role || rep?.semantic_role || "")}</p>
+      <p>${mathProseMarkup(node.role || rep?.semantic_role || "")}</p>
       <dl class="focus-dl">
         ${shape ? `<dt>shape</dt><dd><code>${escapeHtml(shape)}</code></dd>` : ""}
         <dt>scale</dt><dd>${escapeHtml(node.scale || rep?.scale || "unknown")}</dd>
@@ -4169,8 +4163,8 @@ function repFocusHtml(node, rep) {
         ${valueSiteInterface?.consumerRefs?.length ? `<dt>consumed by</dt><dd>${escapeHtml(readableRefs(valueSiteInterface.consumerRefs))}</dd>` : ""}
       </dl>
       ${renderRepresentationFieldTable(rep)}
-      ${semantics?.notes?.length ? semantics.notes.map((note) => `<p>${escapeHtml(note)}</p>`).join("") : ""}
-      ${carries.length ? `<h3>Carries</h3><ul class="claim-list">${carries.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}
+      ${semantics?.notes?.length ? semantics.notes.map((note) => `<p>${mathProseMarkup(note)}</p>`).join("") : ""}
+      ${carries.length ? `<h3>Carries</h3><ul class="claim-list">${carries.map((item) => `<li>${mathProseMarkup(item)}</li>`).join("")}</ul>` : ""}
       ${node.template_fact_ref ? `<p><strong>Reusable template:</strong> <code>${escapeHtml(node.template_fact_ref)}</code></p>` : ""}
       ${rep?.evidence ? renderReferences(rep) : ""}
     </div>
@@ -4760,6 +4754,7 @@ function longestHorizontalSegment(points) {
 
 function renderEdges() {
   const board = currentBoard();
+  const boardNodes = visibleNodes(board);
   const width = elements.moduleLayer.offsetWidth;
   const height = elements.moduleLayer.offsetHeight;
   elements.edgeLayer.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -4774,9 +4769,14 @@ function renderEdges() {
   elements.edgeLayer.append(pathLayer, annotationLayer, hitLayer);
 
   const edges = state.displayEdges || displayGraph(board).edges;
+  const denseBoard = boardNodes.length > 20 || edges.length > 30;
+  const contextNodeIds = new Set(boardNodes
+    .filter((node) => node.prominence === "context")
+    .map((node) => node.id));
+  elements.canvas.classList.toggle("is-dense-board", denseBoard);
   const orthoRoutes = buildOrthoRoutes(edges);
   const renderedRoutes = new Map();
-  const annotationObstacles = visibleNodes(board)
+  const annotationObstacles = boardNodes
     .map((node) => nodeBox(node.id))
     .filter(Boolean);
   const occupiedAnnotationBoxes = [];
@@ -4809,6 +4809,9 @@ function renderEdges() {
     path.setAttribute("marker-end", `url(#${edgeMarkerId(edge)})`);
     path.dataset.edgeIndex = String(index);
     if (contracted) path.classList.add("is-contracted");
+    if (contextNodeIds.has(edge.from) || contextNodeIds.has(edge.to)) {
+      path.classList.add("is-context-flow");
+    }
     applyEdgeTone(path, edge);
     pathLayer.appendChild(path);
 
@@ -4864,7 +4867,25 @@ function renderEdges() {
           String(annotationY + EDGE_TEXT_STYLES.label.fontSize
             + lineIndex * EDGE_ANNOTATION_METRICS.labelHeight),
         );
-        span.textContent = line;
+        const mathParts = svgMathLabelParts(line);
+        if (mathParts.some((part) => part.kind !== "plain")) {
+          label.classList.add("is-math");
+          mathParts.forEach((part) => {
+            const token = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+            token.textContent = part.text;
+            token.classList.add(`math-${part.kind}`);
+            if (part.kind === "sub" || part.kind === "sup") {
+              token.setAttribute("baseline-shift", part.kind === "sub" ? "sub" : "super");
+              token.setAttribute("font-size", "9px");
+            }
+            if (part.kind === "sup" && part.overlap) {
+              token.setAttribute("dx", `${-0.52 * part.overlap}em`);
+            }
+            span.appendChild(token);
+          });
+        } else {
+          span.textContent = line;
+        }
         label.appendChild(span);
       });
       annotationLayer.appendChild(label);
@@ -5527,7 +5548,7 @@ function connectionInspectorHtml(edge, { expanded = false } = {}) {
     : null;
   return `
     <div class="focus-section">
-      <p>${escapeHtml(edge.connection.inside)}</p>
+      <p>${mathProseMarkup(edge.connection.inside)}</p>
       ${contracted
         ? contractedTooltipHtml(edge, expanded, "Select to keep details")
         : `<dl class="focus-dl">
@@ -5613,7 +5634,7 @@ function contractedTooltipHtml(edge, pinned, hint = "click edge to pin details")
       (segment) => `
         <li>
           <strong>${escapeHtml(nodeLabelById(segment.from))} → ${escapeHtml(nodeLabelById(segment.to))}</strong>
-          <p>${escapeHtml(segment.connection?.inside || "")}</p>
+          <p>${mathProseMarkup(segment.connection?.inside || "")}</p>
         </li>
       `,
     )
@@ -5699,9 +5720,9 @@ function focusOverview() {
   const notes = (board.notes || []).map((note) => String(note).trim()).filter(Boolean);
   setFocusBody(`
     <div class="focus-section focus-takeaway">
-      <p>${escapeHtml(summary || "Explore the board to see how information moves through this level.")}</p>
+      <p>${mathProseMarkup(summary || "Explore the board to see how information moves through this level.")}</p>
       ${notes.length
-        ? `<ul>${notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("")}</ul>`
+        ? `<ul>${notes.map((note) => `<li>${mathProseMarkup(note)}</li>`).join("")}</ul>`
         : ""}
       <p class="focus-guidance">Select a block or connection to inspect it. Use a block's magnifying-glass button to move deeper.</p>
     </div>
@@ -5755,7 +5776,7 @@ function focusModule(module, node) {
   const blockHtml = renderStandardBlocks(module);
   setFocusBody(`
     <div class="focus-section">
-      <p>${escapeHtml(module.role)}</p>
+      <p>${mathProseMarkup(module.role)}</p>
       ${equationMarkup(module.equation)}
       ${renderAttentionSummary(module)}
       ${module.accepts_but_does_not_use ? renderUnusedInputs(module.accepts_but_does_not_use) : ""}
@@ -5776,7 +5797,7 @@ function focusOperation(node) {
   elements.focusTitle.textContent = node.label || node.id;
   setFocusBody(`
     <div class="focus-section">
-      <p>${escapeHtml(node.role || "")}</p>
+      <p>${mathProseMarkup(node.role || "")}</p>
       <dl class="focus-dl">
         <dt>scale</dt><dd>${escapeHtml(node.scale || "operation")}</dd>
         <dt>node</dt><dd>${escapeHtml(node.id)}</dd>
